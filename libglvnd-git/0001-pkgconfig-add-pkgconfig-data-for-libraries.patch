@@ -1,0 +1,213 @@
+From c5bb7303c6785b497f8484e49c4e472354832c39 Mon Sep 17 00:00:00 2001
+From: fafryd <dz1125.bug.tracker@gmail.com>
+Date: Mon, 12 Dec 2016 15:02:14 +0100
+Subject: [PATCH] pkgconfig: add pkgconfig data for libraries
+
+https://github.com/NVIDIA/libglvnd/pull/86
+---
+ configure.ac               |  6 ++++++
+ src/EGL/Makefile.am        |  3 +++
+ src/EGL/egl.pc.in          | 10 ++++++++++
+ src/GL/Makefile.am         |  3 +++
+ src/GL/gl.pc.in            | 10 ++++++++++
+ src/GLESv1/Makefile.am     |  2 ++
+ src/GLESv1/glesv1_cm.pc.in | 10 ++++++++++
+ src/GLESv2/Makefile.am     |  2 ++
+ src/GLESv2/glesv2.pc.in    | 10 ++++++++++
+ src/GLX/Makefile.am        |  2 ++
+ src/GLX/glx.pc.in          | 10 ++++++++++
+ src/OpenGL/Makefile.am     |  2 ++
+ src/OpenGL/opengl.pc.in    | 10 ++++++++++
+ 13 files changed, 80 insertions(+)
+ create mode 100644 src/EGL/egl.pc.in
+ create mode 100644 src/GL/gl.pc.in
+ create mode 100644 src/GLESv1/glesv1_cm.pc.in
+ create mode 100644 src/GLESv2/glesv2.pc.in
+ create mode 100644 src/GLX/glx.pc.in
+ create mode 100644 src/OpenGL/opengl.pc.in
+
+diff --git a/configure.ac b/configure.ac
+index 1c0e6bf..1dd0f2e 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -255,11 +255,17 @@ AC_CONFIG_FILES([Makefile
+                  libglvnd.pc
+                  include/Makefile
+                  src/Makefile
++                 src/GL/gl.pc
+                  src/GL/Makefile
++                 src/OpenGL/opengl.pc
+                  src/OpenGL/Makefile
++                 src/GLESv1/glesv1_cm.pc
+                  src/GLESv1/Makefile
++                 src/GLESv2/glesv2.pc
+                  src/GLESv2/Makefile
++                 src/GLX/glx.pc
+                  src/GLX/Makefile
++                 src/EGL/egl.pc
+                  src/EGL/Makefile
+                  src/GLdispatch/Makefile
+                  src/GLdispatch/vnd-glapi/Makefile
+diff --git a/src/EGL/Makefile.am b/src/EGL/Makefile.am
+index 2af32a9..f61aed6 100644
+--- a/src/EGL/Makefile.am
++++ b/src/EGL/Makefile.am
+@@ -103,3 +103,6 @@ g_egldispatchstubs.c : $(GENERATE_DEPS)
+ 
+ g_egldispatchstubs.h : $(GENERATE_DEPS)
+ 	$(VM_V_GEN)$(PYTHON2) $(GENERATE_DISPATCH_SCRIPT) header $(GENERATE_LIST_FILES) > $@
++
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = egl.pc
+\ No newline at end of file
+diff --git a/src/EGL/egl.pc.in b/src/EGL/egl.pc.in
+new file mode 100644
+index 0000000..23230ab
+--- /dev/null
++++ b/src/EGL/egl.pc.in
+@@ -0,0 +1,10 @@
++prefix=@prefix@
++exec_prefix=${prefix}
++libdir=@libdir@
++includedir=@includedir@
++
++Name: egl
++Description: libglvnd EGL library
++Version: @PACKAGE_VERSION@
++Libs: -L${libdir} -lEGL
++Cflags: -I${includedir}
+diff --git a/src/GL/Makefile.am b/src/GL/Makefile.am
+index b0b1c68..e222da8 100644
+--- a/src/GL/Makefile.am
++++ b/src/GL/Makefile.am
+@@ -69,3 +69,6 @@ libGL_la_LIBADD += ../GLdispatch/libGLdispatch.la
+ libGL_la_LIBADD += ../GLdispatch/vnd-glapi/libglapi_gl.la
+ libGL_la_LIBADD += ../util/libutils_misc.la
+ libGL_la_LIBADD += -ldl
++
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = gl.pc
+diff --git a/src/GL/gl.pc.in b/src/GL/gl.pc.in
+new file mode 100644
+index 0000000..0a52387
+--- /dev/null
++++ b/src/GL/gl.pc.in
+@@ -0,0 +1,10 @@
++prefix=@prefix@
++exec_prefix=${prefix}
++libdir=@libdir@
++includedir=@includedir@
++
++Name: gl
++Description: libglvnd legacy OpenGL library
++Version: @PACKAGE_VERSION@
++Libs: -L${libdir} -lGL
++Cflags: -I${includedir}
+diff --git a/src/GLESv1/Makefile.am b/src/GLESv1/Makefile.am
+index 8c96015..929732c 100644
+--- a/src/GLESv1/Makefile.am
++++ b/src/GLESv1/Makefile.am
+@@ -48,3 +48,5 @@ CLEANFILES = $(BUILT_SOURCES)
+ g_glesv1_exports.sym : $(glapi_gen_libopengl_exports_deps)
+ 	$(call glapi_gen_libopengl_exports, glesv1)
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = glesv1_cm.pc
+diff --git a/src/GLESv1/glesv1_cm.pc.in b/src/GLESv1/glesv1_cm.pc.in
+new file mode 100644
+index 0000000..80da789
+--- /dev/null
++++ b/src/GLESv1/glesv1_cm.pc.in
+@@ -0,0 +1,10 @@
++prefix=@prefix@
++exec_prefix=${prefix}
++libdir=@libdir@
++includedir=@includedir@
++
++Name: gl
++Description: libglvnd OpenGL ES v1 library
++Version: @PACKAGE_VERSION@
++Libs: -L${libdir} -lGLESv1_CM
++Cflags: -I${includedir}
+diff --git a/src/GLESv2/Makefile.am b/src/GLESv2/Makefile.am
+index ca93a82..3691587 100644
+--- a/src/GLESv2/Makefile.am
++++ b/src/GLESv2/Makefile.am
+@@ -48,3 +48,5 @@ CLEANFILES = $(BUILT_SOURCES)
+ g_glesv2_exports.sym : $(glapi_gen_libopengl_exports_deps)
+ 	$(call glapi_gen_libopengl_exports, glesv2)
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = glesv2.pc
+diff --git a/src/GLESv2/glesv2.pc.in b/src/GLESv2/glesv2.pc.in
+new file mode 100644
+index 0000000..b3ad672
+--- /dev/null
++++ b/src/GLESv2/glesv2.pc.in
+@@ -0,0 +1,10 @@
++prefix=@prefix@
++exec_prefix=${prefix}
++libdir=@libdir@
++includedir=@includedir@
++
++Name: gles2
++Description: libglvnd OpenGL ES v2+ library
++Version: @PACKAGE_VERSION@
++Libs: -L${libdir} -lGLESv2
++Cflags: -I${includedir}
+diff --git a/src/GLX/Makefile.am b/src/GLX/Makefile.am
+index ce2e068..cb2dedd 100644
+--- a/src/GLX/Makefile.am
++++ b/src/GLX/Makefile.am
+@@ -69,3 +69,5 @@ libGLX_la_SOURCES = \
+ 	libglxmapping.c \
+ 	libglxproto.c
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = glx.pc
+\ No newline at end of file
+diff --git a/src/GLX/glx.pc.in b/src/GLX/glx.pc.in
+new file mode 100644
+index 0000000..9449d89
+--- /dev/null
++++ b/src/GLX/glx.pc.in
+@@ -0,0 +1,10 @@
++prefix=@prefix@
++exec_prefix=${prefix}
++libdir=@libdir@
++includedir=@includedir@
++
++Name: glx
++Description: libglvnd GLX library
++Version: @PACKAGE_VERSION@
++Libs: -L${libdir} -lGLX
++Cflags: -I${includedir}
+diff --git a/src/OpenGL/Makefile.am b/src/OpenGL/Makefile.am
+index 545b227..66d1483 100644
+--- a/src/OpenGL/Makefile.am
++++ b/src/OpenGL/Makefile.am
+@@ -56,3 +56,5 @@ CLEANFILES = $(BUILT_SOURCES)
+ g_opengl_exports.sym : $(glapi_gen_libopengl_exports_deps)
+ 	$(call glapi_gen_libopengl_exports, opengl)
+ 
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = opengl.pc
+diff --git a/src/OpenGL/opengl.pc.in b/src/OpenGL/opengl.pc.in
+new file mode 100644
+index 0000000..81f67fa
+--- /dev/null
++++ b/src/OpenGL/opengl.pc.in
+@@ -0,0 +1,10 @@
++prefix=@prefix@
++exec_prefix=${prefix}
++libdir=@libdir@
++includedir=@includedir@
++
++Name: openg
++Description: libglvnd OpenGL library
++Version: @PACKAGE_VERSION@
++Libs: -L${libdir} -lOpenGL
++Cflags: -I${includedir}
+-- 
+2.10.2
+

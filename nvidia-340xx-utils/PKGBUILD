@@ -1,0 +1,230 @@
+# $Id: PKGBUILD 239541 2015-05-18 23:34:43Z svenstaro $
+# Maintainer: Sven-Hendrik Haase <sh@lutzhaase.com>
+# Maintainer: Thomas Baechler <thomas@archlinux.org>
+# Contributor: James Rayner <iphitus@gmail.com>
+# Contributor: Aaron Plattner <aplattner@nvidia.com>
+# Contributor: Darek Zielski <dz1125.bug.tracker@gmail.com>
+
+pkgbase=nvidia-340xx-utils
+pkgname=('nvidia-340xx-utils' 'nvidia-340xx-libgl' 'opencl-nvidia-340xx')
+pkgver=340.101
+pkgrel=1
+arch=('i686' 'x86_64')
+url="http://www.nvidia.com/"
+license=('custom')
+options=('!strip')
+source=("http://us.download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
+        "http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
+sha256sums=('5f5eda9c3d9bf53b56ef4f546dd1be5317eed46df425edbdd2c34023fb9eb062'
+            '5ef62e073ba18d4ca745dcaa53c5fbf3d1de4b84cc1739a6cc3f7f746a77c752')
+
+[[ "$CARCH" = "i686" ]] && _pkg="NVIDIA-Linux-x86-${pkgver}"
+[[ "$CARCH" = "x86_64" ]] && _pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
+
+prepare() {
+    sh "${_pkg}.run" --extract-only
+    cd "${_pkg}"
+    bsdtar -xf nvidia-persistenced-init.tar.bz2
+}
+
+process_manifest_340xx () {
+    declare -A type_handlers=(
+        # opencl-nvidia-340xx
+        ["CUDA_ICD"]="opencl-nvidia-340xx install_opencl_vendor"
+        ["CUDA_LIB"]="opencl-nvidia-340xx install_lib"
+        ["CUDA_SYMLINK"]="opencl-nvidia-340xx symlink_lib_with_path"
+
+        # nvidia-340xx-libgl
+        ["APPLICATION_PROFILE"]="nvidia-340xx-libgl install_app_profile"
+        ["GLX_MODULE_SHARED_LIB"]="nvidia-340xx-libgl install_glx_module"
+        ["GLX_MODULE_SYMLINK"]="nvidia-340xx-libgl symlink_glx_module"
+        ["NVIDIA_MODPROBE_MANPAGE"]="nvidia-340xx-libgl install_man"
+        ["NVIDIA_MODPROBE"]="nvidia-340xx-libgl install_bin"
+        ["OPENGL_LIB"]="nvidia-340xx-libgl install_lib"
+        ["OPENGL_SYMLINK"]="nvidia-340xx-libgl symlink_lib"
+        ["TLS_LIB"]="nvidia-340xx-libgl install_tls"
+        ["VDPAU_LIB"]="nvidia-340xx-libgl install_lib"
+        ["VDPAU_SYMLINK"]="nvidia-340xx-libgl symlink_lib_with_path"
+        ["XMODULE_SHARED_LIB"]="nvidia-340xx-libgl install_x_driver"
+
+        # nvidia-340xx-utils
+        ["DOCUMENTATION"]="nvidia-340xx-utils install_doc"
+        ["DOT_DESKTOP"]="nvidia-340xx-utils install_dot_desktop"
+        ["ENCODEAPI_LIB"]="nvidia-340xx-utils install_lib"
+        ["ENCODEAPI_LIB_SYMLINK"]="nvidia-340xx-utils symlink_lib"
+        ["MANPAGE"]="nvidia-340xx-utils install_man"
+        ["NVCUVID_LIB"]="nvidia-340xx-utils install_lib"
+        ["NVCUVID_LIB_SYMLINK"]="nvidia-340xx-utils symlink_lib"
+        ["NVIFR_LIB"]="nvidia-340xx-utils install_lib"
+        ["NVIFR_LIB_SYMLINK"]="nvidia-340xx-utils symlink_lib"
+        ["UTILITY_BINARY"]="nvidia-340xx-utils install_bin"
+        ["UTILITY_LIB"]="nvidia-340xx-utils install_lib"
+        ["UTILITY_LIB_SYMLINK"]="nvidia-340xx-utils symlink_lib"
+
+        # Ignored entries
+        ["EXPLICIT_PATH"]="ignored"             # provided by hwids
+        ["INSTALLER_BINARY"]="ignored"          # provided by pacman :)
+        ["KERNEL_MODULE_SRC"]="ignored"         # kernel modules are handled by the nvidia PKGBUILD
+        ["LIBGL_LA"]="ignored"                  # .la files are not needed
+        ["OPENGL_HEADER"]="ignored"             # provided by mesa
+        ["UTILITY_BIN_SYMLINK"]="ignored"       # provided by pacman
+        ["UVM_MODULE_SRC"]="ignored"            # kernel modules are handled by the nvidia PKGBUILD
+        ["VDPAU_WRAPPER_LIB"]="ignored"         # provided by libvdpau
+        ["VDPAU_WRAPPER_SYMLINK"]="ignored"     # provided by libvdpau
+        ["XMODULE_NEWSYM"]="ignored"            # not needed for modern X servers
+        ["XMODULE_SYMLINK"]="ignored"           # not needed for modern X servers
+    )
+
+    tail -n +9 .manifest | {
+        while read name perm type extra1 extra2 extra3; do
+            if [ ${type_handlers[${type}]+isset} ]; then
+                local data=( ${type_handlers[${type}]} )
+                local pkg=${data[0]}
+                local handler=${data[1]}
+
+                # Check if this file type is handled by the current package.
+                # Otherwise, ignore it.
+                if [ ${pkg} = ${pkgname} ]; then
+                    eval ${handler} $name $perm $type $extra1 $extra2 $extra3
+                fi
+            else
+                echo "Unrecognized manifest type ${type}"
+                exit 1
+            fi
+        done
+    }
+
+    mkdir -p "${pkgdir}/usr/share/licenses"
+    ln -s nvidia "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+install_app_profile()   { install -D -m$2 "$1" "${pkgdir}/usr/share/nvidia/$1"; }
+install_bin()           { install -D -m$2 "$1" "${pkgdir}/usr/bin/$1"; }
+install_glx_module()    { install -D -m$2 "$1" "${pkgdir}/usr/lib/xorg/modules/extensions/$1"; }
+install_opencl_vendor() { install -D -m$2 "$1" "${pkgdir}/etc/OpenCL/vendors/$1"; }
+
+install_lib()           {
+    case "$1" in
+       libOpenCL*)
+            # provided by libcl (ocl-icd)
+            ;;
+        *)
+            install -D -m$2 "$1" "${pkgdir}/usr/lib/$5$1";
+            ;;
+    esac
+}
+
+install_man()           {
+    case "$1" in
+        nvidia-installer*)
+            # not needed because "INSTALLER_BINARY" is ignored
+            ;;
+        *)
+            install -D -m$2 "$1" "${pkgdir}/usr/share/man/man1/$1";
+            ;;
+    esac
+}
+
+install_x_driver()      {
+    case "$1" in
+        libnvidia-wfb*)
+            # not needed for modern X servers
+            ;;
+        *)
+            install -D -m$2 "$1" "${pkgdir}/usr/lib/xorg/modules/$4$1";
+            ;;
+    esac
+}
+
+install_dot_desktop()   {
+    install -D -m$2 "$1" "${pkgdir}/usr/share/applications/$1"
+
+    # Set the appropriate paths in the .desktop file
+    sed -i -e 's:__UTILS_PATH__:/usr/bin:' \
+           -e 's:__PIXMAP_PATH__:/usr/share/doc/nvidia:' \
+           -e 's:Application;Settings;:Settings;HardwareSettings;:' \
+           "${pkgdir}/usr/share/applications/$1"
+}
+
+install_tls() {
+    # Only "new" TLS is needed on modern systems.
+    case $5 in
+        CLASSIC)
+            return
+            ;;
+        NEW)
+            install -D -m$2 "$1" "${pkgdir}/usr/lib/$1"
+            ;;
+        *)
+            echo "Unrecognized TLS library type $5"
+            exit 1
+            ;;
+    esac
+}
+
+install_doc() {
+    # Strip the historical NVIDIA_GLX-1.0 prefix off of the target path and
+    # "html" off the source path.
+    local src=$(basename $1)
+    local target=${4#NVIDIA_GLX-1.0/}
+    install -D -m$2 "$1" "${pkgdir}/usr/share/doc/nvidia/${target}/${src}"
+}
+
+symlink_glx_module()    { ln -s "$5" "${pkgdir}/usr/lib/xorg/modules/extensions/$1"; }
+symlink_lib()           { ln -s "$5" "${pkgdir}/usr/lib/$1"; }
+
+symlink_lib_with_path() {
+    case "$1" in
+       libOpenCL*)
+            # provided by libcl (ocl-icd)
+            ;;
+        *)
+            ln -s "$6" "${pkgdir}/usr/lib/$5$1";
+            ;;
+    esac
+}
+
+
+package_opencl-nvidia-340xx() {
+    pkgdesc="OpenCL implemention for NVIDIA"
+    depends=('libcl' 'zlib')
+    optdepends=('opencl-headers: headers necessary for OpenCL development')
+    provides=('opencl-nvidia' 'libnvidia-ml' 'opencl-driver')
+    conflicts=('opencl-nvidia' 'opencl-driver')
+    cd "${_pkg}"
+
+    process_manifest_340xx
+}
+
+package_nvidia-340xx-libgl() {
+    pkgdesc="NVIDIA drivers libraries"
+    optdepends=('libvdpau: VDPAU wrapper library')
+    provides=('libgl' 'libegl' 'libgles' 'nvidia-libgl')
+    conflicts=('libgl' 'libegl' 'libgles' 'nvidia-libgl' 'libglvnd')
+    cd "${_pkg}"
+
+    process_manifest_340xx
+}
+
+package_nvidia-340xx-utils() {
+    pkgdesc="NVIDIA drivers utilities"
+    depends=('xorg-server')
+    optdepends=('gtk2: nvidia-settings'
+                'xorg-server-devel: nvidia-xconfig'
+                'opencl-nvidia: OpenCL support'
+                'libnvidia-ml: nvidia-smi')
+    provides=('nvidia-settings' 'nvidia-utils')
+    conflicts=('nvidia-settings' 'nvidia-utils')
+    install="${pkgname}.install"
+    cd "${_pkg}"
+
+    process_manifest_340xx
+
+    install -D -m644 nvidia-persistenced-init/systemd/nvidia-persistenced.service.template \
+                     "${pkgdir}/usr/lib/systemd/system/nvidia-persistenced.service"
+    sed -i 's/__USER__/nvidia-persistenced/' \
+           "${pkgdir}/usr/lib/systemd/system/nvidia-persistenced.service"
+
+    install -D -m644 LICENSE "${pkgdir}/usr/share/licenses/nvidia/LICENSE"
+    ln -s nvidia "${pkgdir}/usr/share/doc/${pkgname}"
+}

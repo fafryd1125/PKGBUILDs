@@ -1,0 +1,86 @@
+From 99cfc7ab30bb233160cdeafe32f2bd7acf9a251d Mon Sep 17 00:00:00 2001
+From: Nicolas Chauvet <kwizart@gmail.com>
+Date: Mon, 5 Dec 2016 11:43:47 +0100
+Subject: [PATCH 3/3] mesa: glapi: Clean-up dlopening glapi as we are building
+ shared by default
+
+Signed-off-by: Nicolas Chauvet <kwizart@gmail.com>
+---
+ src/egl/drivers/dri2/egl_dri2.c | 54 -----------------------------------------
+ 1 file changed, 54 deletions(-)
+
+diff --git a/src/egl/drivers/dri2/egl_dri2.c b/src/egl/drivers/dri2/egl_dri2.c
+index 63e29fc..fc0638e 100644
+--- a/src/egl/drivers/dri2/egl_dri2.c
++++ b/src/egl/drivers/dri2/egl_dri2.c
+@@ -2863,55 +2863,6 @@ dri2_unload(_EGLDriver *drv)
+    free(dri2_drv);
+ }
+ 
+-static EGLBoolean
+-dri2_load(_EGLDriver *drv)
+-{
+-   struct dri2_egl_driver *dri2_drv = dri2_egl_driver(drv);
+-#ifdef HAVE_ANDROID_PLATFORM
+-   const char *libname = "libglapi.so";
+-#elif defined(__APPLE__)
+-   const char *libname = "libglapi.0.dylib";
+-#elif defined(__CYGWIN__)
+-   const char *libname = "cygglapi-0.dll";
+-#else
+-   const char *libname = "libglapi.so.0";
+-#endif
+-   void *handle;
+-
+-   /* RTLD_GLOBAL to make sure glapi symbols are visible to DRI drivers */
+-   handle = dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);
+-   if (!handle) {
+-      _eglLog(_EGL_WARNING, "DRI2: failed to open glapi provider");
+-      goto no_handle;
+-   }
+-
+-   dri2_drv->get_proc_address = (_EGLProc (*)(const char *))
+-         dlsym(handle, "_glapi_get_proc_address");
+-
+-   /* if glapi is not available, loading DRI drivers will fail */
+-   if (!dri2_drv->get_proc_address) {
+-      _eglLog(_EGL_WARNING, "DRI2: failed to find _glapi_get_proc_address");
+-      goto no_symbol;
+-   }
+-
+-   dri2_drv->glFlush = (void (*)(void))
+-      dri2_drv->get_proc_address("glFlush");
+-
+-   /* if glFlush is not available things are horribly broken */
+-   if (!dri2_drv->glFlush) {
+-      _eglLog(_EGL_WARNING, "DRI2: failed to find glFlush entry point");
+-      goto no_symbol;
+-   }
+-
+-   dri2_drv->handle = handle;
+-   return EGL_TRUE;
+-
+-no_symbol:
+-   dlclose(handle);
+-no_handle:
+-   return EGL_FALSE;
+-}
+-
+ /**
+  * This is the main entrypoint into the driver, called by libEGL.
+  * Create a new _EGLDriver object and init its dispatch table.
+@@ -2927,11 +2878,6 @@ _eglBuiltInDriverDRI2(const char *args)
+    if (!dri2_drv)
+       return NULL;
+ 
+-   if (!dri2_load(&dri2_drv->base)) {
+-      free(dri2_drv);
+-      return NULL;
+-   }
+-
+    _eglInitDriverFallbacks(&dri2_drv->base);
+    dri2_drv->base.API.Initialize = dri2_initialize;
+    dri2_drv->base.API.Terminate = dri2_terminate;
+-- 
+2.7.4
+

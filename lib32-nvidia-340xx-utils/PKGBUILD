@@ -1,0 +1,172 @@
+# $Id$
+# Maintainer: Sven-Hendrik Haase <sh@lutzhaase.com>
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Thomas Baechler <thomas@archlinux.org>
+# Contributor: James Rayner <iphitus@gmail.com>
+# Contributor: Aaron Plattner <aplattner@nvidia.com>
+# Contributor: Darek Zielski <dz1125.bug.tracker@gmail.com>
+
+_pkgbasename=nvidia-340xx-utils
+pkgbase=lib32-$_pkgbasename
+pkgname=('lib32-nvidia-340xx-utils' 'lib32-nvidia-340xx-libgl' 'lib32-opencl-nvidia-340xx')
+pkgver=340.101
+pkgrel=1
+arch=('x86_64')
+url="http://www.nvidia.com/"
+license=('custom')
+options=('!strip')
+
+_arch='x86'
+_pkg="NVIDIA-Linux-${_arch}-${pkgver}"
+source=("http://us.download.nvidia.com/XFree86/Linux-${_arch}/${pkgver}/${_pkg}.run")
+sha256sums=('5f5eda9c3d9bf53b56ef4f546dd1be5317eed46df425edbdd2c34023fb9eb062')
+
+prepare() {
+    sh ${_pkg}.run --extract-only
+}
+
+process_manifest_340xx () {
+    declare -A type_handlers=(
+        # lib32-opencl-nvidia-340xx
+        ["CUDA_LIB"]="lib32-opencl-nvidia-340xx install_lib"
+        ["CUDA_SYMLINK"]="lib32-opencl-nvidia-340xx symlink_lib_with_path"
+
+        # lib32-nvidia-340xx-libgl
+        ["OPENGL_LIB"]="lib32-nvidia-340xx-libgl install_lib"
+        ["OPENGL_SYMLINK"]="lib32-nvidia-340xx-libgl symlink_lib"
+        ["TLS_LIB"]="lib32-nvidia-340xx-libgl install_tls"
+        ["VDPAU_LIB"]="lib32-nvidia-340xx-libgl install_lib"
+        ["VDPAU_SYMLINK"]="lib32-nvidia-340xx-libgl symlink_lib_with_path"
+
+
+        # lib32-nvidia-340xx-utils
+        ["ENCODEAPI_LIB"]="lib32-nvidia-340xx-utils install_lib"
+        ["ENCODEAPI_LIB_SYMLINK"]="lib32-nvidia-340xx-utils symlink_lib"
+        ["NVCUVID_LIB"]="lib32-nvidia-340xx-utils install_lib"
+        ["NVCUVID_LIB_SYMLINK"]="lib32-nvidia-340xx-utils symlink_lib"
+        ["NVIFR_LIB"]="lib32-nvidia-340xx-utils install_lib"
+        ["NVIFR_LIB_SYMLINK"]="lib32-nvidia-340xx-utils symlink_lib"
+        ["UTILITY_LIB"]="lib32-nvidia-340xx-utils install_lib"
+        ["UTILITY_LIB_SYMLINK"]="lib32-nvidia-340xx-utils symlink_lib"
+
+        # Ignored entries
+        ["INSTALLER_BINARY"]="ignored"          # provided by pacman :)
+        ["KERNEL_MODULE_SRC"]="ignored"         # kernel modules are handled by the nvidia PKGBUILD
+        ["LIBGL_LA"]="ignored"                  # .la files are not needed
+        ["OPENGL_HEADER"]="ignored"             # provided by mesa
+        ["UTILITY_BIN_SYMLINK"]="ignored"       # provided by pacman
+        ["UVM_MODULE_SRC"]="ignored"            # kernel modules are handled by the nvidia PKGBUILD
+        ["VDPAU_WRAPPER_LIB"]="ignored"         # provided by libvdpau
+        ["VDPAU_WRAPPER_SYMLINK"]="ignored"     # provided by libvdpau
+        ["XMODULE_NEWSYM"]="ignored"            # not needed for modern X servers
+        ["XMODULE_SYMLINK"]="ignored"           # not needed for modern X servers
+
+        # Ignored entries for lib32-* packages
+        ["CUDA_ICD"]="ignored"                  # lib32-opencl-nvidia-340xx
+        ["APPLICATION_PROFILE"]="ignored"       # lib32-nvidia-340xx-libgl
+        ["EXPLICIT_PATH"]="ignored"
+        ["NVIDIA_MODPROBE_MANPAGE"]="ignored"
+        ["NVIDIA_MODPROBE"]="ignored"
+        ["GLX_MODULE_SHARED_LIB"]="ignored"
+        ["GLX_MODULE_SYMLINK"]="ignored"
+        ["XMODULE_SHARED_LIB"]="ignored"
+        ["UTILITY_BINARY"]="ignored"            # lib32-nvidia-340xx-utils
+        ["DOT_DESKTOP"]="ignored"
+        ["MANPAGE"]="ignored"
+        ["DOCUMENTATION"]="ignored"
+    )
+
+    tail -n +9 .manifest | {
+        while read name perm type extra1 extra2 extra3; do
+            if [ ${type_handlers[${type}]+isset} ]; then
+                local data=( ${type_handlers[${type}]} )
+                local pkg=${data[0]}
+                local handler=${data[1]}
+
+                # Check if this file type is handled by the current package.
+                # Otherwise, ignore it.
+                if [ ${pkg} = ${pkgname} ]; then
+                    eval ${handler} $name $perm $type $extra1 $extra2 $extra3
+                fi
+            else
+                echo "Unrecognized manifest type ${type}"
+                exit 1
+            fi
+        done
+    }
+
+    mkdir -p "${pkgdir}/usr/share/licenses"
+    ln -s nvidia "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+install_lib()           {
+    case "$1" in
+       libOpenCL*)
+            # provided by libcl (ocl-icd)
+            ;;
+        *)
+            install -D -m$2 "$1" "${pkgdir}/usr/lib32/$5$1";
+            ;;
+    esac
+}
+
+install_tls()           {
+    # Only "new" TLS is needed on modern systems.
+    case $5 in
+        CLASSIC)
+            return
+            ;;
+        NEW)
+            install -D -m$2 "$1" "${pkgdir}/usr/lib32/$1"
+            ;;
+        *)
+            echo "Unrecognized TLS library type $5"
+            exit 1
+            ;;
+    esac
+}
+
+symlink_lib()           { ln -s "$5" "${pkgdir}/usr/lib32/$1"; }
+
+symlink_lib_with_path() {
+    case "$1" in
+       libOpenCL*)
+            # provided by libcl (ocl-icd)
+            ;;
+        *)
+            ln -s "$6" "${pkgdir}/usr/lib32/$5$1";
+            ;;
+    esac
+}
+
+package_lib32-opencl-nvidia-340xx() {
+    pkgdesc="OpenCL implemention for NVIDIA (32-bit)"
+    depends=('lib32-libcl' 'lib32-zlib' 'lib32-gcc-libs')
+    optdepends=('opencl-headers: headers necessary for OpenCL development')
+    provides=('lib32-opencl-nvidia' 'lib32-opencl-driver')
+    conflicts=('lib32-opencl-nvidia' 'lib32-opencl-driver')
+    cd "${_pkg}"
+
+    process_manifest_340xx
+}
+
+package_lib32-nvidia-340xx-libgl() {
+    pkgdesc="NVIDIA drivers libraries (32-bit)"
+    depends=('nvidia-340xx-libgl')
+    optdepends=('lib32-libvdpau: VDPAU wrapper library')
+    provides=('lib32-libgl' 'lib32-libegl' 'lib32-libgles')
+    conflicts=('lib32-libgl' 'lib32-libegl' 'lib32-libgles' 'lib32-libglvnd')
+    cd "${_pkg}"
+
+    process_manifest_340xx
+}
+
+package_lib32-nvidia-340xx-utils() {
+    pkgdesc="NVIDIA drivers utilities (32-bit)"
+    depends=('lib32-zlib' 'lib32-gcc-libs' 'nvidia-340xx-utils')
+    optdepends=('lib32-opencl-nvidia-340xx')
+    conflicts=('lib32-nvidia-utils')
+    cd "${_pkg}"
+
+    process_manifest_340xx
+}

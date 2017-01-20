@@ -1,0 +1,34 @@
+# $Id:
+# Maintainer: Darek Zielski <dz1125.bug.tracker@gmail.com>
+
+_pkgname=eglexternalplatform
+pkgname=eglexternalplatform-git
+pkgver=r1.53bf47c
+pkgrel=1
+pkgdesc="EGL External Platform Interface"
+arch=('any')
+url="https://github.com/NVIDIA/eglexternalplatform"
+license=('custom:BSD-like')
+provides=('eglexternalplatform')
+conflicts=('eglexternalplatform')
+source=("eglexternalplatform::git+https://github.com/NVIDIA/eglexternalplatform.git"
+        'LICENSE')
+sha256sums=('SKIP'
+            'ac41d561bbaa48a7c988dd7a5dd47f7ab18d81583d7dc23a1349f0a542bb9313')
+
+pkgver() {
+  cd "${_pkgname}"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+package() {
+  cd "${_pkgname}"
+
+  install -v -Dm 644 interface/*.h -t  "${pkgdir}/usr/include/"
+  install -v -Dm 644 "${_pkgname}.pc" "${pkgdir}/usr/lib/pkgconfig/${_pkgname}.pc"
+
+  install -Dm 644 README.md "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+  install -Dm 644 samples/* -t "${pkgdir}/usr/share/doc/${pkgname}/samples/"
+
+  install -Dm644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"}
+}

@@ -1,0 +1,43 @@
+# $Id:
+# Maintainer: Darek Zielski <dz1125.bug.tracker@gmail.com>
+
+_pkgname=egl-wayland
+pkgname=lib32-egl-wayland-git
+pkgver=r1.743d702
+pkgrel=1
+pkgdesc="The EGLStream-based Wayland external platform (32-bit)"
+arch=('i686' 'x86_64')
+url="https://github.com/NVIDIA/egl-wayland"
+license=('custom:BSD-like')
+depends=('egl-wayland')
+makedepends=('eglexternalplatform' 'lib32-wayland' 'wayland-protocols' 'mesa' 'gcc-multilib')
+provides=('lib32-egl-wayland')
+conflicts=('lib32-egl-wayland')
+source=("egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "${_pkgname}"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  export CC='gcc -m32'
+  export CXX='g++ -m32'
+
+  cd "${_pkgname}"
+
+  ./autogen.sh
+  ./configure \
+      --prefix=/usr \
+      --libdir=/usr/lib32/
+  make
+}
+
+package() {
+  cd "${_pkgname}"
+  make DESTDIR="${pkgdir}" install
+
+  mkdir -p "${pkgdir}/usr/share/licenses"
+  ln -s "${pkgname#*-}" "${pkgdir}/usr/share/licenses/${pkgname}"
+}

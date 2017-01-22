@@ -163,7 +163,7 @@ package_lib32-nvidia-libgl() {
     pkgdesc="NVIDIA drivers libraries (32-bit)"
     depends=('nvidia-libgl' 'lib32-libglvnd')
     optdepends=('lib32-libvdpau: VDPAU wrapper library'
-                'lib32-egl-wayland : The EGLStream-based Wayland external platform ')
+                'lib32-egl-wayland: The EGLStream-based Wayland external platform')
     provides=('lib32-vulkan-driver')
     cd "${_pkg}"
 

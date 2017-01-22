@@ -8,10 +8,18 @@
 pkgname=nvidia-optimus
 pkgver=378.09
 pkgrel=1
+pkgdesc="NVIDIA drivers utilities"
 arch=('i686' 'x86_64')
 url="http://www.nvidia.com/"
 license=('custom')
+# Can be installed with mesa-glvnd or mesa (non-GLVND)
+depends=('xorg-server' 'bumblebee')
+optdepends=('xorg-server-devel: nvidia-xconfig'
+            'opencl-nvidia: OpenCL support')
+provides=('nvidia-settings' 'nvidia-utils')
+conflicts=('nvidia-settings' 'nvidia-utils' 'nvidia-libgl')
 options=('!strip')
+install="${pkgname}.install"
 source=("http://us.download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
         "http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
 sha256sums=('feaaa52b96f82ed27fa7286b645c6f220984fb2831aac492b037a188f5e63b28'
@@ -193,14 +201,6 @@ symlink_lib() {
 }
 
 package() {
-    pkgdesc="NVIDIA drivers utilities"
-    # Can be installed with mesa-glvnd or mesa (non-GLVND)
-    depends=('xorg-server' 'bumblebee')
-    optdepends=('xorg-server-devel: nvidia-xconfig'
-                'opencl-nvidia: OpenCL support')
-    provides=('nvidia-settings' 'nvidia-utils')
-    conflicts=('nvidia-settings' 'nvidia-utils' 'nvidia-libgl')
-    install="${pkgname}.install"
     cd "${_pkg}"
 
     process_manifest

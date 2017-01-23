@@ -1,0 +1,54 @@
+# $Id$
+# Maintainer: Sven-Hendrik Haase <sh@lutzhaase.com>
+# Maintainer: Thomas Baechler <thomas@archlinux.org>
+
+pkgname=nvidia
+pkgver=378.09
+_extramodules=extramodules-4.9-ARCH
+pkgrel=1
+pkgdesc='NVIDIA drivers for linux'
+arch=('i686' 'x86_64')
+url="http://www.nvidia.com/"
+depends=('linux>=4.9' 'linux<4.10' "nvidia-libgl=${pkgver}")
+makedepends=('linux-headers>=4.9' 'linux-headers<4.10')
+license=('custom')
+install=nvidia.install
+options=(!strip)
+source=("ftp://download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
+        "ftp://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
+sha256sums=('feaaa52b96f82ed27fa7286b645c6f220984fb2831aac492b037a188f5e63b28'
+            'c3c9f33ae3cf2be80a9b46aede4fb02162758194d08fd714b5d01b04df8e4355')
+
+[[ "$CARCH" = "i686" ]] && _pkg="NVIDIA-Linux-x86-${pkgver}"
+[[ "$CARCH" = "x86_64" ]] && _pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
+
+prepare() {
+    sh "${_pkg}.run" --extract-only
+    cd "${_pkg}"
+    # patches here
+}
+
+build() {
+    _kernver="$(cat /usr/lib/modules/${_extramodules}/version)"
+    cd "${_pkg}"/kernel
+    make SYSSRC=/usr/lib/modules/"${_kernver}/build" module
+}
+
+package() {
+    install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia.ko" \
+                     "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia.ko"
+    install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia-drm.ko" \
+                     "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-drm.ko"
+    install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia-modeset.ko" \
+                     "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-modeset.ko"
+
+    if [[ "$CARCH" = "x86_64" ]]; then
+        install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia-uvm.ko" \
+                         "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-uvm.ko"
+    fi
+
+    gzip "${pkgdir}/usr/lib/modules/${_extramodules}/"*.ko
+    install -d -m755 "${pkgdir}/usr/lib/modprobe.d"
+
+    echo "blacklist nouveau" >> "${pkgdir}/usr/lib/modprobe.d/${pkgname}.conf"
+}

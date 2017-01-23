@@ -187,7 +187,7 @@ symlink_lib_with_path() {
 
 package_opencl-nvidia-340xx() {
     pkgdesc="OpenCL implemention for NVIDIA"
-    depends=('libcl' 'zlib')
+    depends=('zlib')
     optdepends=('opencl-headers: headers necessary for OpenCL development')
     provides=('opencl-nvidia' 'libnvidia-ml' 'opencl-driver')
     conflicts=('opencl-nvidia' 'opencl-driver')

@@ -12,8 +12,8 @@ url="https://github.com/NVIDIA/libglvnd"
 license=('custom:BSD-like')
 depends=('lib32-libxext' 'libglvnd-git')
 makedepends=('lib32-libx11' 'git' 'glproto' 'gcc-multilib' 'python')
-provides=('lib32-libglvnd' 'lib32-libgl' 'lib32-libegl')
-conflicts=('lib32-libglvnd' 'lib32-libgl' 'lib32-libegl')
+provides=('lib32-libglvnd')
+conflicts=('lib32-libglvnd')
 source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
         '0001-Update-.xml-files-revision-33335.patch'
         '0001-m4-update-macros.patch'

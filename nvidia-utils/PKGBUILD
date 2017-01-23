@@ -213,8 +213,9 @@ package_opencl-nvidia() {
 package_nvidia-libgl() {
     pkgdesc="NVIDIA drivers libraries"
     depends=('libglvnd')
-    optdepends=('libvdpau: VDPAU wrapper library'
-                'egl-wayland : The EGLStream-based Wayland external platform ')
+    optdepends=('egl-wayland : The EGLStream-based Wayland external platform'
+                'libvdpau: VDPAU wrapper library'
+                'nvidia-utils: NVIDIA drivers utilities')
     provides=('vulkan-driver')
     cd "${_pkg}"
 
@@ -223,7 +224,7 @@ package_nvidia-libgl() {
 
 package_nvidia-utils() {
     pkgdesc="NVIDIA drivers utilities"
-    depends=('xorg-server')
+    depends=('xorg-server' 'nvidia')
     optdepends=('xorg-server-devel: nvidia-xconfig'
                 'opencl-nvidia: OpenCL support')
     provides=('nvidia-settings')

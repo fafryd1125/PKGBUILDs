@@ -22,11 +22,11 @@ pkgver() {
 package() {
   cd "${_pkgname}"
 
-  install -v -Dm 644 interface/*.h -t  "${pkgdir}/usr/include/"
-  install -v -Dm 644 "${_pkgname}.pc" "${pkgdir}/usr/lib/pkgconfig/${_pkgname}.pc"
+  install -v -Dm644 interface/*.h -t  "${pkgdir}/usr/include/"
+  install -v -Dm644 "${_pkgname}.pc" "${pkgdir}/usr/lib/pkgconfig/${_pkgname}.pc"
 
-  install -Dm 644 README.md "${pkgdir}/usr/share/doc/${pkgname}/README.md"
-  install -Dm 644 samples/* -t "${pkgdir}/usr/share/doc/${pkgname}/samples/"
+  install -Dm644 README.md "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+  install -Dm644 samples/* -t "${pkgdir}/usr/share/doc/${pkgname}/samples/"
 
-  install -Dm 644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+  install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
 }

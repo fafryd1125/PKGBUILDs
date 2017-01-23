@@ -12,8 +12,8 @@ url="https://github.com/NVIDIA/libglvnd"
 license=('custom:BSD-like')
 depends=('libxext')
 makedepends=('libx11' 'git' 'glproto' 'python')
-provides=('libglvnd' 'libgl' 'libegl' 'libgles')
-conflicts=('libglvnd' 'libgl' 'libegl' 'libgles')
+provides=('libglvnd')
+conflicts=('libglvnd')
 source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
         'LICENSE'
         '0001-Update-.xml-files-revision-33335.patch'

@@ -50,8 +50,6 @@ prepare() {
   patch -Np1 -i ../0002-Revert-gbm-dlopen-libglapi-so-gbm_create_device-work.patch
   #https://bugs.freedesktop.org/show_bug.cgi?id=98428#c17
 #  patch -Np1 -i ../0003-mesa-glapi-Clean-up-dlopening-glapi-as-we-are-buildi.patch
-
-  autoreconf -fiv
 }
 
 build() {

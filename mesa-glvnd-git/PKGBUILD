@@ -109,7 +109,7 @@ package_mesa-glvnd-libgl-git() {
   provides=('libgles' 'mesa-libgl')
   conflicts=('libgles' 'mesa-libgl')
 
-  # libglvnd-mesa + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
+  # libglvnd-mesa-git + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
   install -m755 -d ${pkgdir}/usr/lib/pkgconfig
   cp -v ${srcdir}/fakeinstall/usr/lib/pkgconfig/{glesv1_cm,glesv2}.pc ${pkgdir}/usr/lib/pkgconfig
 
@@ -158,8 +158,8 @@ package_mesa-glvnd-git() {
   cp -rv ${srcdir}/fakeinstall/usr/include ${pkgdir}/usr
   cp -rv ${srcdir}/fakeinstall/usr/lib/pkgconfig ${pkgdir}/usr/lib/
 
-  # provided by mesa-glvnd-libgl and
-  # libglvnd-mesa + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
+  # provided by mesa-glvnd-libgl-git and
+  # libglvnd-mesa-git + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
   rm -fv ${pkgdir}/usr/lib/pkgconfig/{egl,gl,glesv1_cm,glesv2}.pc
 
   install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"

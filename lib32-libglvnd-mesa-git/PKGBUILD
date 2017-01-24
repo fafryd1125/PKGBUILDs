@@ -62,7 +62,7 @@ build() {
   ./configure \
       --prefix=/usr \
       --libdir=/usr/lib32/ \
-      --build=i686-unknown-linux-gnu \
+      --build=i686-pc-linux-gnu \
       --enable-shared \
       --enable-static=no \
       --disable-gles

@@ -81,6 +81,10 @@ build() {
       --with-clang-libdir=/usr/lib
   make
 
+#  --enable-libglvnd       Build GLX and EGL for libglvnd [default=disabled]
+#  --enable-libglvnd-glx   Build GLX for libglvnd [default=disabled]
+#  --enable-libglvnd-egl   Build EGL for libglvnd [default=disabled]
+
   # fake installation
   mkdir $srcdir/fakeinstall
   make DESTDIR=${srcdir}/fakeinstall install
@@ -154,6 +158,7 @@ package_mesa-glvnd-git() {
   cp -rv ${srcdir}/fakeinstall/usr/include ${pkgdir}/usr
   cp -rv ${srcdir}/fakeinstall/usr/lib/pkgconfig ${pkgdir}/usr/lib/
 
+  # provided by mesa-glvnd-libgl and
   # libglvnd-mesa + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
   rm -fv ${pkgdir}/usr/lib/pkgconfig/{egl,gl,glesv1_cm,glesv2}.pc
 

@@ -9,7 +9,7 @@ pkgrel=1
 pkgdesc='NVIDIA drivers for linux'
 arch=('i686' 'x86_64')
 url="http://www.nvidia.com/"
-depends=('linux>=4.9' 'linux<4.10' "nvidia-libgl=${pkgver}")
+depends=('linux>=4.9' 'linux<4.10' 'libgl')
 makedepends=('linux-headers>=4.9' 'linux-headers<4.10')
 license=('custom')
 install=nvidia.install

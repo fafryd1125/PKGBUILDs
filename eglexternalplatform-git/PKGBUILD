@@ -9,6 +9,7 @@ pkgdesc="EGL External Platform Interface"
 arch=('any')
 url="https://github.com/NVIDIA/eglexternalplatform"
 license=('MIT')
+makedepends=('git')
 provides=('eglexternalplatform')
 conflicts=('eglexternalplatform')
 source=("eglexternalplatform::git+https://github.com/NVIDIA/eglexternalplatform.git")

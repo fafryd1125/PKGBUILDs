@@ -113,11 +113,6 @@ package_mesa-glvnd-libgl-git() {
   install -m755 -d ${pkgdir}/usr/lib/pkgconfig
   cp -v ${srcdir}/fakeinstall/usr/lib/pkgconfig/{glesv1_cm,glesv2}.pc ${pkgdir}/usr/lib/pkgconfig
 
-
-  # See FS#26284
-  install -m755 -d "${pkgdir}/usr/lib/xorg/modules/extensions"
-  ln -s libglx.xorg "${pkgdir}/usr/lib/xorg/modules/extensions/libglx.so"
-
   install -m755 -d ${pkgdir}/usr/lib/
   #  --enable-libglvnd
   cp -rv ${srcdir}/fakeinstall/usr/lib/libGLX_mesa.so* ${pkgdir}/usr/lib/

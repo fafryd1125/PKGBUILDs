@@ -199,7 +199,7 @@ package_opencl-nvidia-340xx() {
 package_nvidia-340xx-libgl() {
     pkgdesc="NVIDIA drivers libraries"
     optdepends=('libvdpau: VDPAU wrapper library')
-    provides=('libgl' 'libegl' 'libgles' 'nvidia-libgl')
+    provides=('libgl' 'libegl' 'libgles')
     conflicts=('libgl' 'libegl' 'libgles' 'nvidia-libgl' 'libglvnd')
     cd "${_pkg}"
 

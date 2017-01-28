@@ -198,7 +198,8 @@ package_opencl-nvidia-340xx() {
 
 package_nvidia-340xx-libgl() {
     pkgdesc="NVIDIA drivers libraries"
-    optdepends=('libvdpau: VDPAU wrapper library')
+    optdepends=('libvdpau: VDPAU wrapper library'
+                'nvidia-340xx-utils: NVIDIA drivers utilities')
     provides=('libgl' 'libegl' 'libgles')
     conflicts=('libgl' 'libegl' 'libgles' 'nvidia-libgl' 'libglvnd')
     cd "${_pkg}"
@@ -208,10 +209,10 @@ package_nvidia-340xx-libgl() {
 
 package_nvidia-340xx-utils() {
     pkgdesc="NVIDIA drivers utilities"
-    depends=('xorg-server')
+    depends=('xorg-server' 'nvidia-340xx')
     optdepends=('gtk2: nvidia-settings'
                 'xorg-server-devel: nvidia-xconfig'
-                'opencl-nvidia: OpenCL support'
+                'opencl-nvidia-340xx: OpenCL support'
                 'libnvidia-ml: nvidia-smi')
     provides=('nvidia-settings' 'nvidia-utils')
     conflicts=('nvidia-settings' 'nvidia-utils')

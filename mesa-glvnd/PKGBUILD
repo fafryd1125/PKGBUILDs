@@ -50,7 +50,7 @@ build() {
       --sysconfdir=/etc \
       --with-dri-driverdir=/usr/lib/xorg/modules/dri \
       --with-gallium-drivers=nouveau,svga,swrast,virgl \
-      --with-dri-drivers=i965,nouveau,swrast \
+      --with-dri-drivers=nouveau,swrast \
       --with-egl-platforms=x11,drm,wayland \
       --with-sha1=libgcrypt \
       --enable-gallium-llvm \
@@ -129,14 +129,14 @@ package_mesa-glvnd() {
   cp -rv ${srcdir}/fakeinstall/etc/drirc ${pkgdir}/etc
 
   install -m755 -d ${pkgdir}/usr/lib/xorg/modules/dri
-  # nouveau-dri, intel-dri, svga-dri, swrast
+  # nouveau-dri, svga-dri, swrast
   cp -av ${srcdir}/fakeinstall/usr/lib/xorg/modules/dri/* ${pkgdir}/usr/lib/xorg/modules/dri
 
   cp -rv ${srcdir}/fakeinstall/usr/lib/bellagio  ${pkgdir}/usr/lib
   cp -rv ${srcdir}/fakeinstall/usr/lib/d3d  ${pkgdir}/usr/lib
 
   cp -rv ${srcdir}/fakeinstall/usr/lib/*.so* ${pkgdir}/usr/lib/
-  # provided by opencl-mesa (lib*OpenCL*) , mesa-libgl
+  # provided by opencl-mesa (lib*OpenCL*), mesa-glvnd-libgl
   rm -fv ${pkgdir}/usr/lib/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
 
   cp -rv ${srcdir}/fakeinstall/usr/include ${pkgdir}/usr

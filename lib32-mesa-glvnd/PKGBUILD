@@ -56,7 +56,7 @@ build() {
       --sysconfdir=/etc \
       --with-dri-driverdir=/usr/lib32/xorg/modules/dri \
       --with-gallium-drivers=nouveau,svga,swrast,virgl \
-      --with-dri-drivers=i965,nouveau,swrast \
+      --with-dri-drivers=nouveau,swrast \
       --with-egl-platforms=x11,drm,wayland \
       --with-sha1=libgcrypt \
       --enable-gallium-llvm \
@@ -122,11 +122,11 @@ package_lib32-mesa-glvnd() {
            'lib32-libelf' 'lib32-llvm-libs' 'lib32-wayland' 'lib32-libtxc_dxtn' 'mesa-glvnd')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'lib32-mesa-vdpau: for accelerated video playback')
-  provides=('lib32-intel-dri' 'lib32-nouveau-dri' 'lib32-mesa-dri' 'lib32-mesa')
-  conflicts=('lib32-intel-dri' 'lib32-nouveau-dri' 'lib32-mesa-dri' 'lib32-mesa')
+  provides=('lib32-nouveau-dri' 'lib32-mesa-dri' 'lib32-mesa')
+  conflicts=('lib32-nouveau-dri' 'lib32-mesa-dri' 'lib32-mesa')
 
   install -m755 -d ${pkgdir}/usr/lib32/xorg/modules/dri
-  # nouveau-dri, intel-dri, svga-dri, swrast
+  # nouveau-dri, svga-dri, swrast
   cp -av ${srcdir}/fakeinstall/usr/lib32/xorg/modules/dri/* ${pkgdir}/usr/lib32/xorg/modules/dri
 
   install -m755 -d ${pkgdir}/usr/lib32

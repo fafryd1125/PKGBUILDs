@@ -122,8 +122,8 @@ package_mesa-glvnd() {
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'mesa-vdpau: for accelerated video playback'
               'libva-mesa-driver: for accelerated video playback')
-  provides=('intel-dri' 'nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa')
-  conflicts=('intel-dri' 'nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa')
+  provides=('nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa')
+  conflicts=('nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa')
 
   install -m755 -d ${pkgdir}/etc
   cp -rv ${srcdir}/fakeinstall/etc/drirc ${pkgdir}/etc

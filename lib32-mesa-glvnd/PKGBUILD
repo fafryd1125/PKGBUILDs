@@ -133,8 +133,8 @@ package_lib32-mesa-glvnd() {
   cp -rv ${srcdir}/fakeinstall/usr/lib32/d3d  ${pkgdir}/usr/lib32
 
   cp -rv ${srcdir}/fakeinstall/usr/lib32/*.so* ${pkgdir}/usr/lib32/
-  # provided by lib32-opencl-mesa (lib*OpenCL*) , lib32-mesa-glvnd-libgl
-  rm -fv ${pkgdir}/usr/lib32/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
+  # provided by lib32-mesa-glvnd-libgl
+  rm -fv ${pkgdir}/usr/lib32/{libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
 
   cp -rv ${srcdir}/fakeinstall/usr/lib32/pkgconfig ${pkgdir}/usr/lib32/
 

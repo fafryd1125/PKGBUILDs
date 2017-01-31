@@ -1,0 +1,179 @@
+# $Id$
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+
+pkgbase=lib32-mesa-glvnd
+_pkgname=mesa
+pkgname=('lib32-vulkan-intel' 'lib32-vulkan-radeon' 'lib32-mesa-glvnd-vdpau' 'lib32-mesa-glvnd-libgl'  'lib32-mesa-glvnd')
+pkgver=13.0.3
+pkgrel=1
+arch=('i686' 'x86_64')
+makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
+             'lib32-libxshmfence' 'lib32-libxxf86vm' 'lib32-libxdamage' 'gcc-multilib' 'lib32-libelf' 'lib32-llvm' 'lib32-libvdpau'
+             'lib32-wayland' 'lib32-libgcrypt' 'lib32-libglvnd')
+url="http://mesa3d.sourceforge.net"
+license=('custom')
+source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
+        'remove-libpthread-stubs.patch'
+        '0001-glapi-Link-with-glapi-when-built-shared.patch'
+        '0001-egl-glvnd-support.patch')
+sha256sums=('d9aa8be5c176d00d0cd503cb2f64a5a403ea471ec819c022581414860d7ba40e'
+            'SKIP'
+            '75ab53ad44b95204c788a2988e97a5cb963bdbf6072a5466949a2afb79821c8f'
+            '064dcd5a3ab1b7c23383e2cafbd37859e4c353f8839671d9695c6f7c2ef3260b'
+            '6b99adc4960ba5b0c928ae4ffa8d4d84873857e08e25b24c300a1dfd1db764fa')
+validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
+
+prepare() {
+  cd "${_pkgname}-${pkgver}"
+
+  # Now mesa checks for libpthread-stubs - so remove the check
+  patch -Np1 -i ../remove-libpthread-stubs.patch
+
+  # https://copr.fedorainfracloud.org/coprs/kwizart/glvnd/ (Build ID: 500713)
+  # http://copr-dist-git.fedorainfracloud.org/cgit/kwizart/glvnd/mesa.git/
+  # https://bugs.freedesktop.org/show_bug.cgi?id=98428
+  # https://github.com/NVIDIA/libglvnd/issues/104
+  patch -Np1 -i ../0001-glapi-Link-with-glapi-when-built-shared.patch
+  patch -Np1 -i ../0001-egl-glvnd-support.patch
+
+  autoreconf -fiv
+}
+
+build() {
+  export CC="gcc -m32"
+  export CXX="g++ -m32"
+  export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
+  export LLVM_CONFIG="/usr/bin/llvm-config32"
+
+  cd "${_pkgname}-${pkgver}"
+
+  ./configure \
+      --build=i686-pc-linux-gnu \
+      --host=i686-pc-linux-gnu \
+      --prefix=/usr \
+      --libdir=/usr/lib32 \
+      --sysconfdir=/etc \
+      --with-dri-driverdir=/usr/lib32/xorg/modules/dri \
+      --with-gallium-drivers=r300,r600,radeonsi,nouveau,swrast,virgl \
+      --with-dri-drivers=i915,i965,r200,radeon,nouveau,swrast \
+      --with-egl-platforms=x11,drm,wayland \
+      --with-vulkan-drivers=intel,radeon \
+      --with-sha1=libgcrypt \
+      --enable-gallium-llvm \
+      --enable-llvm-shared-libs \
+      --enable-shared-glapi \
+      --enable-libglvnd \
+      --enable-glx-tls \
+      --enable-gbm \
+      --enable-dri \
+      --enable-dri3 \
+      --enable-osmesa \
+      --enable-texture-float \
+      --enable-vdpau \
+      --enable-nine
+  make
+
+#  --enable-libglvnd       Build GLX and EGL for libglvnd [default=disabled]
+#  --enable-libglvnd-glx   Build GLX for libglvnd [default=disabled]
+#  --enable-libglvnd-egl   Build EGL for libglvnd [default=disabled]
+
+  # fake installation
+  mkdir $srcdir/fakeinstall
+  make DESTDIR=${srcdir}/fakeinstall install
+}
+
+package_lib32-vulkan-intel() {
+  pkgdesc="Intel's Vulkan mesa driver (32-bit)"
+  depends=('lib32-libgcrypt' 'lib32-wayland' 'lib32-libx11' 'lib32-gcc-libs' 'lib32-libxshmfence' 'vulkan-intel')
+  provides=('lib32-vulkan-driver')
+
+  install -m755 -d ${pkgdir}/usr/share/vulkan/icd.d
+  mv -v ${srcdir}/fakeinstall/usr/share/vulkan/icd.d/intel_icd*.json ${pkgdir}/usr/share/vulkan/icd.d/
+
+  install -m755 -d ${pkgdir}/usr/lib32
+  mv -v ${srcdir}/fakeinstall/usr/lib32/libvulkan_intel.so ${pkgdir}/usr/lib32/
+
+  install -m755 -d "${pkgdir}/usr/share/licenses"
+  ln -s vulkan-intel "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+package_lib32-vulkan-radeon() {
+  pkgdesc="Radeon's Vulkan mesa driver (32-bit)"
+  depends=('lib32-libgcrypt' 'lib32-wayland' 'lib32-libx11' 'lib32-llvm-libs' 'lib32-libdrm' 'lib32-libelf' 
+           'lib32-libxshmfence' 'vulkan-radeon')
+  provides=('lib32-vulkan-driver')
+
+  install -m755 -d ${pkgdir}/usr/share/vulkan/icd.d
+  mv -v ${srcdir}/fakeinstall/usr/share/vulkan/icd.d/radeon_icd*.json ${pkgdir}/usr/share/vulkan/icd.d/
+
+  install -m755 -d ${pkgdir}/usr/lib32
+  mv -v ${srcdir}/fakeinstall/usr/lib32/libvulkan_radeon.so ${pkgdir}/usr/lib32/
+
+  install -m755 -d "${pkgdir}/usr/share/licenses"
+  ln -s vulkan-radeon "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+package_lib32-mesa-glvnd-vdpau() {
+  pkgdesc="Mesa VDPAU drivers (32-bit)"
+  depends=('lib32-libdrm' 'lib32-libx11' 'lib32-expat' 'lib32-llvm-libs' 'lib32-libelf' 'lib32-libgcrypt'
+           'lib32-libxshmfence')
+  provides=('lib32-mesa-vdpau')
+  conflicts=('lib32-mesa-vdpau')
+
+  install -m755 -d ${pkgdir}/usr/lib32
+  cp -rv ${srcdir}/fakeinstall/usr/lib32/vdpau ${pkgdir}/usr/lib32
+
+  install -m755 -d "${pkgdir}/usr/share/licenses"
+  ln -s mesa-glvnd-vdpau "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+package_lib32-mesa-glvnd-libgl() {
+  pkgdesc="Mesa 3-D graphics library (32-bit)"
+  depends=('lib32-libglvnd')
+  provides=('lib32-libgles' 'lib32-mesa-libgl')
+  conflicts=('lib32-libgles' 'lib32-mesa-libgl')
+
+  # libglvnd-mesa-git + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
+  install -m755 -d ${pkgdir}/usr/lib32/pkgconfig
+  cp -v ${srcdir}/fakeinstall/usr/lib32/pkgconfig/{glesv1_cm,glesv2}.pc ${pkgdir}/usr/lib32/pkgconfig
+
+  install -m755 -d ${pkgdir}/usr/lib32/
+  #  --enable-libglvnd
+  cp -rv ${srcdir}/fakeinstall/usr/lib32/libGLX_mesa.so* ${pkgdir}/usr/lib32/
+  cp -rv ${srcdir}/fakeinstall/usr/lib32/libEGL*.so* ${pkgdir}/usr/lib32/
+  cp -rv ${srcdir}/fakeinstall/usr/lib32/libGLES*.so* ${pkgdir}/usr/lib32/
+
+  install -m755 -d "${pkgdir}/usr/share/licenses"
+  ln -s mesa-glvnd-libgl "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+package_lib32-mesa-glvnd() {
+  pkgdesc="an open-source implementation of the OpenGL specification (32-bit)"
+  depends=('lib32-libdrm' 'lib32-libxxf86vm' 'lib32-libxdamage' 'lib32-libxshmfence' 'lib32-libgcrypt'
+           'lib32-libelf' 'lib32-llvm-libs' 'lib32-wayland' 'lib32-libtxc_dxtn' 'mesa-glvnd')
+  optdepends=('opengl-man-pages: for the OpenGL API man pages'
+              'lib32-mesa-vdpau: for accelerated video playback')
+  provides=('lib32-nouveau-dri' 'lib32-mesa-dri' 'lib32-mesa')
+  conflicts=('lib32-nouveau-dri' 'lib32-mesa-dri' 'lib32-mesa')
+
+  install -m755 -d ${pkgdir}/usr/lib32/xorg/modules/dri
+  # nouveau-dri, svga-dri, swrast
+  cp -av ${srcdir}/fakeinstall/usr/lib32/xorg/modules/dri/* ${pkgdir}/usr/lib32/xorg/modules/dri
+
+  install -m755 -d ${pkgdir}/usr/lib32
+  cp -rv ${srcdir}/fakeinstall/usr/lib32/d3d  ${pkgdir}/usr/lib32
+
+  cp -rv ${srcdir}/fakeinstall/usr/lib32/*.so* ${pkgdir}/usr/lib32/
+  # provided by lib32-opencl-mesa (lib*OpenCL*) , lib32-mesa-glvnd-libgl
+  rm -fv ${pkgdir}/usr/lib32/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
+
+  cp -rv ${srcdir}/fakeinstall/usr/lib32/pkgconfig ${pkgdir}/usr/lib32/
+
+  # provided by lib32-mesa-glvnd-libgl and
+  # lib32-libglvnd-mesa-git + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
+  rm -fv ${pkgdir}/usr/lib32/pkgconfig/{egl,gl,glesv1_cm,glesv2}.pc
+
+  install -m755 -d "${pkgdir}/usr/share/licenses"
+  ln -s mesa-glvnd "$pkgdir/usr/share/licenses/${pkgname}"
+}

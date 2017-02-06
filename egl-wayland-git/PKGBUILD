@@ -13,10 +13,8 @@ makedepends=('eglexternalplatform' 'wayland' 'mesa' 'git')
 provides=('egl-wayland')
 conflicts=('egl-wayland')
 source=("egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git"
-        'LICENSE'
         '10_nvidia_wayland.json')
 sha256sums=('SKIP'
-            'ac41d561bbaa48a7c988dd7a5dd47f7ab18d81583d7dc23a1349f0a542bb9313'
             '5cccf1905a266e8e34d5ad4aad4be85390e60b1a0850a29dd9d64adc641de412')
 
 pkgver() {
@@ -41,5 +39,5 @@ package() {
   # manually added in order to make the library work with the NVIDIA driver.
   install -Dm644 "${srcdir}/10_nvidia_wayland.json"  "${pkgdir}/usr/share/egl/egl_external_platform.d/10_nvidia_wayland.json"
 
-  install -Dm644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
 }

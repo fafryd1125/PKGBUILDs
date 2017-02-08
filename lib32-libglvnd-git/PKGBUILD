@@ -17,14 +17,14 @@ conflicts=('lib32-libglvnd' 'lib32-libgl')
 source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
         '0001-Update-.xml-files-revision-33335.patch'
         '0001-m4-update-macros.patch'
-        '0001-pkgconfig-add-pkgconfig-data-for-libraries.patch'
+        '0001-pkgconfig-add-pkgconfig-data-for-libraries-v2.patch'
         'https://patch-diff.githubusercontent.com/raw/NVIDIA/libglvnd/pull/100.patch'
         'https://patch-diff.githubusercontent.com/raw/NVIDIA/libglvnd/pull/107.patch'
         'https://patch-diff.githubusercontent.com/raw/NVIDIA/libglvnd/pull/113.patch')
 sha256sums=('SKIP'
             'c76870613ec9a88a58857011e91db010167594b218a6c8ca9b401d37589fbc90'
             'b0d804f222c588cfb79405db37bf39ba293d2c274e7d86c48bf126d0e586db1f'
-            '2cd3ddab728eea8487d84f26cbeb5033db990f41d4ad34f528095443d4b2f7a1'
+            '404bd653cac71c1c402369030af72677d0b6e0b05eb7dbc73f205a61f069a0c4'
             'fafdf8f48994c9ba05d818018a1d42cfac861322474fd5dad89b38114acbff14'
             '1b69690925aefe4d6db6817c37c5234b62fdf28d28e37d7d1df37bc550ae5697'
             '149646e01614348dc8e4778932398e83fa79b1f8205145ed73ecef33d6123b24')
@@ -44,7 +44,7 @@ prepare() {
 #  patch -p1 -i ../0001-m4-update-macros.patch
 
   # https://github.com/NVIDIA/libglvnd/pull/86 (update)
-#  patch -p1 -i ../0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
+#  patch -p1 -i ../0001-pkgconfig-add-pkgconfig-data-for-libraries-v2.patch
 
   # https://github.com/NVIDIA/libglvnd/pulls
 #  patch -p1 -i ../100.patch

@@ -5,7 +5,7 @@
 pkgbase=mesa-glvnd-git
 _pkgbase=mesa
 pkgname=('mesa-glvnd-vdpau-git' 'mesa-glvnd-libgl-git'  'mesa-glvnd-git')
-pkgver=17.1.0_devel.88288.de0b0a3a9c
+pkgver=17.1.0_devel.88832.30cf9ffb59
 pkgrel=1
 arch=('i686' 'x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -19,14 +19,14 @@ source=('mesa::git+http://anongit.freedesktop.org/git/mesa/mesa.git#branch=maste
         '0001-glapi-Link-with-glapi-when-built-shared.patch'
         '0002-Revert-gbm-dlopen-libglapi-so-gbm_create_device-work.patch'
         '0003-mesa-glapi-Clean-up-dlopening-glapi-as-we-are-buildi.patch'
-        '0001-EGL-Implement-the-libglvnd-interface-for-EGL-v2.5.patch')
+        '0001-EGL-Implement-the-libglvnd-interface-for-EGL-v3.patch')
 sha256sums=('SKIP'
             '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2'
             '09e738ba5059e5871c1452661187ea56c24ff81270f3a958b90c43d9fc1723e2'
             '064dcd5a3ab1b7c23383e2cafbd37859e4c353f8839671d9695c6f7c2ef3260b'
             'c7fac2e4522917d89f0b624e4df7879157fcfc96962a2392a962be70c56692b0'
             'c7eeeb8e176cbc6bdb50a9750660a7047e6273dd437e9765e280457eeca4fcdc'
-            '71e645a6163a98f4be8b8f5e43c8c893c3d514b5895094845acba1e9d4073c40')
+            'bb88b0b16ddb8361795fcef861c995c8b8f74129ef205fa43775cbb813e25e66')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 
 pkgver() {
@@ -42,7 +42,7 @@ prepare() {
 
   # https://bugs.freedesktop.org/show_bug.cgi?id=92877
   # https://patchwork.freedesktop.org/series/12354/
-  patch -Np1 -i ../0001-EGL-Implement-the-libglvnd-interface-for-EGL-v2.5.patch
+  patch -Np1 -i ../0001-EGL-Implement-the-libglvnd-interface-for-EGL-v3.patch
 
   # https://bugs.freedesktop.org/show_bug.cgi?id=98428
   # https://github.com/NVIDIA/libglvnd/issues/104

@@ -1,0 +1,46 @@
+# $Id$
+# Maintainer: Eric Bélanger <eric@archlinux.org>
+
+pkgname=wxgtk3
+pkgver=3.0.3+58949+dc7acca
+pkgrel=1
+pkgdesc="GTK+ implementation of wxWidgets API for GUI"
+arch=('i686' 'x86_64')
+url="https://wxwidgets.org"
+license=('custom:wxWindows')
+depends=('gtk3' 'libsm' 'gst-plugins-base-libs')
+makedepends=('glu' 'gst-plugins-base' 'git')
+optdepends=('webkit2gtk: for webview support')
+provides=('wxgtk')
+conflicts=('wxgtk')
+source=("wxgtk3::git+https://github.com/wxWidgets/wxWidgets.git#branch=WX_3_0_BRANCH")
+sha256sums=('SKIP')
+
+build() {
+  cd "${pkgname}"
+
+  ./autogen.sh
+  ./configure               \
+      --prefix=/usr         \
+      --libdir=/usr/lib     \
+      --with-gtk=3          \
+      --with-opengl         \
+      --enable-graphics_ctx \
+      --enable-mediactrl    \
+      --enable-webview      \
+      --with-regex          \
+      --with-libpng         \
+      --with-libxpm         \
+      --with-libjpeg        \
+      --with-libtiff        \
+      --disable-precomp-headers
+  make
+  make -C locale allmo
+}
+
+package() {
+  cd "${pkgname}"
+  make DESTDIR="${pkgdir}" install
+
+  install -D -m644 docs/licence.txt "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

@@ -3,7 +3,7 @@
 # Maintainer: Thomas Baechler <thomas@archlinux.org>
 
 pkgname=nvidia
-pkgver=378.09
+pkgver=378.13
 _extramodules=extramodules-4.9-ARCH
 pkgrel=1
 pkgdesc='NVIDIA drivers for linux'
@@ -16,8 +16,8 @@ install=nvidia.install
 options=(!strip)
 source=("ftp://download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
         "ftp://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
-sha256sums=('feaaa52b96f82ed27fa7286b645c6f220984fb2831aac492b037a188f5e63b28'
-            'c3c9f33ae3cf2be80a9b46aede4fb02162758194d08fd714b5d01b04df8e4355')
+sha256sums=('05e62a6098aac7373438ee381072253a861d56522f74948c2b714e20e69a46b1'
+            'a97a2ab047759a0b2c4abab5601e6f027230d355615ee745e24e738ee21cf5da')
 
 [[ "$CARCH" = "i686" ]] && _pkg="NVIDIA-Linux-x86-${pkgver}"
 [[ "$CARCH" = "x86_64" ]] && _pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"

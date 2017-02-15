@@ -4,16 +4,12 @@ Installation
 ```
 Current release
 
-                                                     [N] ->- mesa-glvnd -> [3]
 
-                                                   /
-  GLVND [1]/[2] --->--- nvidia --->--- GLVND [1]/[2]
-                                               \
-                                                ->- nvidia-libgl
+ GLVND [1] ->- nvidia -->-- GLVND [1]->- nvidia-libgl->-[N] ->- mesa-glvnd -> [2]
+
 
 [1] libglvnd-git
-[2] libglvnd-mesa-git
-[3] bumblebee
+[2] bumblebee
 [N] not tested
 
 ------------------------------------------------------------------------------
@@ -29,7 +25,7 @@ Legacy releases for GeForce 8 and 9 series GPUs
         \
          [v2] -->-- mesa --> [2]
 
-[1]  libglvnd-mesa-git
+[1]  libglvnd-git
 [2]  bumblebee
 [*]  GLVND isn't supported
 [N]  not tested

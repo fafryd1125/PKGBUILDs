@@ -66,9 +66,11 @@ drwxr-xr-x root/root         0 2017-02-14 15:15 usr/share/man/man1/
 lrwxrwxrwx root/root         0 2017-02-14 15:15 usr/share/licenses/nvidia-libgl -> nvidia
 drwxr-xr-x root/root         0 2017-02-14 15:15 usr/share/glvnd/egl_vendor.d/
 -rw-r--r-- root/root       107 2017-02-14 15:15 usr/share/glvnd/egl_vendor.d/10_nvidia.json
+```
 
 ### nvidia-utils:
 
+```
 drwxr-xr-x root/root         0 2017-02-14 15:14 usr/
 drwxr-xr-x root/root         0 2017-02-14 15:14 usr/share/
 drwxr-xr-x root/root         0 2017-02-14 15:14 usr/bin/

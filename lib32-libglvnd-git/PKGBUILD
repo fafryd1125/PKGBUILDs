@@ -4,12 +4,12 @@
 
 _pkgname=libglvnd
 pkgname=lib32-libglvnd-git
-pkgver=r500.dc16f8c
+pkgver=r505.4ba5345
 pkgrel=1
 pkgdesc="The GL Vendor-Neutral Dispatch library"
 arch=('x86_64')
 url="https://github.com/NVIDIA/libglvnd"
-license=('custom:BSD-like')
+license=('MIT')
 depends=('lib32-libxext' 'libglvnd-git')
 makedepends=('lib32-libx11' 'git' 'glproto' 'gcc-multilib' 'python')
 provides=('lib32-libglvnd' 'lib32-libgl')
@@ -19,15 +19,13 @@ source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
         '0001-m4-update-macros.patch'
         '0001-pkgconfig-add-pkgconfig-data-for-libraries-v2.patch'
         'https://patch-diff.githubusercontent.com/raw/NVIDIA/libglvnd/pull/100.patch'
-        'https://patch-diff.githubusercontent.com/raw/NVIDIA/libglvnd/pull/107.patch'
-        'https://patch-diff.githubusercontent.com/raw/NVIDIA/libglvnd/pull/113.patch')
+        'https://patch-diff.githubusercontent.com/raw/NVIDIA/libglvnd/pull/107.patch')
 sha256sums=('SKIP'
             'c76870613ec9a88a58857011e91db010167594b218a6c8ca9b401d37589fbc90'
             'b0d804f222c588cfb79405db37bf39ba293d2c274e7d86c48bf126d0e586db1f'
             '404bd653cac71c1c402369030af72677d0b6e0b05eb7dbc73f205a61f069a0c4'
             'fafdf8f48994c9ba05d818018a1d42cfac861322474fd5dad89b38114acbff14'
-            '1b69690925aefe4d6db6817c37c5234b62fdf28d28e37d7d1df37bc550ae5697'
-            '149646e01614348dc8e4778932398e83fa79b1f8205145ed73ecef33d6123b24')
+            '1b69690925aefe4d6db6817c37c5234b62fdf28d28e37d7d1df37bc550ae5697')
 
 pkgver() {
   cd "${_pkgname}"
@@ -49,7 +47,6 @@ prepare() {
   # https://github.com/NVIDIA/libglvnd/pulls
 #  patch -p1 -i ../100.patch
 #  patch -p1 -i ../107.patch
-#  patch -p1 -i ../113.patch
 }
 
 build() {

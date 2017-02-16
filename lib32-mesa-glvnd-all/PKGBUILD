@@ -129,19 +129,16 @@ package_lib32-mesa-glvnd-vdpau() {
 package_lib32-mesa-glvnd-libgl() {
   pkgdesc="Mesa 3-D graphics library (32-bit)"
   depends=('lib32-libglvnd')
-  provides=('lib32-libgles' 'lib32-mesa-libgl')
-  conflicts=('lib32-libgles' 'lib32-mesa-libgl')
+  provides=('lib32-mesa-libgl')
+  conflicts=('lib32-mesa-libgl')
 
   install -m755 -d ${pkgdir}/usr/lib32/pkgconfig
   cp -v ${srcdir}/fakeinstall/usr/lib32/pkgconfig/{egl,gl,glesv1_cm,glesv2}.pc ${pkgdir}/usr/lib32/pkgconfig
-  # libglvnd-mesa-git + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
-#  cp -v ${srcdir}/fakeinstall/usr/lib32/pkgconfig/{glesv1_cm,glesv2}.pc ${pkgdir}/usr/lib32/pkgconfig
 
   install -m755 -d ${pkgdir}/usr/lib32/
   #  --enable-libglvnd
   cp -rv ${srcdir}/fakeinstall/usr/lib32/libGLX_mesa.so* ${pkgdir}/usr/lib32/
   cp -rv ${srcdir}/fakeinstall/usr/lib32/libEGL*.so* ${pkgdir}/usr/lib32/
-  cp -rv ${srcdir}/fakeinstall/usr/lib32/libGLES*.so* ${pkgdir}/usr/lib32/
 
   install -m755 -d "${pkgdir}/usr/share/licenses"
   ln -s mesa-glvnd-libgl "${pkgdir}/usr/share/licenses/${pkgname}"
@@ -169,7 +166,7 @@ package_lib32-mesa-glvnd() {
 
   cp -rv ${srcdir}/fakeinstall/usr/lib32/pkgconfig ${pkgdir}/usr/lib32/
 
-  # provided by lib32-mesa-glvnd-libgl and/or
+  # provided by lib32-mesa-glvnd-libgl or
   # lib32-libglvnd-mesa-git + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
   rm -fv ${pkgdir}/usr/lib32/pkgconfig/{egl,gl,glesv1_cm,glesv2}.pc
 

@@ -132,6 +132,7 @@ package_lib32-mesa-glvnd-libgl() {
   provides=('lib32-mesa-libgl')
   conflicts=('lib32-mesa-libgl')
 
+  # note: probably for users (nvidia-340xx) it is better to keep all the files in one package (lib32-mesa-glvnd)
   install -m755 -d ${pkgdir}/usr/lib32/pkgconfig
   cp -v ${srcdir}/fakeinstall/usr/lib32/pkgconfig/{egl,gl,glesv1_cm,glesv2}.pc ${pkgdir}/usr/lib32/pkgconfig
 
@@ -168,6 +169,7 @@ package_lib32-mesa-glvnd() {
 
   # provided by lib32-mesa-glvnd-libgl or
   # lib32-libglvnd-mesa-git + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
+  # note: probably for users (nvidia-340xx) it is better to keep all the files in one package (lib32-mesa-glvnd)
   rm -fv ${pkgdir}/usr/lib32/pkgconfig/{egl,gl,glesv1_cm,glesv2}.pc
 
   install -m755 -d "${pkgdir}/usr/share/licenses"

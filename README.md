@@ -17,7 +17,7 @@ Current release
 Legacy releases for GeForce 8 and 9 series GPUs
 
 
- nvidia-340xx --->--- [*] nvidia-340xx-libgl --> [v2]/[N][v3]
+ nvidia-340xx --->--- [*] nvidia-340xx-libgl --> [v2]/[v3]
     \
      \
       [N][v1] -->-- GLVND [1] -->-- mesa-glvnd --> [2]

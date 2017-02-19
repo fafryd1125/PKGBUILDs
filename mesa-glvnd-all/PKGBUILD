@@ -212,6 +212,9 @@ package_mesa-glvnd() {
   # note: probably for users (nvidia-340xx) it is better to keep all the files in one package (mesa-glvnd)
   rm -fv ${pkgdir}/usr/lib/pkgconfig/{egl,gl,glesv1_cm,glesv2}.pc
 
+  # remove vulkan headers
+  rm -rf ${pkgdir}/usr/include/vulkan
+
   install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
   install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/"
 }

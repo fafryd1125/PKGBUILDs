@@ -47,8 +47,6 @@ process_manifest () {
         ["NVCUVID_LIB_SYMLINK"]="lib32-nvidia-utils symlink_lib"
         ["NVIFR_LIB"]="lib32-nvidia-utils install_lib"
         ["NVIFR_LIB_SYMLINK"]="lib32-nvidia-utils symlink_lib"
-        ["UTILITY_LIB"]="lib32-nvidia-utils install_lib"
-        ["UTILITY_LIB_SYMLINK"]="lib32-nvidia-utils symlink_lib"
 
         # Ignored entries
         ["DKMS_CONF"]="ignored"                  # dkms isn't needed with Arch's version-locked packages
@@ -84,6 +82,8 @@ process_manifest () {
         ["DOT_DESKTOP"]="ignored"
         ["MANPAGE"]="ignored"
         ["DOCUMENTATION"]="ignored"
+        ["UTILITY_LIB"]="ignored"
+        ["UTILITY_LIB_SYMLINK"]="ignored"
     )
 
     tail -n +9 .manifest | {

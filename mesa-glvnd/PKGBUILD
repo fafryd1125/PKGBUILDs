@@ -61,7 +61,7 @@ build() {
       --enable-gbm \
       --enable-dri \
       --enable-dri3 \
-      --enable-osmesa \
+      --enable-gallium-osmesa \
       --enable-texture-float \
       --enable-xa \
       --enable-vdpau \

@@ -2,9 +2,8 @@
 # Maintainer: Jan de Groot <jgc@archlinux.org>
 # Maintainer: Andreas Radke <andyrtr@archlinux.org>
 
-pkgbase=mesa-glvnd
-_pkgname=mesa
-pkgname=('mesa-glvnd-vdpau' 'mesa-glvnd-libgl'  'mesa-glvnd')
+pkgbase=mesa
+pkgname=('mesa-vdpau' 'mesa-glvnd'  'mesa')
 pkgver=17.0.0
 pkgrel=1
 arch=('i686' 'x86_64')
@@ -27,7 +26,7 @@ sha256sums=('39db3d59700159add7f977307d12a7dfe016363e760ad82280ac4168ea668481'
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 
 prepare() {
-  cd "${_pkgname}-${pkgver}"
+  cd "${pkgbase}-${pkgver}"
 
   # Now mesa checks for libpthread-stubs - so remove the check
   patch -Np1 -i ../remove-libpthread-stubs.patch
@@ -43,7 +42,7 @@ prepare() {
 }
 
 build() {
-  cd "${_pkgname}-${pkgver}"
+  cd "${pkgbase}-${pkgver}"
 
   ./configure \
       --prefix=/usr \
@@ -79,11 +78,9 @@ build() {
   make DESTDIR=${srcdir}/fakeinstall install
 }
 
-package_mesa-glvnd-vdpau() {
+package_mesa-vdpau() {
   pkgdesc="Mesa VDPAU drivers"
   depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'libxshmfence' 'mesa-glvnd')
-  provides=('mesa-vdpau')
-  conflicts=('mesa-vdpau')
 
   install -m755 -d ${pkgdir}/usr/lib
   cp -rv ${srcdir}/fakeinstall/usr/lib/vdpau ${pkgdir}/usr/lib
@@ -92,11 +89,9 @@ package_mesa-glvnd-vdpau() {
   install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/"
 }
 
-package_mesa-glvnd-libgl() {
+package_mesa-glvnd() {
   pkgdesc="Mesa 3-D graphics library"
-  depends=('mesa-glvnd' 'libglvnd')
-  provides=('mesa-libgl')
-  conflicts=('mesa-libgl')
+  depends=('mesa' 'libglvnd')
 
   install -m755 -d ${pkgdir}/usr/lib/
   #  --enable-libglvnd
@@ -110,15 +105,15 @@ package_mesa-glvnd-libgl() {
   install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/"
 }
 
-package_mesa-glvnd() {
+package_mesa() {
   pkgdesc="an open-source implementation of the OpenGL specification"
   depends=('libdrm' 'wayland' 'libxxf86vm' 'libxdamage' 'libxshmfence' 'libelf'
            'libomxil-bellagio' 'libtxc_dxtn' 'llvm-libs')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'mesa-vdpau: for accelerated video playback'
               'libva-mesa-driver: for accelerated video playback')
-  provides=('nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa')
-  conflicts=('nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa')
+  provides=('nouveau-dri' 'svga-dri' 'mesa-dri')
+  conflicts=('nouveau-dri' 'svga-dri' 'mesa-dri')
 
   install -m755 -d ${pkgdir}/etc
   cp -rv ${srcdir}/fakeinstall/etc/drirc ${pkgdir}/etc
@@ -131,7 +126,7 @@ package_mesa-glvnd() {
   cp -rv ${srcdir}/fakeinstall/usr/lib/d3d  ${pkgdir}/usr/lib
 
   cp -rv ${srcdir}/fakeinstall/usr/lib/*.so* ${pkgdir}/usr/lib/
-  # provided by opencl-mesa (lib*OpenCL*), mesa-glvnd-libgl
+  # provided by opencl-mesa (lib*OpenCL*), mesa-glvnd
   rm -fv ${pkgdir}/usr/lib/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
 
   cp -rv ${srcdir}/fakeinstall/usr/include ${pkgdir}/usr

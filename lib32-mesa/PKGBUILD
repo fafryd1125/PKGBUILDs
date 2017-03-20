@@ -2,9 +2,9 @@
 # Maintainer: Jan de Groot <jgc@archlinux.org>
 # Maintainer: Andreas Radke <andyrtr@archlinux.org>
 
-pkgbase=lib32-mesa-glvnd
+pkgbase=lib32-mesa
 _pkgname=mesa
-pkgname=('lib32-mesa-glvnd-vdpau' 'lib32-mesa-glvnd-libgl'  'lib32-mesa-glvnd')
+pkgname=('lib32-mesa-vdpau' 'lib32-mesa-glvnd'  'lib32-mesa')
 pkgver=17.0.0
 pkgrel=1
 arch=('i686' 'x86_64')
@@ -82,11 +82,9 @@ build() {
   make DESTDIR=${srcdir}/fakeinstall install
 }
 
-package_lib32-mesa-glvnd-vdpau() {
+package_lib32-mesa-vdpau() {
   pkgdesc="Mesa VDPAU drivers (32-bit)"
   depends=('lib32-libdrm' 'lib32-libx11' 'lib32-expat' 'lib32-llvm-libs' 'lib32-libelf' 'lib32-libxshmfence')
-  provides=('lib32-mesa-vdpau')
-  conflicts=('lib32-mesa-vdpau')
 
   install -m755 -d ${pkgdir}/usr/lib32
   cp -rv ${srcdir}/fakeinstall/usr/lib32/vdpau ${pkgdir}/usr/lib32
@@ -95,11 +93,9 @@ package_lib32-mesa-glvnd-vdpau() {
   ln -s mesa-glvnd-vdpau "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 
-package_lib32-mesa-glvnd-libgl() {
+package_lib32-mesa-glvnd() {
   pkgdesc="Mesa 3-D graphics library (32-bit)"
   depends=('lib32-libglvnd')
-  provides=('lib32-mesa-libgl')
-  conflicts=('lib32-mesa-libgl')
 
   install -m755 -d ${pkgdir}/usr/lib32/
   #  --enable-libglvnd
@@ -110,14 +106,14 @@ package_lib32-mesa-glvnd-libgl() {
   ln -s mesa-glvnd-libgl "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 
-package_lib32-mesa-glvnd() {
+package_lib32-mesa() {
   pkgdesc="an open-source implementation of the OpenGL specification (32-bit)"
   depends=('lib32-libdrm' 'lib32-libxxf86vm' 'lib32-libxdamage' 'lib32-libxshmfence' 'lib32-libelf'
            'lib32-llvm-libs' 'lib32-wayland' 'lib32-libtxc_dxtn' 'mesa-glvnd')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'lib32-mesa-vdpau: for accelerated video playback')
-  provides=('lib32-nouveau-dri' 'lib32-mesa-dri' 'lib32-mesa')
-  conflicts=('lib32-nouveau-dri' 'lib32-mesa-dri' 'lib32-mesa')
+  provides=('lib32-nouveau-dri' 'lib32-mesa-dri')
+  conflicts=('lib32-nouveau-dri' 'lib32-mesa-dri')
 
   install -m755 -d ${pkgdir}/usr/lib32/xorg/modules/dri
   # nouveau-dri, svga-dri, swrast

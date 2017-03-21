@@ -5,34 +5,29 @@ Installation
 Current release
 
 
- GLVND [1] ->- nvidia -->-- GLVND [1]->- nvidia-libgl->-[N] ->- mesa-glvnd -> [2]
+ nvidia -->-- GLVND [1]->- nvidia-libgl ->- mesa-glvnd -> [2]
 
 
 [1] libglvnd-git
 [2] bumblebee
-[N] not tested
 
 ------------------------------------------------------------------------------
 
 Legacy releases for GeForce 8 and 9 series GPUs
 
 
- nvidia-340xx --->--- [*] nvidia-340xx-libgl --> [v2]/[v3]
+ nvidia-340xx --->--- [*] nvidia-340xx-libgl --> [v2]
     \
      \
-      [N][v1] -->-- GLVND [1] -->-- mesa-glvnd --> [2]
-       \
-        \
-         [v2] -->-- mesa --> [2]
+      [v1] -->-- GLVND [1] -->-- mesa-glvnd --> [2]
+
 
 [1]  libglvnd-git
 [2]  bumblebee
 [*]  GLVND isn't supported
-[N]  not tested
 
 [v1] version: glvnd Mesa
-[v2] version: mesa (non-GLVND)
-[v3] version: mesa-glvnd (without mesa-glvnd-libgl)
+[v2] version: mesa (without mesa-glvnd package)
 ```
 
 See also

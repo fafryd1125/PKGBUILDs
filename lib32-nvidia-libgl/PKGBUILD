@@ -7,7 +7,7 @@
 # Contributor: Darek Zielski <dz1125.bug.tracker@gmail.com>
 
 pkgname=lib32-nvidia-libgl
-pkgver=378.13
+pkgver=381.09
 pkgrel=1
 pkgdesc="NVIDIA drivers libraries (32-bit)"
 arch=('x86_64')
@@ -21,7 +21,7 @@ options=('!strip')
 _arch='x86'
 _pkg="NVIDIA-Linux-${_arch}-${pkgver}"
 source=("http://us.download.nvidia.com/XFree86/Linux-${_arch}/${pkgver}/${_pkg}.run")
-sha256sums=('05e62a6098aac7373438ee381072253a861d56522f74948c2b714e20e69a46b1')
+sha256sums=('c39805e6610f710d16acf57c9d09cb5504d33c557e634e632079d46f18da4268')
 
 prepare() {
     sh ${_pkg}.run --extract-only
@@ -33,7 +33,7 @@ process_manifest () {
         ["OPENGL_LIB"]="lib32-nvidia-libgl install_lib"
         ["OPENGL_SYMLINK"]="lib32-nvidia-libgl symlink_lib"
         ["TLS_LIB"]="lib32-nvidia-libgl install_tls"
-        ["VDPAU_LIB"]="lib32-nvidia-libgl install_lib"
+        ["VDPAU_LIB"]="lib32-nvidia-libgl install_custom_module"
         ["VDPAU_SYMLINK"]="lib32-nvidia-libgl symlink_lib_with_path"
 
         # Ignored entries
@@ -88,7 +88,7 @@ process_manifest () {
     )
 
     tail -n +9 .manifest | {
-        while read name perm type extra1 extra2 extra3; do
+        while read name perm type extra1 extra2 extra3 extra4; do
             if [ ${type_handlers[${type}]+isset} ]; then
                 local data=( ${type_handlers[${type}]} )
                 local pkg=${data[0]}
@@ -97,7 +97,7 @@ process_manifest () {
                 # Check if this file type is handled by the current package.
                 # Otherwise, ignore it.
                 if [ ${pkg} = ${pkgname} ]; then
-                    eval ${handler} $name $perm $type $extra1 $extra2 $extra3
+                    eval ${handler} $name $perm $type $extra1 $extra2 $extra3 $extra4
                 fi
             else
                 echo "Unrecognized manifest type ${type}"
@@ -110,13 +110,15 @@ process_manifest () {
     ln -s nvidia "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 
+install_custom_module() { install -D -m$2 "$1" "${pkgdir}/usr/lib32/$5$1"; }
+
 install_lib() {
     case "$1" in
         libnvidia-egl-wayland*)
             # Use the separate lib32-egl-wayland package.
             ;;
         *)
-            install -D -m$2 "$1" "${pkgdir}/usr/lib32/$5$1"
+            install -D -m$2 "$1" "${pkgdir}/usr/lib32/$6$1"
             ;;
     esac
 }

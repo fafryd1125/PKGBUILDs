@@ -2,9 +2,9 @@
 # Maintainer: Jan de Groot <jgc@archlinux.org>
 # Maintainer: Andreas Radke <andyrtr@archlinux.org>
 
-pkgbase=mesa-glvnd-git
+pkgbase=mesa-git
 _pkgbase=mesa
-pkgname=('mesa-glvnd-vdpau-git' 'mesa-glvnd-libgl-git'  'mesa-glvnd-git')
+pkgname=('mesa-vdpau-git' 'mesa-glvnd-git'  'mesa-git')
 pkgver=17.1.0_devel.88947.956556b3c3
 pkgrel=1
 arch=('i686' 'x86_64')
@@ -94,9 +94,9 @@ build() {
   make DESTDIR=${srcdir}/fakeinstall install
 }
 
-package_mesa-glvnd-vdpau-git() {
+package_mesa-vdpau-git() {
   pkgdesc="Mesa VDPAU drivers (git version)"
-  depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'libxshmfence' "mesa-glvnd-git=${pkgver}")
+  depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'libxshmfence' "mesa-git=${pkgver}")
   provides=('mesa-vdpau')
   conflicts=('mesa-vdpau')
 
@@ -107,11 +107,9 @@ package_mesa-glvnd-vdpau-git() {
   install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/"
 }
 
-package_mesa-glvnd-libgl-git() {
+package_mesa-glvnd-git() {
   pkgdesc="Mesa 3-D graphics library"
-  depends=('mesa-glvnd-git' 'libglvnd')
-  provides=('mesa-libgl')
-  conflicts=('mesa-libgl')
+  depends=('mesa-git' 'libglvnd')
 
   install -m755 -d ${pkgdir}/usr/lib/
   #  --enable-libglvnd
@@ -125,7 +123,7 @@ package_mesa-glvnd-libgl-git() {
   install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/"
 }
 
-package_mesa-glvnd-git() {
+package_mesa-git() {
   pkgdesc="an open-source implementation of the OpenGL specification"
   depends=('libdrm' 'wayland' 'libxxf86vm' 'libxdamage' 'libxshmfence' 'libelf'
            'libomxil-bellagio' 'libtxc_dxtn' 'llvm-libs')
@@ -146,7 +144,7 @@ package_mesa-glvnd-git() {
   cp -rv ${srcdir}/fakeinstall/usr/lib/d3d  ${pkgdir}/usr/lib
 
   cp -rv ${srcdir}/fakeinstall/usr/lib/*.so* ${pkgdir}/usr/lib/
-  # provided by opencl-mesa (lib*OpenCL*), mesa-glvnd-libgl-git
+  # provided by opencl-mesa (lib*OpenCL*), mesa-glvnd-git
   rm -fv ${pkgdir}/usr/lib/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
 
   # indirect rendering

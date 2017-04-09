@@ -126,6 +126,10 @@ package_lib32-mesa() {
   # provided by lib32-mesa-glvnd-libgl
   rm -fv ${pkgdir}/usr/lib32/{libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
 
+  # indirect rendering
+  # uncomment if needed - provided by lib32-nvidia-libgl
+#  ln -s /usr/lib32/libGLX_mesa.so.0 ${pkgdir}/usr/lib32/libGLX_indirect.so.0
+
   cp -rv ${srcdir}/fakeinstall/usr/lib32/pkgconfig ${pkgdir}/usr/lib32/
 
   # provided by

@@ -204,6 +204,10 @@ package_mesa-glvnd() {
   # provided by opencl-mesa-glvnd (lib*OpenCL*), mesa-glvnd-libgl
   rm -fv ${pkgdir}/usr/lib/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
 
+  # indirect rendering
+  # uncomment if needed - provided by nvidia-libgl
+#  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
+
   cp -rv ${srcdir}/fakeinstall/usr/include ${pkgdir}/usr
   cp -rv ${srcdir}/fakeinstall/usr/lib/pkgconfig ${pkgdir}/usr/lib/
 

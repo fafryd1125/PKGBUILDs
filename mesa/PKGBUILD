@@ -4,7 +4,7 @@
 
 pkgbase=mesa
 pkgname=('mesa-vdpau' 'mesa-glvnd'  'mesa')
-pkgver=17.0.3
+pkgver=17.1.0rc2
 pkgrel=1
 arch=('i686' 'x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -12,38 +12,18 @@ makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'd
              'libomxil-bellagio' 'libclc' 'clang' 'libglvnd')
 url="http://mesa3d.sourceforge.net"
 license=('custom')
-source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
-        'LICENSE'
-        'remove-libpthread-stubs.patch'
-        '0001-glapi-Link-with-glapi-when-built-shared.patch'
-        '0001-EGL-Implement-the-libglvnd-interface-for-EGL-v2.5.patch')
-sha256sums=('ca646f5075a002d60ef9123c8a4331cede155c01712ef945a65c59a5e69fe7ed'
+source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
+        https://mesa.freedesktop.org/archive/mesa-17.1.0-rc2.tar.xz{,.sig}
+        'LICENSE')
+sha256sums=('d83b78241ed408738b121465d1527dabe0d84ddf80fcf3115b8af65c71e267da'
             'SKIP'
-            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2'
-            '75ab53ad44b95204c788a2988e97a5cb963bdbf6072a5466949a2afb79821c8f'
-            '064dcd5a3ab1b7c23383e2cafbd37859e4c353f8839671d9695c6f7c2ef3260b'
-            '71e645a6163a98f4be8b8f5e43c8c893c3d514b5895094845acba1e9d4073c40')
+            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # "Andres Gomez <tanty@igalia.com>"
 
-prepare() {
-  cd "${pkgbase}-${pkgver}"
-
-  # Now mesa checks for libpthread-stubs - so remove the check
-  patch -Np1 -i ../remove-libpthread-stubs.patch
-
-  # https://copr.fedorainfracloud.org/coprs/kwizart/glvnd/ (Build ID: 500713)
-  # http://copr-dist-git.fedorainfracloud.org/cgit/kwizart/glvnd/mesa.git/
-  # https://bugs.freedesktop.org/show_bug.cgi?id=98428
-  # https://github.com/NVIDIA/libglvnd/issues/104
-  patch -Np1 -i ../0001-glapi-Link-with-glapi-when-built-shared.patch
-  patch -Np1 -i ../0001-EGL-Implement-the-libglvnd-interface-for-EGL-v2.5.patch
-
-  autoreconf -fiv
-}
-
 build() {
-  cd "${pkgbase}-${pkgver}"
+#  cd "${pkgbase}-${pkgver}"
+  cd "${pkgbase}-17.1.0-rc2"
 
   ./configure \
       --prefix=/usr \
@@ -70,10 +50,6 @@ build() {
       --with-clang-libdir=/usr/lib
   make
 
-#  --enable-libglvnd       Build GLX and EGL for libglvnd [default=disabled]
-#  --enable-libglvnd-glx   Build GLX for libglvnd [default=disabled]
-#  --enable-libglvnd-egl   Build EGL for libglvnd [default=disabled]
-
   # fake installation
   mkdir $srcdir/fakeinstall
   make DESTDIR=${srcdir}/fakeinstall install
@@ -81,7 +57,7 @@ build() {
 
 package_mesa-vdpau() {
   pkgdesc="Mesa VDPAU drivers"
-  depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'libxshmfence' 'mesa-glvnd')
+  depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'libxshmfence' 'mesa')
 
   install -m755 -d ${pkgdir}/usr/lib
   cp -rv ${srcdir}/fakeinstall/usr/lib/vdpau ${pkgdir}/usr/lib

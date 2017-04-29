@@ -5,7 +5,7 @@
 pkgbase=mesa-git
 _pkgbase=mesa
 pkgname=('mesa-vdpau-git' 'mesa-glvnd-git'  'mesa-git')
-pkgver=17.1.0_devel.88947.956556b3c3
+pkgver=17.2.0_devel.91490.52d69c2e8d
 pkgrel=1
 arch=('i686' 'x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -14,21 +14,9 @@ makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'd
 url="http://mesa3d.sourceforge.net"
 license=('custom')
 source=('mesa::git+http://anongit.freedesktop.org/git/mesa/mesa.git#branch=master'
-        'LICENSE'
-        'disable-pthread-stubs-on-linux.patch'
-        '0001-glapi-Link-with-glapi-when-built-shared.patch'
-        '0002-Revert-gbm-dlopen-libglapi-so-gbm_create_device-work.patch'
-        '0003-mesa-glapi-Clean-up-dlopening-glapi-as-we-are-buildi.patch'
-        '0001-EGL-Implement-the-libglvnd-interface-for-EGL-v3.patch'
-        'Mesa-dev-GLX-Generate-the-libglvnd-dispatch-stub-functions..patch')
+        'LICENSE')
 sha256sums=('SKIP'
-            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2'
-            '09e738ba5059e5871c1452661187ea56c24ff81270f3a958b90c43d9fc1723e2'
-            '064dcd5a3ab1b7c23383e2cafbd37859e4c353f8839671d9695c6f7c2ef3260b'
-            'c7fac2e4522917d89f0b624e4df7879157fcfc96962a2392a962be70c56692b0'
-            'c7eeeb8e176cbc6bdb50a9750660a7047e6273dd437e9765e280457eeca4fcdc'
-            'bb88b0b16ddb8361795fcef861c995c8b8f74129ef205fa43775cbb813e25e66'
-            'df5c4ecfc6c05f4bff0838bc5193342ee8c28b8fcd9ae10160f0286d1f3bfff4')
+            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 
 pkgver() {
@@ -36,25 +24,10 @@ pkgver() {
   echo $(cat VERSION | tr "-" "_").$(git rev-list --count HEAD).$(git rev-parse --short HEAD)
 }
 
-prepare() {
-  cd "$_pkgbase"
-
-  # Now mesa checks for libpthread-stubs - so remove the check
-  patch -Np1 -i ../disable-pthread-stubs-on-linux.patch
-
-  # https://bugs.freedesktop.org/show_bug.cgi?id=92877
-  # https://patchwork.freedesktop.org/series/12354/
-  patch -Np1 -i ../0001-EGL-Implement-the-libglvnd-interface-for-EGL-v3.patch
-
-  # https://bugs.freedesktop.org/show_bug.cgi?id=98428
-  # https://github.com/NVIDIA/libglvnd/issues/104
-  patch -Np1 -i ../0001-glapi-Link-with-glapi-when-built-shared.patch
-  patch -Np1 -i ../0002-Revert-gbm-dlopen-libglapi-so-gbm_create_device-work.patch
-  #https://bugs.freedesktop.org/show_bug.cgi?id=98428#c17
-#  patch -Np1 -i ../0003-mesa-glapi-Clean-up-dlopening-glapi-as-we-are-buildi.patch
-  # https://patchwork.freedesktop.org/series/20113/
-  patch -Np1 -i ../Mesa-dev-GLX-Generate-the-libglvnd-dispatch-stub-functions..patch
-}
+#prepare() {
+#  cd "$_pkgbase"
+#  patch -Np1 -i ../
+#}
 
 build() {
   cd "$_pkgbase"
@@ -84,10 +57,6 @@ build() {
       --enable-nine \
       --with-clang-libdir=/usr/lib
   make
-
-#  --enable-libglvnd       Build GLX and EGL for libglvnd [default=disabled]
-#  --enable-libglvnd-glx   Build GLX for libglvnd [default=disabled]
-#  --enable-libglvnd-egl   Build EGL for libglvnd [default=disabled]
 
   # fake installation
   mkdir $srcdir/fakeinstall

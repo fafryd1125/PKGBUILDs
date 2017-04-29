@@ -5,40 +5,20 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-mesa-vdpau' 'lib32-mesa-glvnd'  'lib32-mesa')
-pkgver=17.0.2
+pkgver=17.1.0rc2
 pkgrel=1
 arch=('i686' 'x86_64')
 makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
              'lib32-libxshmfence' 'lib32-libxxf86vm' 'lib32-libxdamage' 'gcc-multilib' 'lib32-libelf' 'lib32-llvm' 'lib32-libvdpau'
-             'lib32-wayland' 'lib32-libglvnd')
+             'lib32-wayland' 'lib32-libglvnd' 'lib32-libunwind')
 url="http://mesa3d.sourceforge.net"
 license=('custom')
-source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
-        'remove-libpthread-stubs.patch'
-        '0001-glapi-Link-with-glapi-when-built-shared.patch'
-        '0001-EGL-Implement-the-libglvnd-interface-for-EGL-v2.5.patch')
-sha256sums=('f8f191f909e01e65de38d5bdea5fb057f21649a3aed20948be02348e77a689d4'
-            'SKIP'
-            '75ab53ad44b95204c788a2988e97a5cb963bdbf6072a5466949a2afb79821c8f'
-            '064dcd5a3ab1b7c23383e2cafbd37859e4c353f8839671d9695c6f7c2ef3260b'
-            '71e645a6163a98f4be8b8f5e43c8c893c3d514b5895094845acba1e9d4073c40')
+source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
+        https://mesa.freedesktop.org/archive/mesa-17.1.0-rc2.tar.xz{,.sig})
+sha256sums=('d83b78241ed408738b121465d1527dabe0d84ddf80fcf3115b8af65c71e267da'
+            'SKIP')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
-
-prepare() {
-  cd "${_pkgname}-${pkgver}"
-
-  # Now mesa checks for libpthread-stubs - so remove the check
-  patch -Np1 -i ../remove-libpthread-stubs.patch
-
-  # https://copr.fedorainfracloud.org/coprs/kwizart/glvnd/ (Build ID: 500713)
-  # http://copr-dist-git.fedorainfracloud.org/cgit/kwizart/glvnd/mesa.git/
-  # https://bugs.freedesktop.org/show_bug.cgi?id=98428
-  # https://github.com/NVIDIA/libglvnd/issues/104
-  patch -Np1 -i ../0001-glapi-Link-with-glapi-when-built-shared.patch
-  patch -Np1 -i ../0001-EGL-Implement-the-libglvnd-interface-for-EGL-v2.5.patch
-
-  autoreconf -fiv
-}
+validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') #  "Andres Gomez <tanty@igalia.com>"
 
 build() {
   export CC="gcc -m32"
@@ -46,7 +26,8 @@ build() {
   export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
   export LLVM_CONFIG="/usr/bin/llvm-config32"
 
-  cd "${_pkgname}-${pkgver}"
+#  cd "${_pkgname}-${pkgver}"
+  cd "${_pkgname}-17.1.0-rc2"
 
   ./configure \
       --build=i686-pc-linux-gnu \
@@ -72,10 +53,6 @@ build() {
       --enable-vdpau \
       --enable-nine
   make
-
-#  --enable-libglvnd       Build GLX and EGL for libglvnd [default=disabled]
-#  --enable-libglvnd-glx   Build GLX for libglvnd [default=disabled]
-#  --enable-libglvnd-egl   Build EGL for libglvnd [default=disabled]
 
   # fake installation
   mkdir $srcdir/fakeinstall
@@ -123,7 +100,7 @@ package_lib32-mesa() {
   cp -rv ${srcdir}/fakeinstall/usr/lib32/d3d  ${pkgdir}/usr/lib32
 
   cp -rv ${srcdir}/fakeinstall/usr/lib32/*.so* ${pkgdir}/usr/lib32/
-  # provided by lib32-mesa-glvnd-libgl
+  # provided by lib32-mesa-glvnd
   rm -fv ${pkgdir}/usr/lib32/{libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
 
   # indirect rendering
@@ -133,7 +110,7 @@ package_lib32-mesa() {
   cp -rv ${srcdir}/fakeinstall/usr/lib32/pkgconfig ${pkgdir}/usr/lib32/
 
   # provided by
-  # lib32-libglvnd-mesa-git + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
+  # lib32-libglvnd-git + 0001-pkgconfig-add-pkgconfig-data-for-libraries.patch
   rm -fv ${pkgdir}/usr/lib32/pkgconfig/{egl,gl,glesv2}.pc
 
   install -m755 -d "${pkgdir}/usr/share/licenses"

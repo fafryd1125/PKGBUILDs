@@ -88,6 +88,10 @@ package_mesa-glvnd-git() {
   install -m755 -d "${pkgdir}/usr/share/glvnd/egl_vendor.d"
   cp -rv ${srcdir}/fakeinstall/usr/share/glvnd/egl_vendor.d/50_mesa.json ${pkgdir}/usr/share/glvnd/egl_vendor.d/
 
+  # indirect rendering
+  # uncomment if needed - provided by nvidia-libgl
+#  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
+
   install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
   install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/"
 }
@@ -115,10 +119,6 @@ package_mesa-git() {
   cp -rv ${srcdir}/fakeinstall/usr/lib/*.so* ${pkgdir}/usr/lib/
   # provided by opencl-mesa (lib*OpenCL*), mesa-glvnd-git
   rm -fv ${pkgdir}/usr/lib/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
-
-  # indirect rendering
-  # uncomment if needed - provided by nvidia-libgl
-#  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
 
   cp -rv ${srcdir}/fakeinstall/usr/include ${pkgdir}/usr
   cp -rv ${srcdir}/fakeinstall/usr/lib/pkgconfig ${pkgdir}/usr/lib/

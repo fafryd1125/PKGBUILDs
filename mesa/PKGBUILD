@@ -4,7 +4,7 @@
 
 pkgbase=mesa
 pkgname=('mesa-vdpau' 'mesa-glvnd'  'mesa')
-pkgver=17.1.0rc2
+pkgver=17.1.0rc3
 pkgrel=1
 arch=('i686' 'x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -13,9 +13,9 @@ makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'd
 url="http://mesa3d.sourceforge.net"
 license=('custom')
 source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
-        https://mesa.freedesktop.org/archive/mesa-17.1.0-rc2.tar.xz{,.sig}
+        https://mesa.freedesktop.org/archive/mesa-17.1.0-rc3.tar.xz{,.sig}
         'LICENSE')
-sha256sums=('d83b78241ed408738b121465d1527dabe0d84ddf80fcf3115b8af65c71e267da'
+sha256sums=('52831657b7ac64b3dd4899f2f6d995c062fc77ac436017470daddfc1ebc0e85e'
             'SKIP'
             '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
@@ -23,7 +23,7 @@ validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # "Andres Gomez <tant
 
 build() {
 #  cd "${pkgbase}-${pkgver}"
-  cd "${pkgbase}-17.1.0-rc2"
+  cd "${pkgbase}-17.1.0-rc3"
 
   ./configure \
       --prefix=/usr \
@@ -78,6 +78,10 @@ package_mesa-glvnd() {
   install -m755 -d "${pkgdir}/usr/share/glvnd/egl_vendor.d"
   cp -rv ${srcdir}/fakeinstall/usr/share/glvnd/egl_vendor.d/50_mesa.json ${pkgdir}/usr/share/glvnd/egl_vendor.d/
 
+  # indirect rendering
+  # uncomment if needed - provided by nvidia-libgl
+#  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
+
   install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
   install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/"
 }
@@ -105,10 +109,6 @@ package_mesa() {
   cp -rv ${srcdir}/fakeinstall/usr/lib/*.so* ${pkgdir}/usr/lib/
   # provided by opencl-mesa (lib*OpenCL*), mesa-glvnd
   rm -fv ${pkgdir}/usr/lib/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
-
-  # indirect rendering
-  # uncomment if needed - provided by nvidia-libgl
-#  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
 
   cp -rv ${srcdir}/fakeinstall/usr/include ${pkgdir}/usr
   cp -rv ${srcdir}/fakeinstall/usr/lib/pkgconfig ${pkgdir}/usr/lib/

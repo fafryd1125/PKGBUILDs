@@ -5,7 +5,7 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-mesa-vdpau' 'lib32-mesa-glvnd'  'lib32-mesa')
-pkgver=17.1.0rc2
+pkgver=17.1.0rc3
 pkgrel=1
 arch=('i686' 'x86_64')
 makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -14,8 +14,8 @@ makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glprot
 url="http://mesa3d.sourceforge.net"
 license=('custom')
 source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
-        https://mesa.freedesktop.org/archive/mesa-17.1.0-rc2.tar.xz{,.sig})
-sha256sums=('d83b78241ed408738b121465d1527dabe0d84ddf80fcf3115b8af65c71e267da'
+        https://mesa.freedesktop.org/archive/mesa-17.1.0-rc3.tar.xz{,.sig})
+sha256sums=('52831657b7ac64b3dd4899f2f6d995c062fc77ac436017470daddfc1ebc0e85e'
             'SKIP')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') #  "Andres Gomez <tanty@igalia.com>"
@@ -27,7 +27,7 @@ build() {
   export LLVM_CONFIG="/usr/bin/llvm-config32"
 
 #  cd "${_pkgname}-${pkgver}"
-  cd "${_pkgname}-17.1.0-rc2"
+  cd "${_pkgname}-17.1.0-rc3"
 
   ./configure \
       --build=i686-pc-linux-gnu \
@@ -79,6 +79,10 @@ package_lib32-mesa-glvnd() {
   cp -rv ${srcdir}/fakeinstall/usr/lib32/libGLX_mesa.so* ${pkgdir}/usr/lib32/
   cp -rv ${srcdir}/fakeinstall/usr/lib32/libEGL*.so* ${pkgdir}/usr/lib32/
 
+  # indirect rendering
+  # uncomment if needed - provided by lib32-nvidia-libgl
+#  ln -s /usr/lib32/libGLX_mesa.so.0 ${pkgdir}/usr/lib32/libGLX_indirect.so.0
+
   install -m755 -d "${pkgdir}/usr/share/licenses"
   ln -s mesa-glvnd-libgl "${pkgdir}/usr/share/licenses/${pkgname}"
 }
@@ -102,10 +106,6 @@ package_lib32-mesa() {
   cp -rv ${srcdir}/fakeinstall/usr/lib32/*.so* ${pkgdir}/usr/lib32/
   # provided by lib32-mesa-glvnd
   rm -fv ${pkgdir}/usr/lib32/{libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
-
-  # indirect rendering
-  # uncomment if needed - provided by lib32-nvidia-libgl
-#  ln -s /usr/lib32/libGLX_mesa.so.0 ${pkgdir}/usr/lib32/libGLX_indirect.so.0
 
   cp -rv ${srcdir}/fakeinstall/usr/lib32/pkgconfig ${pkgdir}/usr/lib32/
 

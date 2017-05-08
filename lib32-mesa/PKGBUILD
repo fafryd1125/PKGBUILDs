@@ -5,7 +5,7 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-mesa-vdpau' 'lib32-mesa-glvnd'  'lib32-mesa')
-pkgver=17.1.0rc3
+pkgver=17.1.0rc4
 pkgrel=1
 arch=('i686' 'x86_64')
 makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -14,8 +14,8 @@ makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glprot
 url="http://mesa3d.sourceforge.net"
 license=('custom')
 source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
-        https://mesa.freedesktop.org/archive/mesa-17.1.0-rc3.tar.xz{,.sig})
-sha256sums=('52831657b7ac64b3dd4899f2f6d995c062fc77ac436017470daddfc1ebc0e85e'
+        https://mesa.freedesktop.org/archive/mesa-17.1.0-rc4.tar.xz{,.sig})
+sha256sums=('dadd8f28ca8f5c02ec456bb2919da59b369957d5792f66c2e58016ee8692ea7d'
             'SKIP')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') #  "Andres Gomez <tanty@igalia.com>"
@@ -27,7 +27,7 @@ build() {
   export LLVM_CONFIG="/usr/bin/llvm-config32"
 
 #  cd "${_pkgname}-${pkgver}"
-  cd "${_pkgname}-17.1.0-rc3"
+  cd "${_pkgname}-17.1.0-rc4"
 
   ./configure \
       --build=i686-pc-linux-gnu \
@@ -67,12 +67,12 @@ package_lib32-mesa-vdpau() {
   cp -rv ${srcdir}/fakeinstall/usr/lib32/vdpau ${pkgdir}/usr/lib32
 
   install -m755 -d "${pkgdir}/usr/share/licenses"
-  ln -s mesa-glvnd-vdpau "${pkgdir}/usr/share/licenses/${pkgname}"
+  ln -s "${_pkgname}" "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 
 package_lib32-mesa-glvnd() {
   pkgdesc="Mesa 3-D graphics library (32-bit)"
-  depends=('lib32-libglvnd')
+  depends=('lib32-mesa' 'lib32-libglvnd')
 
   install -m755 -d ${pkgdir}/usr/lib32/
   #  --enable-libglvnd
@@ -84,7 +84,7 @@ package_lib32-mesa-glvnd() {
 #  ln -s /usr/lib32/libGLX_mesa.so.0 ${pkgdir}/usr/lib32/libGLX_indirect.so.0
 
   install -m755 -d "${pkgdir}/usr/share/licenses"
-  ln -s mesa-glvnd-libgl "${pkgdir}/usr/share/licenses/${pkgname}"
+  ln -s "${_pkgname}" "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 
 package_lib32-mesa() {
@@ -114,5 +114,5 @@ package_lib32-mesa() {
   rm -fv ${pkgdir}/usr/lib32/pkgconfig/{egl,gl,glesv2}.pc
 
   install -m755 -d "${pkgdir}/usr/share/licenses"
-  ln -s mesa-glvnd "$pkgdir/usr/share/licenses/${pkgname}"
+  ln -s "${_pkgname}" "${pkgdir}/usr/share/licenses/${pkgname}"
 }

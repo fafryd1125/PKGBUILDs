@@ -3,21 +3,23 @@
 # Maintainer: Thomas Baechler <thomas@archlinux.org>
 
 pkgname=nvidia
-pkgver=381.09
-_extramodules=extramodules-4.9-ARCH
+pkgver=381.22
+_extramodules=extramodules-4.11-ARCH
 pkgrel=1
 pkgdesc='NVIDIA drivers for linux'
 arch=('i686' 'x86_64')
 url="http://www.nvidia.com/"
-depends=('linux>=4.9' 'linux<4.10' 'libgl')
-makedepends=('linux-headers>=4.9' 'linux-headers<4.10')
+depends=('linux>=4.11' 'linux<4.12' 'libgl')
+makedepends=('linux-headers>=4.11' 'linux-headers<4.12')
 license=('custom')
 install=nvidia.install
 options=(!strip)
 source=("ftp://download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
-        "ftp://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
-sha256sums=('c39805e6610f710d16acf57c9d09cb5504d33c557e634e632079d46f18da4268'
-            'ff433aa127a602a3cdf6d308faab841a64e02f32a750caf0dc3999f0a3b70120')
+        "ftp://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run"
+        'kernel_4.11.patch')
+sha256sums=('7b7dd6ee1c871dc5367fc207bba65077c3820a683decbfe6126fc70c0d1b9d08'
+            'c2468130af124bfe748bdf2bc4c08952a81b35d2bdb87d1217717e6a576217e8'
+            'a461221688d45184c0ba18c5cea68a51750227f64e2696e1621c31f6a2bc51de')
 
 [[ "$CARCH" = "i686" ]] && _pkg="NVIDIA-Linux-x86-${pkgver}"
 [[ "$CARCH" = "x86_64" ]] && _pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
@@ -26,6 +28,7 @@ prepare() {
     sh "${_pkg}.run" --extract-only
     cd "${_pkg}"
     # patches here
+    patch -p1 -i ../kernel_4.11.patch
 }
 
 build() {

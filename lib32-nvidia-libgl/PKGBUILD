@@ -7,7 +7,7 @@
 # Contributor: Darek Zielski <dz1125.bug.tracker@gmail.com>
 
 pkgname=lib32-nvidia-libgl
-pkgver=381.09
+pkgver=381.22
 pkgrel=1
 pkgdesc="NVIDIA drivers libraries (32-bit)"
 arch=('x86_64')
@@ -21,7 +21,7 @@ options=('!strip')
 _arch='x86'
 _pkg="NVIDIA-Linux-${_arch}-${pkgver}"
 source=("http://us.download.nvidia.com/XFree86/Linux-${_arch}/${pkgver}/${_pkg}.run")
-sha256sums=('c39805e6610f710d16acf57c9d09cb5504d33c557e634e632079d46f18da4268')
+sha256sums=('7b7dd6ee1c871dc5367fc207bba65077c3820a683decbfe6126fc70c0d1b9d08')
 
 prepare() {
     sh ${_pkg}.run --extract-only

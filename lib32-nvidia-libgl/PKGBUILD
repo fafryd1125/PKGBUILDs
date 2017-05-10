@@ -146,6 +146,10 @@ symlink_lib() {
         libnvidia-egl-wayland*)
             # Use the separate lib32-egl-wayland package.
             ;;
+        # Uncomment if needed
+#        libGLX_indirect*)
+#            # Skip to avoid conflict with lib32-mesa-glvnd package.
+#            ;;
         *)
             ln -s "$5" "${pkgdir}/usr/lib32/$1"
             ;;

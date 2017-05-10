@@ -203,6 +203,10 @@ symlink_lib() {
         libnvidia-egl-wayland*)
             # Use the separate egl-wayland package.
             ;;
+        # Uncomment if needed
+#        libGLX_indirect*)
+#            # Skip to avoid conflict with mesa-glvnd package.
+#            ;;
         *)
             ln -s "$5" "${pkgdir}/usr/lib/$1"
             ;;

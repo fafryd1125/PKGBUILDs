@@ -5,7 +5,7 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-mesa-vdpau' 'lib32-mesa-glvnd'  'lib32-mesa')
-pkgver=17.1.0rc4
+pkgver=17.1.0
 pkgrel=1
 arch=('i686' 'x86_64')
 makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -13,9 +13,8 @@ makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glprot
              'lib32-wayland' 'lib32-libglvnd' 'lib32-libunwind')
 url="http://mesa3d.sourceforge.net"
 license=('custom')
-source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
-        https://mesa.freedesktop.org/archive/mesa-17.1.0-rc4.tar.xz{,.sig})
-sha256sums=('dadd8f28ca8f5c02ec456bb2919da59b369957d5792f66c2e58016ee8692ea7d'
+source=(https://mesa.freedesktop.org/archive/mesa-17.1.0.tar.xz{,.sig})
+sha256sums=('cf234a6ed4764673886b6661553b54675776ef0898f774716173cec890ac3b17'
             'SKIP')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') #  "Andres Gomez <tanty@igalia.com>"
@@ -26,8 +25,7 @@ build() {
   export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
   export LLVM_CONFIG="/usr/bin/llvm-config32"
 
-#  cd "${_pkgname}-${pkgver}"
-  cd "${_pkgname}-17.1.0-rc4"
+  cd "${_pkgname}-${pkgver}"
 
   ./configure \
       --build=i686-pc-linux-gnu \
@@ -36,10 +34,10 @@ build() {
       --libdir=/usr/lib32 \
       --sysconfdir=/etc \
       --with-dri-driverdir=/usr/lib32/xorg/modules/dri \
-      --with-gallium-drivers=nouveau,svga,swrast,virgl \
+      --with-gallium-drivers=nouveau,swrast \
       --with-dri-drivers=nouveau,swrast \
-      --with-egl-platforms=x11,drm,wayland \
-      --enable-gallium-llvm \
+      --with-platforms=x11,drm,wayland \
+      --enable-llvm \
       --enable-llvm-shared-libs \
       --enable-shared-glapi \
       --enable-libglvnd \
@@ -97,7 +95,7 @@ package_lib32-mesa() {
   conflicts=('lib32-nouveau-dri' 'lib32-mesa-dri')
 
   install -m755 -d ${pkgdir}/usr/lib32/xorg/modules/dri
-  # nouveau-dri, svga-dri, swrast
+  # nouveau-dri, swrast
   cp -av ${srcdir}/fakeinstall/usr/lib32/xorg/modules/dri/* ${pkgdir}/usr/lib32/xorg/modules/dri
 
   install -m755 -d ${pkgdir}/usr/lib32

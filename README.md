@@ -5,7 +5,7 @@ Installation
 Current release
 
 
- nvidia -->-- GLVND [1]->- nvidia-libgl ->- mesa-glvnd -> [2]
+ nvidia -->-- GLVND [1]->- nvidia-drivers ->- mesa-glvnd -> [2]
 
 
 [1] libglvnd-git

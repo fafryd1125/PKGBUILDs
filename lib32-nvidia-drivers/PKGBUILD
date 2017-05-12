@@ -6,17 +6,17 @@
 # Contributor: Aaron Plattner <aplattner@nvidia.com>
 # Contributor: Darek Zielski <dz1125.bug.tracker@gmail.com>
 
-pkgname=lib32-nvidia-libgl
+pkgname=lib32-nvidia-drivers
 pkgver=381.22
 pkgrel=1
 pkgdesc="NVIDIA drivers libraries (32-bit)"
 arch=('x86_64')
 url="http://www.nvidia.com/"
 license=('custom')
-depends=('nvidia-libgl' 'lib32-libglvnd')
+depends=('nvidia-drivers' 'lib32-libglvnd')
 optdepends=('lib32-libvdpau: VDPAU wrapper library'
             'lib32-egl-wayland: The EGLStream-based Wayland external platform')
-provides=('lib32-vulkan-driver')
+provides=('lib32-vulkan-driver' 'lib32-opengl-driver')
 options=('!strip')
 _arch='x86'
 _pkg="NVIDIA-Linux-${_arch}-${pkgver}"
@@ -29,12 +29,12 @@ prepare() {
 
 process_manifest () {
     declare -A type_handlers=(
-        # lib32-nvidia-libgl
-        ["OPENGL_LIB"]="lib32-nvidia-libgl install_lib"
-        ["OPENGL_SYMLINK"]="lib32-nvidia-libgl symlink_lib"
-        ["TLS_LIB"]="lib32-nvidia-libgl install_tls"
-        ["VDPAU_LIB"]="lib32-nvidia-libgl install_custom_module"
-        ["VDPAU_SYMLINK"]="lib32-nvidia-libgl symlink_lib_with_path"
+        # lib32-nvidia-drivers
+        ["OPENGL_LIB"]="lib32-nvidia-drivers install_lib"
+        ["OPENGL_SYMLINK"]="lib32-nvidia-drivers symlink_lib"
+        ["TLS_LIB"]="lib32-nvidia-drivers install_tls"
+        ["VDPAU_LIB"]="lib32-nvidia-drivers install_custom_module"
+        ["VDPAU_SYMLINK"]="lib32-nvidia-drivers symlink_lib_with_path"
 
         # Ignored entries
         ["DKMS_CONF"]="ignored"                  # dkms isn't needed with Arch's version-locked packages
@@ -55,13 +55,13 @@ process_manifest () {
         ["XMODULE_NEWSYM"]="ignored"             # not needed for modern X servers
         ["XMODULE_SYMLINK"]="ignored"            # not needed for modern X servers
 
-        # Ignored entries for lib32-nvidia-libgl package
+        # Ignored entries for lib32-nvidia-drivers package
         # opencl-nvidia
         ["CUDA_ICD"]="ignored"
         ["OPENCL_LIB"]="ignored"                 # lib32-opencl-nvidia
         ["OPENCL_LIB_SYMLINK"]="ignored"
-        # nvidia-libgl
-        ["APPLICATION_PROFILE"]="ignored"        # lib32-nvidia-libgl
+        # nvidia-drivers
+        ["APPLICATION_PROFILE"]="ignored"        # lib32-nvidia-drivers
         ["NVIDIA_MODPROBE_MANPAGE"]="ignored"
         ["NVIDIA_MODPROBE"]="ignored"
         ["GLVND_EGL_ICD_JSON"]="ignored"

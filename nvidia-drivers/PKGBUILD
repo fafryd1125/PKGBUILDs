@@ -5,8 +5,8 @@
 # Contributor: Aaron Plattner <aplattner@nvidia.com>
 # Contributor: Darek Zielski <dz1125.bug.tracker@gmail.com>
 
-pkgbase=nvidia-utils
-pkgname=('nvidia-utils' 'nvidia-libgl' 'opencl-nvidia')
+pkgbase=nvidia-drivers
+pkgname=('nvidia-utils' 'nvidia-drivers' 'opencl-nvidia')
 pkgver=381.22
 pkgrel=1
 arch=('i686' 'x86_64')
@@ -36,21 +36,21 @@ process_manifest () {
         ["OPENCL_LIB"]="opencl-nvidia install_custom_module"
         ["OPENCL_LIB_SYMLINK"]="opencl-nvidia symlink_lib_with_path"
 
-        # nvidia-libgl
-        ["APPLICATION_PROFILE"]="nvidia-libgl install_app_profile"
-        ["GLVND_EGL_ICD_JSON"]="nvidia-libgl install_egl_json"
-        ["GLX_MODULE_SHARED_LIB"]="nvidia-libgl install_glx_module"
-        ["GLX_MODULE_SYMLINK"]="nvidia-libgl symlink_glx_module"
-        ["NVIDIA_MODPROBE_MANPAGE"]="nvidia-libgl install_man"
-        ["NVIDIA_MODPROBE"]="nvidia-libgl install_bin"
-        ["OPENGL_LIB"]="nvidia-libgl install_lib"
-        ["OPENGL_SYMLINK"]="nvidia-libgl symlink_lib"
-        ["TLS_LIB"]="nvidia-libgl install_tls"
-        ["VDPAU_LIB"]="nvidia-libgl install_custom_module"
-        ["VDPAU_SYMLINK"]="nvidia-libgl symlink_lib_with_path"
-        ["VULKAN_ICD_JSON"]="nvidia-libgl install_vulkan_json"
-        ["XMODULE_SHARED_LIB"]="nvidia-libgl install_x_driver"
-        ["XORG_OUTPUTCLASS_CONFIG"]="nvidia-libgl install_x_config"
+        # nvidia-drivers
+        ["APPLICATION_PROFILE"]="nvidia-drivers install_app_profile"
+        ["GLVND_EGL_ICD_JSON"]="nvidia-drivers install_egl_json"
+        ["GLX_MODULE_SHARED_LIB"]="nvidia-drivers install_glx_module"
+        ["GLX_MODULE_SYMLINK"]="nvidia-drivers symlink_glx_module"
+        ["NVIDIA_MODPROBE_MANPAGE"]="nvidia-drivers install_man"
+        ["NVIDIA_MODPROBE"]="nvidia-drivers install_bin"
+        ["OPENGL_LIB"]="nvidia-drivers install_lib"
+        ["OPENGL_SYMLINK"]="nvidia-drivers symlink_lib"
+        ["TLS_LIB"]="nvidia-drivers install_tls"
+        ["VDPAU_LIB"]="nvidia-drivers install_custom_module"
+        ["VDPAU_SYMLINK"]="nvidia-drivers symlink_lib_with_path"
+        ["VULKAN_ICD_JSON"]="nvidia-drivers install_vulkan_json"
+        ["XMODULE_SHARED_LIB"]="nvidia-drivers install_x_driver"
+        ["XORG_OUTPUTCLASS_CONFIG"]="nvidia-drivers install_x_config"
 
         # nvidia-utils
         ["CUDA_LIB"]="nvidia-utils install_custom_module"
@@ -223,21 +223,23 @@ package_opencl-nvidia() {
     process_manifest
 }
 
-package_nvidia-libgl() {
+package_nvidia-drivers() {
     pkgdesc="NVIDIA drivers libraries"
-    depends=('libglvnd')
+    depends=('libglvnd' "nvidia-module=${pkgver}")
     optdepends=('egl-wayland: The EGLStream-based Wayland external platform'
                 'libvdpau: VDPAU wrapper library'
                 'nvidia-utils: NVIDIA drivers utilities')
-    provides=('vulkan-driver')
+    provides=('vulkan-driver' 'opengl-driver')
     cd "${_pkg}"
 
     process_manifest
+
+    install -D -m644 LICENSE "${pkgdir}/usr/share/licenses/nvidia/LICENSE"
 }
 
 package_nvidia-utils() {
     pkgdesc="NVIDIA drivers utilities"
-    depends=('xorg-server' 'nvidia')
+    depends=('xorg-server' 'nvidia-drivers')
     optdepends=('xorg-server-devel: nvidia-xconfig'
                 'opencl-nvidia: OpenCL support')
     provides=('nvidia-settings')
@@ -252,6 +254,5 @@ package_nvidia-utils() {
     sed -i 's/__USER__/nvidia-persistenced/' \
            "${pkgdir}/usr/lib/systemd/system/nvidia-persistenced.service"
 
-    install -D -m644 LICENSE "${pkgdir}/usr/share/licenses/nvidia/LICENSE"
     ln -s nvidia "${pkgdir}/usr/share/doc/nvidia-utils"
 }

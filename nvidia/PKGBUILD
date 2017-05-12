@@ -9,8 +9,10 @@ pkgrel=1
 pkgdesc='NVIDIA drivers for linux'
 arch=('i686' 'x86_64')
 url="http://www.nvidia.com/"
-depends=('linux>=4.11' 'linux<4.12' 'libgl')
+depends=('linux>=4.11' 'linux<4.12')
 makedepends=('linux-headers>=4.11' 'linux-headers<4.12')
+provides=("nvidia-module=${pkgver}")
+conflicts=('nvidia-dkms')
 license=('custom')
 install=nvidia.install
 options=(!strip)

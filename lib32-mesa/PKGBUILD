@@ -41,6 +41,7 @@ build() {
       --enable-llvm-shared-libs \
       --enable-shared-glapi \
       --enable-libglvnd \
+      --enable-libunwind \
       --disable-gles1 \
       --enable-glx-tls \
       --enable-gbm \
@@ -59,7 +60,8 @@ build() {
 
 package_lib32-mesa-vdpau() {
   pkgdesc="Mesa VDPAU drivers (32-bit)"
-  depends=('lib32-libdrm' 'lib32-libx11' 'lib32-expat' 'lib32-llvm-libs' 'lib32-libelf' 'lib32-libxshmfence')
+  depends=('lib32-libdrm' 'lib32-libx11' 'lib32-expat' 'lib32-llvm-libs' 'lib32-libelf' 'lib32-libxshmfence'
+           'lib32-libunwind')
 
   install -m755 -d ${pkgdir}/usr/lib32
   cp -rv ${srcdir}/fakeinstall/usr/lib32/vdpau ${pkgdir}/usr/lib32
@@ -88,7 +90,7 @@ package_lib32-mesa-glvnd() {
 package_lib32-mesa() {
   pkgdesc="an open-source implementation of the OpenGL specification (32-bit)"
   depends=('lib32-libdrm' 'lib32-libxxf86vm' 'lib32-libxdamage' 'lib32-libxshmfence' 'lib32-libelf'
-           'lib32-llvm-libs' 'lib32-wayland' 'lib32-libtxc_dxtn' 'mesa')
+           'lib32-llvm-libs' 'lib32-wayland' 'lib32-libtxc_dxtn' 'lib32-libunwind' 'mesa')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'lib32-mesa-vdpau: for accelerated video playback')
   provides=('lib32-nouveau-dri' 'lib32-mesa-dri')

@@ -1,8 +1,9 @@
 # $Id$
 # Maintainer: Eric Bélanger <eric@archlinux.org>
 
-pkgname=wxgtk3
-pkgver=3.0.3+58949+dc7acca
+pkgname=wxgtk3-git
+_pkgname=wxgtk3
+pkgver=3.0.3.r6.gfdf5056dac
 pkgrel=1
 pkgdesc="GTK+ implementation of wxWidgets API for GUI"
 arch=('i686' 'x86_64')
@@ -11,13 +12,18 @@ license=('custom:wxWindows')
 depends=('gtk3' 'libsm' 'gst-plugins-base-libs')
 makedepends=('glu' 'gst-plugins-base' 'git')
 optdepends=('webkit2gtk: for webview support')
-provides=('wxgtk')
+provides=('wxgtk3' 'wxgtk')
 conflicts=('wxgtk')
 source=("wxgtk3::git+https://github.com/wxWidgets/wxWidgets.git#branch=WX_3_0_BRANCH")
 sha256sums=('SKIP')
 
+pkgver() {
+  cd "${_pkgname}"
+  git describe --long | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
 build() {
-  cd "${pkgname}"
+  cd "${_pkgname}"
 
   ./autogen.sh
   ./configure               \
@@ -39,7 +45,7 @@ build() {
 }
 
 package() {
-  cd "${pkgname}"
+  cd "${_pkgname}"
   make DESTDIR="${pkgdir}" install
 
   install -D -m644 docs/licence.txt "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"

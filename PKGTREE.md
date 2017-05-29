@@ -14,7 +14,7 @@ drwxr-xr-x root/root         0 2017-02-14 15:15 usr/share/licenses/
 lrwxrwxrwx root/root         0 2017-02-14 15:15 usr/share/licenses/opencl-nvidia -> nvidia
 ```
 
-### nvidia-libgl:
+### nvidia-drivers:
 
 ```
 drwxr-xr-x root/root         0 2017-02-14 15:15 etc/

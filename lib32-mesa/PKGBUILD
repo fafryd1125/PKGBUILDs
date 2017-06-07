@@ -5,19 +5,20 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-mesa-vdpau' 'lib32-mesa-glvnd'  'lib32-mesa')
-pkgver=17.1.0
+pkgver=17.1.2
 pkgrel=1
 arch=('i686' 'x86_64')
 makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
              'lib32-libxshmfence' 'lib32-libxxf86vm' 'lib32-libxdamage' 'gcc-multilib' 'lib32-libelf' 'lib32-llvm' 'lib32-libvdpau'
-             'lib32-wayland' 'lib32-libglvnd' 'lib32-libunwind')
+             'lib32-wayland' 'lib32-libglvnd')
 url="http://mesa3d.sourceforge.net"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/mesa-17.1.0.tar.xz{,.sig})
 sha256sums=('cf234a6ed4764673886b6661553b54675776ef0898f774716173cec890ac3b17'
             'SKIP')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
-validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') #  "Andres Gomez <tanty@igalia.com>"
+validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
+validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
 
 build() {
   export CC="gcc -m32"
@@ -41,7 +42,7 @@ build() {
       --enable-llvm-shared-libs \
       --enable-shared-glapi \
       --enable-libglvnd \
-      --enable-libunwind \
+      --disable-libunwind \
       --disable-gles1 \
       --enable-glx-tls \
       --enable-gbm \
@@ -60,8 +61,7 @@ build() {
 
 package_lib32-mesa-vdpau() {
   pkgdesc="Mesa VDPAU drivers (32-bit)"
-  depends=('lib32-libdrm' 'lib32-libx11' 'lib32-expat' 'lib32-llvm-libs' 'lib32-libelf' 'lib32-libxshmfence'
-           'lib32-libunwind')
+  depends=('lib32-libdrm' 'lib32-libx11' 'lib32-expat' 'lib32-llvm-libs' 'lib32-libelf' 'lib32-libxshmfence')
 
   install -m755 -d ${pkgdir}/usr/lib32
   cp -rv ${srcdir}/fakeinstall/usr/lib32/vdpau ${pkgdir}/usr/lib32
@@ -90,7 +90,7 @@ package_lib32-mesa-glvnd() {
 package_lib32-mesa() {
   pkgdesc="an open-source implementation of the OpenGL specification (32-bit)"
   depends=('lib32-libdrm' 'lib32-libxxf86vm' 'lib32-libxdamage' 'lib32-libxshmfence' 'lib32-libelf'
-           'lib32-llvm-libs' 'lib32-wayland' 'lib32-libtxc_dxtn' 'lib32-libunwind' 'mesa')
+           'lib32-llvm-libs' 'lib32-wayland' 'lib32-libtxc_dxtn' 'mesa')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'lib32-mesa-vdpau: for accelerated video playback')
   provides=('lib32-nouveau-dri' 'lib32-mesa-dri')

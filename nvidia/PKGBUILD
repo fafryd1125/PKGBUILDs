@@ -3,7 +3,7 @@
 # Maintainer: Thomas Baechler <thomas@archlinux.org>
 
 pkgname=nvidia
-pkgver=381.22
+pkgver=384.47
 _extramodules=extramodules-4.11-ARCH
 pkgrel=1
 pkgdesc='NVIDIA drivers for linux'
@@ -18,8 +18,8 @@ install=nvidia.install
 options=(!strip)
 source=("ftp://download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
         "ftp://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
-sha256sums=('7b7dd6ee1c871dc5367fc207bba65077c3820a683decbfe6126fc70c0d1b9d08'
-            'c2468130af124bfe748bdf2bc4c08952a81b35d2bdb87d1217717e6a576217e8')
+sha256sums=('433917c5feca240abd936eecfbbd020b3773afead083802afee3b56d8a5bc256'
+            '5bcdcda592c5463bf9c19918253ae07c37169a2c75cbedcd868d1206c2f7f286')
 
 [[ "$CARCH" = "i686" ]] && _pkg="NVIDIA-Linux-x86-${pkgver}"
 [[ "$CARCH" = "x86_64" ]] && _pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
@@ -53,4 +53,5 @@ package() {
     install -d -m755 "${pkgdir}/usr/lib/modprobe.d"
 
     echo "blacklist nouveau" >> "${pkgdir}/usr/lib/modprobe.d/${pkgname}.conf"
+    echo "options nouveau modeset=0" >> "${pkgdir}/usr/lib/modprobe.d/${pkgname}.conf"
 }

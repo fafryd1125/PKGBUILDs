@@ -119,12 +119,12 @@ install_glx_module()    { install -D -m$2 "$1" "${pkgdir}/usr/lib/xorg/modules/e
 install_opencl_vendor() { install -D -m$2 "$1" "${pkgdir}/etc/OpenCL/vendors/$1"; }
 
 install_vulkan_json() {
-    local libname=${1%.template}
-    install -D -m$2 "$1" "${pkgdir}/etc/vulkan/icd.d/${libname}"
+    local filename=${1%.template}
+    install -D -m$2 "$1" "${pkgdir}/etc/vulkan/icd.d/${filename}"
 
-    # Set the appropriate library to "glvnd_glx_client".
+    # Set the proper Vulkan ICD configuration file to "glvnd_glx_client".
     sed -i -e 's:__NV_VK_ICD__:libGLX_nvidia.so.0:' \
-              "${pkgdir}/etc/vulkan/icd.d/${libname}"
+              "${pkgdir}/etc/vulkan/icd.d/${filename}"
 }
 
 install_x_config() {

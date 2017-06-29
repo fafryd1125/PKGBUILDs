@@ -117,7 +117,15 @@ install_custom_module() { install -D -m$2 "$1" "${pkgdir}/usr/lib/$5$1"; }
 install_egl_json()      { install -D -m$2 "$1" "${pkgdir}/usr/share/glvnd/egl_vendor.d/$1"; }
 install_glx_module()    { install -D -m$2 "$1" "${pkgdir}/usr/lib/xorg/modules/extensions/nvidia/$1"; }
 install_opencl_vendor() { install -D -m$2 "$1" "${pkgdir}/etc/OpenCL/vendors/$1"; }
-install_vulkan_json()   { install -D -m$2 "$1" "${pkgdir}/etc/vulkan/icd.d/$1"; }
+
+install_vulkan_json() {
+    local libname=${1%.template}
+    install -D -m$2 "$1" "${pkgdir}/etc/vulkan/icd.d/${libname}"
+
+    # Set the appropriate library to "glvnd_glx_client".
+    sed -i -e 's:__NV_VK_ICD__:libGLX_nvidia.so.0:' \
+              "${pkgdir}/etc/vulkan/icd.d/${libname}"
+}
 
 install_x_config() {
     install -D -m$2 "$1" "${pkgdir}/usr/share/X11/xorg.conf.d/$1"

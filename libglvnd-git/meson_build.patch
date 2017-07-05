@@ -1,0 +1,730 @@
+diff --git a/.travis.yml b/.travis.yml
+new file mode 100644
+index 0000000..ab240e7
+--- /dev/null
++++ b/.travis.yml
+@@ -0,0 +1,20 @@
++sudo: false
++
++os:
++  - linux
++
++language:
++  - c
++
++services:
++  - docker
++
++before_install:
++  - docker pull base/archlinux
++
++script:
++  - echo FROM base/archlinux > Dockerfile
++  - echo RUN pacman --noconfirm -Sy gcc glproto libx11 libxext meson pkg-config >> Dockerfile
++  - echo ADD . /root >> Dockerfile
++  - docker build -t withgit .;
++  - docker run withgit /bin/sh -c "cd /root && TRAVIS=true CC=$CC meson build && ninja -C build test"
+diff --git a/README.md b/README.md
+index 87e45d6..01fef05 100644
+--- a/README.md
++++ b/README.md
+@@ -1,6 +1,8 @@
+ libglvnd: the GL Vendor-Neutral Dispatch library
+ ================================================
+ 
++[![Travis](https://travis-ci.org/aaronp24/libglvnd.svg?branch=meson)](https://travis-ci.org/aaronp24/libglvnd)
++
+ Introduction
+ ------------
+ 
+diff --git a/include/meson.build b/include/meson.build
+new file mode 100644
+index 0000000..5e31df8
+--- /dev/null
++++ b/include/meson.build
+@@ -0,0 +1 @@
++install_subdir('glvnd', install_dir : 'include')
+diff --git a/meson.build b/meson.build
+new file mode 100644
+index 0000000..428e8b2
+--- /dev/null
++++ b/meson.build
+@@ -0,0 +1,19 @@
++project('libglvnd', 'c')
++
++inc = include_directories('include')
++
++datadir = join_paths(get_option('prefix'), get_option('datadir'))
++sysconfdir = join_paths(get_option('prefix'), get_option('sysconfdir'))
++
++subdir('src')
++subdir('include')
++
++import('pkgconfig').generate(
++    name : 'libglvnd',
++    version : '0.2.999',
++    description : 'Vendor-neutral OpenGL dispatch library vendor interface',
++    variables : [
++        'datarootdir=${prefix}/@0@'.format(datadir),
++        'datadir=${datarootdir}',
++    ],
++)
+diff --git a/src/EGL/meson.build b/src/EGL/meson.build
+new file mode 100644
+index 0000000..7662592
+--- /dev/null
++++ b/src/EGL/meson.build
+@@ -0,0 +1,27 @@
++egl = shared_library('EGL',
++    [
++        'libegl.c',
++        'libeglcurrent.c',
++        'libeglmapping.c',
++        'libeglvendor.c',
++        'libeglerror.c',
++    ],
++    c_args : [
++         '-DDEFAULT_EGL_VENDOR_CONFIG_DIRS="@0@/glvnd/egl_vendor.d:@1@/glvnd/egl_vendor.d"'.format(
++            sysconfdir, datadir),
++    ],
++    dependencies : [
++        cJSON_dep,
++        egl_dispatch_stubs_dep,
++        gldispatch_dep,
++        glvnd_pthread_dep,
++        libdl,
++        libm,
++        utils_misc_dep,
++        winsys_dispatch_dep,
++    ],
++    include_directories : [inc, util_inc],
++    sources : g_egldispatchstubs_h,
++    version : '1.0.0',
++    install : true,
++)
+diff --git a/src/GL/meson.build b/src/GL/meson.build
+new file mode 100644
+index 0000000..adda85d
+--- /dev/null
++++ b/src/GL/meson.build
+@@ -0,0 +1,16 @@
++gl = shared_library('GL',
++    [
++        'libgl.c',
++        libglglxwrapper_gen,
++    ],
++    link_whole : [
++        glapi_gl,
++    ],
++    dependencies : [
++        glx_dep,
++        gldispatch_dep,
++    ],
++    include_directories : [inc, glx_inc, util_inc],
++    version : '1.0.0',
++    install : true,
++)
+diff --git a/src/GLESv1/meson.build b/src/GLESv1/meson.build
+new file mode 100644
+index 0000000..cdb488c
+--- /dev/null
++++ b/src/GLESv1/meson.build
+@@ -0,0 +1,15 @@
++glesv1_cm = shared_library('GLESv1_CM', opengl_main_src,
++    include_directories : opengl_main_inc,
++    link_depends : [
++        g_glesv1_exports_sym,
++    ],
++    link_whole : [
++        glapi_glesv1,
++    ],
++    dependencies : [
++        gldispatch_dep,
++        g_glesv1_exports_sym_dep,
++    ],
++    version : '1.0.0',
++    install : true,
++)
+diff --git a/src/GLESv2/meson.build b/src/GLESv2/meson.build
+new file mode 100644
+index 0000000..a1baaf0
+--- /dev/null
++++ b/src/GLESv2/meson.build
+@@ -0,0 +1,15 @@
++glesv2 = shared_library('GLESv2', opengl_main_src,
++    include_directories : opengl_main_inc,
++    link_depends : [
++        g_glesv2_exports_sym,
++    ],
++    link_whole : [
++        glapi_glesv2,
++    ],
++    dependencies : [
++        gldispatch_dep,
++        g_glesv2_exports_sym_dep,
++    ],
++    version : '2.0.0',
++    install : true,
++)
+diff --git a/src/GLX/meson.build b/src/GLX/meson.build
+new file mode 100644
+index 0000000..2795e92
+--- /dev/null
++++ b/src/GLX/meson.build
+@@ -0,0 +1,28 @@
++glx_inc = include_directories('.')
++
++glx_src = [
++    'libglx.c',
++    'libglxmapping.c',
++    'libglxproto.c',
++]
++
++glx = shared_library('GLX',
++    sources : glx_src,
++    include_directories: [inc, util_inc],
++    dependencies : [
++        app_error_check_dep,
++        gldispatch_dep,
++        glvnd_genentry_dep,
++        glvnd_pthread_dep,
++        winsys_dispatch_dep,
++        libdl,
++        utils_misc_dep,
++        dependency('glproto'),
++        dependency('x11'),
++        dependency('xext'),
++    ],
++    version : '0.0.0',
++    install : true,
++)
++
++glx_dep = declare_dependency(link_with : glx)
+diff --git a/src/GLdispatch/export_list.ver b/src/GLdispatch/export_list.ver
+new file mode 100644
+index 0000000..e66bd43
+--- /dev/null
++++ b/src/GLdispatch/export_list.ver
+@@ -0,0 +1,24 @@
++{
++    global:
++
++    _glapi_get_current ;
++    _glapi_Current ;
++    _glapi_tls_Current ;
++    __glDispatchCheckMultithreaded ;
++    __glDispatchCreateTable ;
++    __glDispatchDestroyTable ;
++    __glDispatchFini ;
++    __glDispatchGetABIVersion ;
++    __glDispatchGetCurrentThreadState ;
++    __glDispatchGetProcAddress ;
++    __glDispatchInit ;
++    __glDispatchLoseCurrent ;
++    __glDispatchMakeCurrent ;
++    __glDispatchNewVendorID ;
++    __glDispatchRegisterStubCallbacks ;
++    __glDispatchReset ;
++    __glDispatchUnregisterStubCallbacks ;
++    __glDispatchForceUnpatch ;
++
++    local: *;
++};
+diff --git a/src/GLdispatch/meson.build b/src/GLdispatch/meson.build
+new file mode 100644
+index 0000000..a0e386a
+--- /dev/null
++++ b/src/GLdispatch/meson.build
+@@ -0,0 +1,28 @@
++subdir('vnd-glapi')
++
++gldispatch_inc = include_directories([
++    'vnd-glapi',
++    '.',
++])
++
++gldispatch_linker_script = 'export_list.ver'
++
++gldispatch = shared_library('GLdispatch', 'GLdispatch.c',
++    include_directories : [inc, util_inc, gldispatch_inc],
++    link_whole : [
++        glapi,
++    ],
++    dependencies : [
++        glvnd_pthread_dep,
++        app_error_check_dep,
++        libdl,
++    ],
++    link_depends : gldispatch_linker_script,
++    version : '0.0.0',
++    install : true,
++    link_args : '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), gldispatch_linker_script),
++)
++gldispatch_dep = declare_dependency(
++    link_with : gldispatch,
++    include_directories : gldispatch_inc,
++)
+diff --git a/src/GLdispatch/vnd-glapi/meson.build b/src/GLdispatch/vnd-glapi/meson.build
+new file mode 100644
+index 0000000..c04f5eb
+--- /dev/null
++++ b/src/GLdispatch/vnd-glapi/meson.build
+@@ -0,0 +1,76 @@
++entry_src = [
++    'entry_x86_64_tls.c',
++    'entry_simple_asm.c',
++    'entry_common.c',
++]
++
++glapi_src = entry_src + [
++    'mapi_glapi.c',
++    'stub.c',
++    'table.c',
++    'u_execmem.c',
++    'u_current_tls.c',
++]
++
++glapi = static_library('glapi',
++    sources : glapi_src,
++    include_directories : [inc, util_inc],
++    c_args : '-DMAPI_ABI_HEADER="glapi_mapi_tmp.h"',
++    dependencies : [
++        glapi_mapi_dep,
++        utils_misc_dep,
++    ],
++)
++
++glapi_gl = static_library('glapi_gl',
++    sources : [entry_src, 'stub.c'],
++    include_directories : [inc, util_inc],
++    c_args : [
++        '-DMAPI_ABI_HEADER="glapi_mapi_gl_tmp.h"',
++        '-DSTATIC_DISPATCH_ONLY',
++    ],
++    dependencies : [
++        glapi_mapi_gl_dep,
++        utils_misc_dep,
++    ],
++)
++
++glapi_opengl = static_library('glapi_opengl',
++    sources : [entry_src, 'stub.c'],
++    include_directories : [inc, util_inc],
++    c_args : [
++        '-DMAPI_ABI_HEADER="glapi_mapi_opengl_tmp.h"',
++        '-DSTATIC_DISPATCH_ONLY',
++    ],
++    dependencies : [
++        glapi_mapi_opengl_dep,
++        utils_misc_dep,
++    ],
++)
++
++# TODO: Abstract STATIC_DISPATCH_ONLY
++glapi_glesv1 = static_library('glapi_glesv1',
++    sources : [entry_src, 'stub.c'],
++    include_directories : [inc, util_inc],
++    c_args : [
++        '-DMAPI_ABI_HEADER="glapi_mapi_glesv1_tmp.h"',
++        '-DSTATIC_DISPATCH_ONLY',
++    ],
++    dependencies : [
++        glapi_mapi_glesv1_dep,
++        utils_misc_dep,
++    ],
++)
++
++glapi_glesv2 = static_library('glapi_glesv2',
++    sources : [entry_src, 'stub.c'],
++    include_directories : [inc, util_inc],
++    c_args : [
++        '-DMAPI_ABI_HEADER="glapi_mapi_glesv2_tmp.h"',
++        '-DSTATIC_DISPATCH_ONLY',
++    ],
++    dependencies : [
++        glapi_mapi_glesv2_dep,
++        utils_misc_dep,
++    ],
++)
+diff --git a/src/OpenGL/meson.build b/src/OpenGL/meson.build
+new file mode 100644
+index 0000000..5d35e39
+--- /dev/null
++++ b/src/OpenGL/meson.build
+@@ -0,0 +1,18 @@
++opengl_main_src = files('libopengl.c')
++opengl_main_inc = [inc, util_inc, gldispatch_inc]
++
++opengl = shared_library('OpenGL', opengl_main_src,
++    link_depends : [
++        g_opengl_exports_sym,
++    ],
++    link_whole : [
++        glapi_opengl,
++    ],
++    dependencies : [
++        gldispatch_dep,
++        g_opengl_exports_sym_dep,
++    ],
++    include_directories : opengl_main_inc,
++    version : '0.0.0',
++    install : true,
++)
+diff --git a/src/generate/eglFunctionList.py b/src/generate/eglFunctionList.py
+index c14dd28..bb13ab3 100644
+--- a/src/generate/eglFunctionList.py
++++ b/src/generate/eglFunctionList.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ 
+ """
+ Contains a list of EGL functions to generate dispatch functions for.
+diff --git a/src/generate/genCommon.py b/src/generate/genCommon.py
+index b486ad0..82568cb 100644
+--- a/src/generate/genCommon.py
++++ b/src/generate/genCommon.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ 
+ # (C) Copyright 2015, NVIDIA CORPORATION.
+ # All Rights Reserved.
+diff --git a/src/generate/gen_egl_dispatch.py b/src/generate/gen_egl_dispatch.py
+index 7c65e0b..3589e90 100755
+--- a/src/generate/gen_egl_dispatch.py
++++ b/src/generate/gen_egl_dispatch.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ 
+ """
+ Generates dispatch functions for EGL.
+diff --git a/src/generate/gen_gldispatch_mapi.py b/src/generate/gen_gldispatch_mapi.py
+index 03fb49a..e97177e 100755
+--- a/src/generate/gen_gldispatch_mapi.py
++++ b/src/generate/gen_gldispatch_mapi.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ 
+ # Copyright (C) 2010 LunarG Inc.
+ # (C) Copyright 2015, NVIDIA CORPORATION.
+diff --git a/src/generate/gen_libOpenGL_exports.py b/src/generate/gen_libOpenGL_exports.py
+index 92e4e7f..ff1c496 100755
+--- a/src/generate/gen_libOpenGL_exports.py
++++ b/src/generate/gen_libOpenGL_exports.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ 
+ # (C) Copyright 2015, NVIDIA CORPORATION.
+ # All Rights Reserved.
+@@ -39,9 +39,11 @@ def _main():
+     xmlFiles = sys.argv[2:]
+     roots = [ etree.parse(filename).getroot() for filename in xmlFiles ]
+ 
++    print("{ global:")
+     names = genCommon.getExportNamesFromRoots(target, roots)
+     for name in sorted(names):
+-        print(name)
++        print(name, ";")
++    print("local: *; };")
+ 
+ if (__name__ == "__main__"):
+     _main()
+diff --git a/src/generate/gen_libOpenGL_exports_old.py b/src/generate/gen_libOpenGL_exports_old.py
+new file mode 100755
+index 0000000..1d3e991
+--- /dev/null
++++ b/src/generate/gen_libOpenGL_exports_old.py
+@@ -0,0 +1,48 @@
++#!/usr/bin/env python3
++
++# (C) Copyright 2015, NVIDIA CORPORATION.
++# All Rights Reserved.
++#
++# Permission is hereby granted, free of charge, to any person obtaining a
++# copy of this software and associated documentation files (the "Software"),
++# to deal in the Software without restriction, including without limitation
++# on the rights to use, copy, modify, merge, publish, distribute, sub
++# license, and/or sell copies of the Software, and to permit persons to whom
++# the Software is furnished to do so, subject to the following conditions:
++#
++# The above copyright notice and this permission notice (including the next
++# paragraph) shall be included in all copies or substantial portions of the
++# Software.
++#
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.  IN NO EVENT SHALL
++# IBM AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++# IN THE SOFTWARE.
++#
++# Authors:
++#    Kyle Brenneman <kbrenneman@nvidia.com>
++
++"""
++Generates the list of functions that should be exported from libOpenGL.so.
++"""
++
++import sys
++import xml.etree.cElementTree as etree
++
++import genCommon
++
++def _main():
++    target = sys.argv[1]
++    xmlFiles = sys.argv[2:]
++    roots = [ etree.parse(filename).getroot() for filename in xmlFiles ]
++
++    names = genCommon.getExportNamesFromRoots(target, roots)
++    for name in sorted(names):
++        print(name)
++
++if (__name__ == "__main__"):
++    _main()
++
+diff --git a/src/generate/gen_libgl_glxstubs.py b/src/generate/gen_libgl_glxstubs.py
+index acbe731..718d59f 100755
+--- a/src/generate/gen_libgl_glxstubs.py
++++ b/src/generate/gen_libgl_glxstubs.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ 
+ # (C) Copyright 2015, NVIDIA CORPORATION.
+ # All Rights Reserved.
+diff --git a/src/generate/glvnd_gen.mk b/src/generate/glvnd_gen.mk
+index c1727c9..5f28a6d 100644
+--- a/src/generate/glvnd_gen.mk
++++ b/src/generate/glvnd_gen.mk
+@@ -38,7 +38,7 @@ endef
+ # Generates an export list for an entrypoint library.
+ # $(1) specifies which library we're building, using the same names as
+ # glapi_gen_mapi.
+-glapi_gen_libopengl_exports_script := $(top_srcdir)/src/generate/gen_libOpenGL_exports.py
++glapi_gen_libopengl_exports_script := $(top_srcdir)/src/generate/gen_libOpenGL_exports_old.py
+ glapi_gen_libopengl_exports_deps := \
+ 	$(glapi_gen_libopengl_exports_script) \
+ 	$(glapi_gen_gl_deps)
+diff --git a/src/generate/meson.build b/src/generate/meson.build
+new file mode 100644
+index 0000000..b94cc9f
+--- /dev/null
++++ b/src/generate/meson.build
+@@ -0,0 +1,130 @@
++gen_mapi_script = find_program('gen_gldispatch_mapi.py')
++glapi_gen_gl_core_xml = files('xml/gl.xml')
++glapi_gen_gl_xml = glapi_gen_gl_core_xml + files('xml/gl_other.xml')
++
++glapi_mapi_gen = custom_target('glapi_mapi_tmp.h',
++    command : [gen_mapi_script, 'gldispatch', glapi_gen_gl_xml],
++    capture : true,
++    depend_files : files('genCommon.py') + glapi_gen_gl_xml,
++    output : 'glapi_mapi_tmp.h',
++)
++glapi_mapi_dep = declare_dependency(
++    sources : glapi_mapi_gen,
++)
++
++# opengl
++glapi_mapi_opengl_gen = custom_target('glapi_mapi_opengl_tmp.h',
++    command : [gen_mapi_script, 'opengl', glapi_gen_gl_xml],
++    capture : true,
++    depend_files : files('genCommon.py') + glapi_gen_gl_xml,
++    output : 'glapi_mapi_opengl_tmp.h',
++)
++glapi_mapi_opengl_dep = declare_dependency(
++    sources : glapi_mapi_opengl_gen,
++)
++
++# gl
++glapi_mapi_gl_gen = custom_target('glapi_mapi_gl_tmp.h',
++    command : [gen_mapi_script, 'gl', glapi_gen_gl_xml],
++    capture : true,
++    depend_files : files('genCommon.py') + glapi_gen_gl_xml,
++    output : 'glapi_mapi_gl_tmp.h',
++)
++glapi_mapi_gl_dep = declare_dependency(
++    sources : glapi_mapi_gl_gen,
++)
++
++# glesv1
++glapi_mapi_glesv1_gen = custom_target('glapi_mapi_glesv1_tmp.h',
++    command : [gen_mapi_script, 'glesv1', glapi_gen_gl_xml],
++    capture : true,
++    depend_files : files('genCommon.py') + glapi_gen_gl_xml,
++    output : 'glapi_mapi_glesv1_tmp.h',
++)
++glapi_mapi_glesv1_dep = declare_dependency(
++    sources : glapi_mapi_glesv1_gen,
++)
++
++# glesv2
++glapi_mapi_glesv2_gen = custom_target('glapi_mapi_glesv2_tmp.h',
++    command : [gen_mapi_script, 'glesv2', glapi_gen_gl_xml],
++    capture : true,
++    depend_files : files('genCommon.py') + glapi_gen_gl_xml,
++    output : 'glapi_mapi_glesv2_tmp.h',
++)
++glapi_mapi_glesv2_dep = declare_dependency(
++    sources : glapi_mapi_glesv2_gen,
++)
++
++glapi_gen_libglglxstubs_script = find_program('gen_libgl_glxstubs.py')
++glapi_gen_glx_xml = files('xml/glx.xml', 'xml/glx_other.xml')
++libglglxwrapper_gen = custom_target('g_libglglxwrapper.c',
++    command : [glapi_gen_libglglxstubs_script, glapi_gen_glx_xml],
++    capture : true,
++    depend_files : files('genCommon.py') + glapi_gen_glx_xml,
++    output : 'g_libglglxwrapper.c',
++)
++libglglxwrapper_dep = declare_dependency(
++    sources : libglglxwrapper_gen,
++)
++
++glapi_gen_libopengl_exports_script = find_program('gen_libOpenGL_exports.py')
++g_opengl_exports_sym = custom_target('g_opengl_exports.sym',
++    command : [glapi_gen_libopengl_exports_script, 'opengl', glapi_gen_gl_core_xml],
++    capture : true,
++    depend_files : files('genCommon.py', 'gen_libOpenGL_exports.py') + glapi_gen_gl_core_xml,
++    output : 'g_opengl_exports.sym',
++)
++g_opengl_exports_sym_dep = declare_dependency(
++    sources : g_opengl_exports_sym,
++    link_args : '-Wl,--version-script,@0@'.format(g_opengl_exports_sym.full_path()),
++)
++
++g_glesv1_exports_sym = custom_target('g_glesv1_exports.sym',
++    command : [glapi_gen_libopengl_exports_script, 'glesv1', glapi_gen_gl_xml],
++    capture : true,
++    depend_files : files('genCommon.py', 'gen_libOpenGL_exports.py') + glapi_gen_gl_xml,
++    output : 'g_glesv1_exports.sym',
++)
++g_glesv1_exports_sym_dep = declare_dependency(
++    sources : g_glesv1_exports_sym,
++    link_args : '-Wl,--version-script,@0@'.format(g_glesv1_exports_sym.full_path()),
++)
++
++g_glesv2_exports_sym = custom_target('g_glesv2_exports.sym',
++    command : [glapi_gen_libopengl_exports_script, 'glesv2', glapi_gen_gl_xml],
++    capture : true,
++    depend_files : files('genCommon.py', 'gen_libOpenGL_exports.py') + glapi_gen_gl_xml,
++    output : 'g_glesv2_exports.sym',
++)
++g_glesv2_exports_sym_dep = declare_dependency(
++    sources : g_glesv2_exports_sym,
++    link_args : '-Wl,--version-script,@0@'.format(g_glesv2_exports_sym.full_path()),
++)
++
++# EGL_dispatch_stubs
++# TODO: Move egldispatchstubs.h to here
++egl_inc = include_directories('../EGL')
++egl_gen_dispatch_script = find_program('gen_egl_dispatch.py')
++egl_gen_files = files('eglFunctionList.py', 'xml/egl.xml')
++g_egldispatchstubs_c = custom_target('g_egldispatchstubs.c',
++    command : [egl_gen_dispatch_script, 'source', egl_gen_files],
++    capture : true,
++    depend_files : files('gen_egl_dispatch.py') + egl_gen_files,
++    output : 'g_egldispatchstubs.c',
++)
++g_egldispatchstubs_h = custom_target('g_egldispatchstubs.h',
++    command : [egl_gen_dispatch_script, 'header', egl_gen_files],
++    capture : true,
++    depend_files : files('gen_egl_dispatch.py') + egl_gen_files,
++    output : 'g_egldispatchstubs.h',
++)
++egl_dispatch_stubs = static_library('EGL_dispatch_stubs',
++    [
++        '../EGL/egldispatchstubs.c',
++        g_egldispatchstubs_c,
++    ],
++    include_directories : [inc, egl_inc],
++    sources : g_egldispatchstubs_h,
++)
++egl_dispatch_stubs_dep = declare_dependency(link_with : egl_dispatch_stubs)
+diff --git a/src/meson.build b/src/meson.build
+new file mode 100644
+index 0000000..26558cb
+--- /dev/null
++++ b/src/meson.build
+@@ -0,0 +1,31 @@
++cc =meson.get_compiler('c')
++libdl = cc.find_library('libdl')
++libm = cc.find_library('libm')
++
++# TODO: Handle these dynamically
++c_defines = [
++    'GLDISPATCH_USE_TLS',
++    'HAVE_MINCORE',
++    'HAVE_PTHREAD_RWLOCK_T',
++    'HAVE_RTLD_NOLOAD',
++    'HAVE_SYNC_INTRINSICS',
++    'HAVE_TYPEOF',
++    'USE_ATTRIBUTE_CONSTRUCTOR',
++    'USE_X86_64_ASM',
++]
++foreach d : c_defines
++  add_global_arguments('-D' + d + '=1', language : 'c')
++endforeach
++
++add_global_arguments('-fvisibility=hidden', language : 'c')
++add_global_link_arguments('-Wl,-Bsymbolic', language : 'c')
++
++subdir('generate')
++subdir('util')
++subdir('GLdispatch')
++subdir('OpenGL')
++subdir('EGL')
++subdir('GLX')
++subdir('GL')
++subdir('GLESv1')
++subdir('GLESv2')
+diff --git a/src/util/meson.build b/src/util/meson.build
+new file mode 100644
+index 0000000..9290ec1
+--- /dev/null
++++ b/src/util/meson.build
+@@ -0,0 +1,39 @@
++util_inc = include_directories('.', 'uthash/src')
++
++app_error_check = static_library('libapp_error_check', 'app_error_check.c',
++    include_directories: inc,
++)
++app_error_check_dep = declare_dependency(
++    link_with : app_error_check,
++    include_directories : util_inc,
++)
++
++cJSON = static_library('cJSON', 'cJSON.c',
++    c_args : '-Wno-misleading-indentation',
++)
++cJSON_dep = declare_dependency(
++    link_with : cJSON,
++)
++
++glvnd_genentry = static_library('libglvnd_genentry', 'glvnd_genentry.c')
++glvnd_genentry_dep = declare_dependency(
++    link_with : glvnd_genentry,
++)
++
++glvnd_pthread = static_library('libglvnd_pthread', 'glvnd_pthread.c')
++glvnd_pthread_dep = declare_dependency(
++    link_with : glvnd_pthread,
++    include_directories : util_inc,
++)
++
++utils_misc = static_library('libutils_misc', 'utils_misc.c')
++utils_misc_dep = declare_dependency(
++    link_with : utils_misc,
++)
++
++winsys_dispatch = static_library('libwinsys_dispatch', 'winsys_dispatch.c',
++    include_directories : [inc, util_inc],
++)
++winsys_dispatch_dep = declare_dependency(
++    link_with : winsys_dispatch,
++)

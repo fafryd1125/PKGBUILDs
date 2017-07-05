@@ -2,30 +2,38 @@
 # Maintainer: Darek Zielski <dz1125.bug.tracker@gmail.com>
 # Contributor: Felix Yan <felixonmars@archlinux.org>
 
+# The Meson Build system:     http://mesonbuild.com/index.html
+# This is a work-in-progress: https://github.com/aaronp24/libglvnd/tree/meson
+# TODO:                       https://github.com/aaronp24/libglvnd/blob/meson/src/meson.build#L5
+# Set "1" to enable
+
+_meson=0
+
 _pkgname=libglvnd
 pkgname=lib32-libglvnd-git
-pkgver=r505.4ba5345
+pkgver=r534.d850cdd
 pkgrel=1
 pkgdesc="The GL Vendor-Neutral Dispatch library"
 arch=('x86_64')
 url="https://github.com/NVIDIA/libglvnd"
-license=('MIT')
-depends=('lib32-libxext' 'libglvnd-git')
-makedepends=('lib32-libx11' 'git' 'glproto' 'gcc-multilib' 'python')
-provides=('lib32-libglvnd' 'lib32-libgl')
-conflicts=('lib32-libglvnd' 'lib32-libgl')
+license=('custom:BSD-like')
 source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
-        '0001-Update-.xml-files-revision-33335.patch'
-        '0001-m4-update-macros.patch'
-        '0001-pkgconfig-add-pkgconfig-data-for-libraries-v2.patch'
-        'https://patch-diff.githubusercontent.com/raw/NVIDIA/libglvnd/pull/100.patch'
-        'https://patch-diff.githubusercontent.com/raw/NVIDIA/libglvnd/pull/107.patch')
-sha256sums=('SKIP'
-            'c76870613ec9a88a58857011e91db010167594b218a6c8ca9b401d37589fbc90'
-            'b0d804f222c588cfb79405db37bf39ba293d2c274e7d86c48bf126d0e586db1f'
-            '404bd653cac71c1c402369030af72677d0b6e0b05eb7dbc73f205a61f069a0c4'
-            'fafdf8f48994c9ba05d818018a1d42cfac861322474fd5dad89b38114acbff14'
-            '1b69690925aefe4d6db6817c37c5234b62fdf28d28e37d7d1df37bc550ae5697')
+        '0001-khronos-xml-m4.patch'
+        'meson_build.patch')
+sha1sums=('SKIP'
+          'f8c610148d479f79791cd737df86a2ca15c5ff17'
+          '0dcd7a175c92b71e59b3ba2f97e1aa291b91067a')
+
+depends=('lib32-libxext' 'libglvnd-git')
+makedepends=('lib32-libx11' 'git' 'glproto' 'gcc-multilib')
+provides=('lib32-libglvnd' 'lib32-libgl' 'lib32-libegl' 'lib32-libgles')
+conflicts=('lib32-libglvnd')
+
+if [[ ${_meson} = 1 ]]; then
+  makedepends=(${makedepends[@]} 'meson')
+else
+  makedepends=(${makedepends[@]} 'python')
+fi
 
 pkgver() {
   cd "${_pkgname}"
@@ -33,20 +41,25 @@ pkgver() {
 }
 
 prepare() {
-  cd "${_pkgname}"
-  # Uncomment if needed
+  if [[ ${_meson} = 1 ]]; then
+    mkdir build
 
-  # *.xml - https://www.khronos.org/
-  # *.m4  - https://www.gnu.org/software/autoconf-archive/The-Macros.html#The-Macros
-#  patch -p1 -i ../0001-Update-.xml-files-revision-33335.patch
-#  patch -p1 -i ../0001-m4-update-macros.patch
+    cd "${_pkgname}"
+    patch -p1 -i ../0001-khronos-xml-m4.patch
+    patch -p1 -i ../meson_build.patch
+  else
+    cd "${_pkgname}"
+    # Uncomment if needed
 
-  # https://github.com/NVIDIA/libglvnd/pull/86 (update)
-#  patch -p1 -i ../0001-pkgconfig-add-pkgconfig-data-for-libraries-v2.patch
+    ##  patch -p1 -i ../
 
-  # https://github.com/NVIDIA/libglvnd/pulls
-#  patch -p1 -i ../100.patch
-#  patch -p1 -i ../107.patch
+    # *.xml - https://www.khronos.org/
+    # *.m4  - https://www.gnu.org/software/autoconf-archive/The-Macros.html#The-Macros
+    patch -p1 -i ../0001-khronos-xml-m4.patch
+
+    # https://github.com/NVIDIA/libglvnd/pulls
+#    patch -p1 -i ../
+  fi
 }
 
 build() {
@@ -54,22 +67,38 @@ build() {
   export CXX='g++ -m32'
   export PKG_CONFIG_PATH='/usr/lib32/pkgconfig'
 
-  cd "${_pkgname}"
-
-  ./autogen.sh
-  ./configure \
-      --prefix=/usr \
-      --libdir=/usr/lib32/ \
-      --build=i686-pc-linux-gnu \
-      --enable-shared \
-      --enable-static=no
-  make
+  if [[ ${_meson} = 1 ]]; then
+    # TODO
+    cd build
+    meson \
+        --prefix=/usr \
+        --libdir=/usr/lib32/ \
+        --buildtype=plain \
+        ../${_pkgname}
+    ninja
+  else
+    cd "${_pkgname}"
+    ./autogen.sh
+    ./configure \
+        --prefix=/usr \
+        --libdir=/usr/lib32 \
+        --build=i686-pc-linux-gnu \
+        --enable-shared \
+        --enable-static=no
+    make
+  fi
 }
 
 package() {
-  cd "${_pkgname}"
-  make DESTDIR="${pkgdir}" install
+  if [[ ${_meson} = 1 ]]; then
+    cd build
+    DESTDIR="${pkgdir}" ninja install
+  else
+    cd "${_pkgname}"
+    make DESTDIR="${pkgdir}" install
+  fi
 
+  cd "${srcdir}/${_pkgname}"
   rm -r "${pkgdir}/usr/include"
 
   mkdir -p "${pkgdir}/usr/share/licenses"

@@ -1,0 +1,28 @@
+# Maintainer: Martin Peres <martin.peres[at]free[dot]fr>
+# Contributor: Timothée Ravier <tim[at]siosm[dot]fr>
+
+pkgname=nouveau-fw
+pkgver=340.102
+pkgrel=1
+pkgdesc="This package provides video & pgraph firmwares for all NVIDIA chipsets that need them"
+url='http://nouveau.freedesktop.org/wiki/'
+arch=('any')
+license=('custom')
+makedepends=('python2')
+source=(#"https://raw.github.com/imirkin/re-vp2/master/extract_firmware.py"
+        "http://us.download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
+        'extract_firmware.py')
+sha256sums=('61b13d5dae0f6f5d788a4d8c4c98e8d971d19cb90b606058060d007946248828'
+            'b08d98aa0c0bb3358f8d4ffb75d69e6345da9c233a4d6917bf0a963e26267a12')
+
+build() {
+  sh NVIDIA-Linux-x86-${pkgver}.run --extract-only
+  python2 extract_firmware.py
+}
+
+package() {
+  install -dm 0755 "${pkgdir}"/usr/lib/firmware/nouveau/
+  cp -a nv* vuc-* "${pkgdir}"/usr/lib/firmware/nouveau/
+}
+
+# vim:set ts=2 sw=2 et:

@@ -1,0 +1,60 @@
+# $Id$
+# Maintainer: Maxime Gauduin <alucryd@gmail.com>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgname=lib32-libvdpau-git
+_pkgname=libvdpau
+pkgver=1.1.1.r3.ga21bf7a
+pkgrel=1
+pkgdesc="Video Decode and Presentation API for UNIX (32-bit)"
+arch=('x86_64')
+url='https://www.freedesktop.org/wiki/Software/VDPAU/'
+license=('MIT')
+depends=('lib32-gcc-libs' 'lib32-libxext' 'libvdpau-git')
+makedepends=('dri2proto' 'git')
+provides=('lib32-libvdpau')
+conflicts=('lib32-libvdpau')
+source=("git+https://anongit.freedesktop.org/git/vdpau/libvdpau.git"
+        'Merge_remote_branch_from_mosterta.patch')
+sha256sums=('SKIP'
+            '10e2f8a7c2ec3dcf8063679a85490a73fe77c8a6e2dd4705ff4dbcb93f307e95')
+#validpgpkeys=('BD68A042C603DDAD9AA354B0F56ACC8F09BA9635') # Aaron Plattner
+
+pkgver() {
+  cd "${_pkgname}"
+  git describe --long | sed 's/^libvdpau-//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+  cd "${_pkgname}"
+
+  # https://github.com/mosterta/libvdpau
+  patch -Np1 -i ../Merge_remote_branch_from_mosterta.patch
+}
+
+build() {
+  cd "${_pkgname}"
+
+  export CC='gcc -m32'
+  export CXX='g++ -m32'
+  export PKG_CONFIG_PATH='/usr/lib32/pkgconfig'
+
+  ./autogen.sh
+  ./configure \
+      --prefix='/usr' \
+      --libdir='/usr/lib32' \
+      --sysconfdir='/etc'
+  make
+}
+
+package() {
+  cd "${_pkgname}"
+  make DESTDIR="${pkgdir}" install
+
+  rm -rf "${pkgdir}"/{etc,usr/include}
+
+  install -dm 755 "${pkgdir}"/usr/share/licenses
+  ln -s "${pkgname#*-}" "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+# vim: ts=2 sw=2 et:

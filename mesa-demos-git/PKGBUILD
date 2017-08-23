@@ -1,0 +1,56 @@
+# $Id$
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+
+pkgname=mesa-demos-git
+_pkgname=mesa-demos
+pkgver=8.3.0.r37.g66136b95
+pkgrel=1
+arch=('i686' 'x86_64')
+pkgdesc="Mesa demos and tools incl. glxinfo + glxgears"
+url="http://mesa3d.sourceforge.net"
+license=('custom')
+depends=('libgl' 'glew' 'freeglut')
+makedepends=('mesa' 'freetype2' 'git')
+provides=('mesa-demos')
+conflicts=('mesa-demos')
+source=("${_pkgname}::git+https://anongit.freedesktop.org/git/mesa/demos.git"
+        'LICENSE')
+sha256sums=('SKIP'
+            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2')
+
+pkgver() {
+  cd "${_pkgname}"
+  git describe --long | sed 's/^mesa.demos.//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+  cd "${_pkgname}"
+
+  ./autogen.sh
+  ./configure \
+      --prefix=/usr \
+      --enable-static=no \
+      --enable-egl \
+      --enable-gles1 \
+      --enable-gles2 \
+      --with-system-data-files=/usr/share/mesa-demos
+  make
+}
+
+package() {
+  cd "${_pkgname}"
+  make DESTDIR="${pkgdir}" install
+
+  # add missing egl files
+  # opengl
+  install -m755 src/egl/opengl/{eglgears_wayland,eglgears_x11,eglinfo,eglkms,egltri_wayland,egltri_x11,peglgears,xeglgears,xeglthreads} \
+                "${pkgdir}/usr/bin"
+  # opengles1
+  # 'clear' conflicts with ncurses
+  install -m755 src/egl/opengles1/{bindtex,drawtex_x11,eglfbdev,es1_info,gears_x11,msaa,pbuffer,render_tex,texture_from_pixmap,torus_x11,tri_x11,two_win} \
+                "${pkgdir}/usr/bin"
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/"
+}

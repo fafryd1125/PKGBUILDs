@@ -36,3 +36,5 @@ See also
 * [Andy Ritger - libglvnd Status Update](https://www.youtube.com/watch?v=4PflCyiULO4&feature=youtu.be&t=10156)
 * [glvnd Status Report](https://www.x.org/wiki/Events/XDC2016/Program/xdc-2016-glvnd-status.pdf)
 * [Add support for libglvnd](https://bugs.freedesktop.org/show_bug.cgi?id=92877)
+* [[RFC] Server side glvnd](https://lists.x.org/archives/xorg-devel/2017-July/054118.html)
+* [XDC2017 Program](https://www.x.org/wiki/Events/XDC2017/Program/)

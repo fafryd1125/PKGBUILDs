@@ -14,22 +14,13 @@ depends=('lib32-gcc-libs' 'lib32-libxext' 'libvdpau-git')
 makedepends=('dri2proto' 'git')
 provides=('lib32-libvdpau')
 conflicts=('lib32-libvdpau')
-source=("git+https://anongit.freedesktop.org/git/vdpau/libvdpau.git"
-        'Merge_remote_branch_from_mosterta.patch')
-sha256sums=('SKIP'
-            '10e2f8a7c2ec3dcf8063679a85490a73fe77c8a6e2dd4705ff4dbcb93f307e95')
+source=("git+https://anongit.freedesktop.org/git/vdpau/libvdpau.git")
+sha256sums=('SKIP')
 #validpgpkeys=('BD68A042C603DDAD9AA354B0F56ACC8F09BA9635') # Aaron Plattner
 
 pkgver() {
   cd "${_pkgname}"
   git describe --long | sed 's/^libvdpau-//;s/\([^-]*-g\)/r\1/;s/-/./g'
-}
-
-prepare() {
-  cd "${_pkgname}"
-
-  # https://github.com/mosterta/libvdpau
-  patch -Np1 -i ../Merge_remote_branch_from_mosterta.patch
 }
 
 build() {

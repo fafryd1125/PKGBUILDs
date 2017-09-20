@@ -5,8 +5,8 @@
 # Contributor: Aaron Plattner <aplattner@nvidia.com>
 # Contributor: Darek Zielski <dz1125.bug.tracker@gmail.com>
 
-pkgbase=nvidia-340xx-utils
-pkgname=('nvidia-340xx-utils' 'nvidia-340xx-libgl' 'opencl-nvidia-340xx')
+pkgbase=nvidia-340xx-drivers
+pkgname=('nvidia-340xx-utils' 'nvidia-340xx-drivers' 'opencl-nvidia-340xx')
 pkgver=340.102
 pkgrel=1
 arch=('i686' 'x86_64')
@@ -36,18 +36,18 @@ process_manifest_340xx () {
         ["CUDA_LIB"]="opencl-nvidia-340xx install_lib"
         ["CUDA_SYMLINK"]="opencl-nvidia-340xx symlink_lib_with_path"
 
-        # nvidia-340xx-libgl
-        ["APPLICATION_PROFILE"]="nvidia-340xx-libgl install_app_profile"
-        ["GLX_MODULE_SHARED_LIB"]="nvidia-340xx-libgl install_glx_module"
-        ["GLX_MODULE_SYMLINK"]="nvidia-340xx-libgl symlink_glx_module"
-        ["NVIDIA_MODPROBE_MANPAGE"]="nvidia-340xx-libgl install_man"
-        ["NVIDIA_MODPROBE"]="nvidia-340xx-libgl install_bin"
-        ["OPENGL_LIB"]="nvidia-340xx-libgl install_lib"
-        ["OPENGL_SYMLINK"]="nvidia-340xx-libgl symlink_lib"
-        ["TLS_LIB"]="nvidia-340xx-libgl install_tls"
-        ["VDPAU_LIB"]="nvidia-340xx-libgl install_lib"
-        ["VDPAU_SYMLINK"]="nvidia-340xx-libgl symlink_lib_with_path"
-        ["XMODULE_SHARED_LIB"]="nvidia-340xx-libgl install_x_driver"
+        # nvidia-340xx-drivers
+        ["APPLICATION_PROFILE"]="nvidia-340xx-drivers install_app_profile"
+        ["GLX_MODULE_SHARED_LIB"]="nvidia-340xx-drivers install_glx_module"
+        ["GLX_MODULE_SYMLINK"]="nvidia-340xx-drivers symlink_glx_module"
+        ["NVIDIA_MODPROBE_MANPAGE"]="nvidia-340xx-drivers install_man"
+        ["NVIDIA_MODPROBE"]="nvidia-340xx-drivers install_bin"
+        ["OPENGL_LIB"]="nvidia-340xx-drivers install_lib"
+        ["OPENGL_SYMLINK"]="nvidia-340xx-drivers symlink_lib"
+        ["TLS_LIB"]="nvidia-340xx-drivers install_tls"
+        ["VDPAU_LIB"]="nvidia-340xx-drivers install_lib"
+        ["VDPAU_SYMLINK"]="nvidia-340xx-drivers symlink_lib_with_path"
+        ["XMODULE_SHARED_LIB"]="nvidia-340xx-drivers install_x_driver"
 
         # nvidia-340xx-utils
         ["DOCUMENTATION"]="nvidia-340xx-utils install_doc"
@@ -198,7 +198,7 @@ package_opencl-nvidia-340xx() {
     process_manifest_340xx
 }
 
-package_nvidia-340xx-libgl() {
+package_nvidia-340xx-drivers() {
     pkgdesc="NVIDIA drivers libraries"
     optdepends=('libvdpau: VDPAU wrapper library'
                 'nvidia-340xx-utils: NVIDIA drivers utilities')
@@ -211,6 +211,8 @@ package_nvidia-340xx-libgl() {
     # Not provided by NVIDIA installer
     install -m755 -d "${pkgdir}/usr/share/X11/xorg.conf.d"
     install -m444 "${srcdir}/nvidia-drm-outputclass.conf" "${pkgdir}/usr/share/X11/xorg.conf.d/"
+
+    install -D -m644 LICENSE "${pkgdir}/usr/share/licenses/nvidia/LICENSE"
 }
 
 package_nvidia-340xx-utils() {
@@ -232,6 +234,5 @@ package_nvidia-340xx-utils() {
     sed -i 's/__USER__/nvidia-persistenced/' \
            "${pkgdir}/usr/lib/systemd/system/nvidia-persistenced.service"
 
-    install -D -m644 LICENSE "${pkgdir}/usr/share/licenses/nvidia/LICENSE"
     ln -s nvidia "${pkgdir}/usr/share/doc/${pkgname}"
 }

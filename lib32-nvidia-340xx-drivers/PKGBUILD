@@ -8,7 +8,7 @@
 
 _pkgbasename=nvidia-340xx-drivers
 pkgbase=lib32-$_pkgbasename
-pkgname=('lib32-nvidia-340xx-utils' 'lib32-nvidia-340xx-drivers' 'lib32-opencl-nvidia-340xx')
+pkgname=('lib32-nvidia-340xx-drivers' 'lib32-opencl-nvidia-340xx')
 pkgver=340.102
 pkgrel=1
 arch=('x86_64')
@@ -38,17 +38,6 @@ process_manifest_340xx () {
         ["VDPAU_LIB"]="lib32-nvidia-340xx-drivers install_lib"
         ["VDPAU_SYMLINK"]="lib32-nvidia-340xx-drivers symlink_lib_with_path"
 
-
-        # lib32-nvidia-340xx-utils
-        ["ENCODEAPI_LIB"]="lib32-nvidia-340xx-utils install_lib"
-        ["ENCODEAPI_LIB_SYMLINK"]="lib32-nvidia-340xx-utils symlink_lib"
-        ["NVCUVID_LIB"]="lib32-nvidia-340xx-utils install_lib"
-        ["NVCUVID_LIB_SYMLINK"]="lib32-nvidia-340xx-utils symlink_lib"
-        ["NVIFR_LIB"]="lib32-nvidia-340xx-utils install_lib"
-        ["NVIFR_LIB_SYMLINK"]="lib32-nvidia-340xx-utils symlink_lib"
-        ["UTILITY_LIB"]="lib32-nvidia-340xx-utils install_lib"
-        ["UTILITY_LIB_SYMLINK"]="lib32-nvidia-340xx-utils symlink_lib"
-
         # Ignored entries
         ["INSTALLER_BINARY"]="ignored"          # provided by pacman :)
         ["KERNEL_MODULE_SRC"]="ignored"         # kernel modules are handled by the nvidia PKGBUILD
@@ -74,6 +63,14 @@ process_manifest_340xx () {
         ["DOT_DESKTOP"]="ignored"
         ["MANPAGE"]="ignored"
         ["DOCUMENTATION"]="ignored"
+        ["ENCODEAPI_LIB"]="ignored"
+        ["ENCODEAPI_LIB_SYMLINK"]="ignored"
+        ["NVCUVID_LIB"]="ignored"
+        ["NVCUVID_LIB_SYMLINK"]="ignored"
+        ["NVIFR_LIB"]="ignored"
+        ["NVIFR_LIB_SYMLINK"]="ignored"
+        ["UTILITY_LIB"]="ignored"
+        ["UTILITY_LIB_SYMLINK"]="ignored"
     )
 
     tail -n +9 .manifest | {
@@ -156,16 +153,6 @@ package_lib32-nvidia-340xx-drivers() {
     optdepends=('lib32-libvdpau: VDPAU wrapper library')
     provides=('lib32-libgl' 'lib32-libegl' 'lib32-libgles')
     conflicts=('lib32-libgl' 'lib32-libegl' 'lib32-libgles' 'lib32-libglvnd')
-    cd "${_pkg}"
-
-    process_manifest_340xx
-}
-
-package_lib32-nvidia-340xx-utils() {
-    pkgdesc="NVIDIA drivers utilities (32-bit)"
-    depends=('lib32-zlib' 'lib32-gcc-libs' 'nvidia-340xx-utils')
-    optdepends=('lib32-opencl-nvidia-340xx')
-    conflicts=('lib32-nvidia-utils')
     cd "${_pkg}"
 
     process_manifest_340xx

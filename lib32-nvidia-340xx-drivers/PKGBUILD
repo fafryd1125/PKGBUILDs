@@ -6,9 +6,9 @@
 # Contributor: Aaron Plattner <aplattner@nvidia.com>
 # Contributor: Darek Zielski <dz1125.bug.tracker@gmail.com>
 
-_pkgbasename=nvidia-340xx-utils
+_pkgbasename=nvidia-340xx-drivers
 pkgbase=lib32-$_pkgbasename
-pkgname=('lib32-nvidia-340xx-utils' 'lib32-nvidia-340xx-libgl' 'lib32-opencl-nvidia-340xx')
+pkgname=('lib32-nvidia-340xx-utils' 'lib32-nvidia-340xx-drivers' 'lib32-opencl-nvidia-340xx')
 pkgver=340.102
 pkgrel=1
 arch=('x86_64')
@@ -31,12 +31,12 @@ process_manifest_340xx () {
         ["CUDA_LIB"]="lib32-opencl-nvidia-340xx install_lib"
         ["CUDA_SYMLINK"]="lib32-opencl-nvidia-340xx symlink_lib_with_path"
 
-        # lib32-nvidia-340xx-libgl
-        ["OPENGL_LIB"]="lib32-nvidia-340xx-libgl install_lib"
-        ["OPENGL_SYMLINK"]="lib32-nvidia-340xx-libgl symlink_lib"
-        ["TLS_LIB"]="lib32-nvidia-340xx-libgl install_tls"
-        ["VDPAU_LIB"]="lib32-nvidia-340xx-libgl install_lib"
-        ["VDPAU_SYMLINK"]="lib32-nvidia-340xx-libgl symlink_lib_with_path"
+        # lib32-nvidia-340xx-drivers
+        ["OPENGL_LIB"]="lib32-nvidia-340xx-drivers install_lib"
+        ["OPENGL_SYMLINK"]="lib32-nvidia-340xx-drivers symlink_lib"
+        ["TLS_LIB"]="lib32-nvidia-340xx-drivers install_tls"
+        ["VDPAU_LIB"]="lib32-nvidia-340xx-drivers install_lib"
+        ["VDPAU_SYMLINK"]="lib32-nvidia-340xx-drivers symlink_lib_with_path"
 
 
         # lib32-nvidia-340xx-utils
@@ -63,7 +63,7 @@ process_manifest_340xx () {
 
         # Ignored entries for lib32-* packages
         ["CUDA_ICD"]="ignored"                  # lib32-opencl-nvidia-340xx
-        ["APPLICATION_PROFILE"]="ignored"       # lib32-nvidia-340xx-libgl
+        ["APPLICATION_PROFILE"]="ignored"       # lib32-nvidia-340xx-drivers
         ["EXPLICIT_PATH"]="ignored"
         ["NVIDIA_MODPROBE_MANPAGE"]="ignored"
         ["NVIDIA_MODPROBE"]="ignored"
@@ -150,7 +150,7 @@ package_lib32-opencl-nvidia-340xx() {
     process_manifest_340xx
 }
 
-package_lib32-nvidia-340xx-libgl() {
+package_lib32-nvidia-340xx-drivers() {
     pkgdesc="NVIDIA drivers libraries (32-bit)"
     depends=('nvidia-340xx-libgl')
     optdepends=('lib32-libvdpau: VDPAU wrapper library')

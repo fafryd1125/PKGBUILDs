@@ -3,14 +3,14 @@
 # Maintainer: Thomas Baechler <thomas@archlinux.org>
 
 pkgname=nvidia
-pkgver=384.69
-_extramodules=extramodules-4.12-ARCH
+pkgver=384.90
+_extramodules=extramodules-4.13-ARCH
 pkgrel=1
 pkgdesc='NVIDIA drivers for linux'
 arch=('i686' 'x86_64')
 url="http://www.nvidia.com/"
-depends=('linux>=4.12' 'linux<4.13')
-makedepends=('linux-headers>=4.12' 'linux-headers<4.13')
+depends=('linux>=4.13' 'linux<4.14')
+makedepends=('linux-headers>=4.13' 'linux-headers<4.14')
 provides=("nvidia-module=${pkgver}")
 conflicts=('nvidia-dkms')
 license=('custom')
@@ -18,8 +18,8 @@ install=nvidia.install
 options=(!strip)
 source=("http://us.download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
         "http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
-sha256sums=('3b70587582220ab1102bcb8386f206f89e6b146856af41f16eaa5910e54ef8fd'
-            '1011b9a9db903d243ff722fc7982da7b91dc91f4b82c60227d89b812aa67257f')
+sha256sums=('97a667de9fd7fdaa2f47b75d4049394224788931c2df2848de3f5553de810057'
+            '2b96394931d3caf635aeb5c1b02244c76de9be54f4af944b8f7743eae570302a')
 
 [[ "$CARCH" = "i686" ]] && _pkg="NVIDIA-Linux-x86-${pkgver}"
 [[ "$CARCH" = "x86_64" ]] && _pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"

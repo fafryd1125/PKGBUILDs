@@ -13,12 +13,22 @@ makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glprot
              'lib32-wayland' 'wayland-protocols' 'lib32-libglvnd')
 url="http://mesa3d.sourceforge.net"
 license=('custom')
-source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig})
+source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
+        '0002-glvnd-fix-gl-dot-pc.patch')
 sha256sums=('77385d17827cff24a3bae134342234f2efe7f7f990e778109682571dbbc9ba1e'
-            'SKIP')
+            'SKIP'
+            '64a77944a28026b066c1682c7258d02289d257b24b6f173a9f7580c48beed966')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
+
+prepare() {
+  cd "${_pkgname}-${pkgver}"
+
+  # glvnd support patches - from Fedora
+  # non-upstreamed ones
+  patch -Np1 -i ../0002-glvnd-fix-gl-dot-pc.patch
+}
 
 build() {
   export CC="gcc -m32"

@@ -10,7 +10,7 @@ _meson=1
 
 _pkgname=libglvnd
 pkgname=libglvnd-git
-pkgver=r534.d850cdd
+pkgver=r551.e202ebf
 pkgrel=1
 pkgdesc="The GL Vendor-Neutral Dispatch library"
 arch=('i686' 'x86_64')
@@ -23,7 +23,7 @@ source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
 sha1sums=('SKIP'
           'c88e07f333fcf8dcdbef370b85372b4d88ad8a66'
           'f8c610148d479f79791cd737df86a2ca15c5ff17'
-          '0dcd7a175c92b71e59b3ba2f97e1aa291b91067a')
+          '4fef7706381ad5260e5091b91ba39b25d52b96e8')
 
 depends=('libxext')
 makedepends=('libx11' 'git' 'glproto')

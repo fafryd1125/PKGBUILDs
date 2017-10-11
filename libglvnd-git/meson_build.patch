@@ -1,9 +1,9 @@
 diff --git a/.travis.yml b/.travis.yml
 new file mode 100644
-index 0000000..ab240e7
+index 0000000..cf61ce2
 --- /dev/null
 +++ b/.travis.yml
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,19 @@
 +sudo: false
 +
 +os:
@@ -12,18 +12,17 @@ index 0000000..ab240e7
 +language:
 +  - c
 +
++cache:
++  - ccache
++
 +services:
 +  - docker
 +
-+before_install:
-+  - docker pull base/archlinux
-+
 +script:
-+  - echo FROM base/archlinux > Dockerfile
-+  - echo RUN pacman --noconfirm -Sy gcc glproto libx11 libxext meson pkg-config >> Dockerfile
++  - echo FROM aplattner/arch-glvnd-meson:v3 > Dockerfile
 +  - echo ADD . /root >> Dockerfile
 +  - docker build -t withgit .;
-+  - docker run withgit /bin/sh -c "cd /root && TRAVIS=true CC=$CC meson build && ninja -C build test"
++  - docker run --volume $HOME/.ccache:/root/.ccache withgit /bin/sh -c "Xvfb :3 & cd /root && TRAVIS=true CC=$CC LANG=$LANG meson build && LANG=$LANG DISPLAY=:3 ninja -C build test"
 diff --git a/README.md b/README.md
 index 87e45d6..01fef05 100644
 --- a/README.md
@@ -46,11 +45,15 @@ index 0000000..5e31df8
 +install_subdir('glvnd', install_dir : 'include')
 diff --git a/meson.build b/meson.build
 new file mode 100644
-index 0000000..428e8b2
+index 0000000..38614f8
 --- /dev/null
 +++ b/meson.build
-@@ -0,0 +1,19 @@
-+project('libglvnd', 'c')
+@@ -0,0 +1,24 @@
++project('libglvnd', 'c', meson_version : '>=0.41')
++
++glproto_dep = dependency('glproto', required : true)
++x11_dep = dependency('x11', required : true)
++xext_dep = dependency('xext', required : true)
 +
 +inc = include_directories('include')
 +
@@ -59,6 +62,7 @@ index 0000000..428e8b2
 +
 +subdir('src')
 +subdir('include')
++subdir('tests')
 +
 +import('pkgconfig').generate(
 +    name : 'libglvnd',
@@ -71,10 +75,10 @@ index 0000000..428e8b2
 +)
 diff --git a/src/EGL/meson.build b/src/EGL/meson.build
 new file mode 100644
-index 0000000..7662592
+index 0000000..c9620c4
 --- /dev/null
 +++ b/src/EGL/meson.build
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,28 @@
 +egl = shared_library('EGL',
 +    [
 +        'libegl.c',
@@ -96,6 +100,7 @@ index 0000000..7662592
 +        libm,
 +        utils_misc_dep,
 +        winsys_dispatch_dep,
++        x11_dep,
 +    ],
 +    include_directories : [inc, util_inc],
 +    sources : g_egldispatchstubs_h,
@@ -104,10 +109,10 @@ index 0000000..7662592
 +)
 diff --git a/src/GL/meson.build b/src/GL/meson.build
 new file mode 100644
-index 0000000..adda85d
+index 0000000..90272b9
 --- /dev/null
 +++ b/src/GL/meson.build
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,17 @@
 +gl = shared_library('GL',
 +    [
 +        'libgl.c',
@@ -119,6 +124,7 @@ index 0000000..adda85d
 +    dependencies : [
 +        glx_dep,
 +        gldispatch_dep,
++        x11_dep,
 +    ],
 +    include_directories : [inc, glx_inc, util_inc],
 +    version : '1.0.0',
@@ -168,7 +174,7 @@ index 0000000..a1baaf0
 +)
 diff --git a/src/GLX/meson.build b/src/GLX/meson.build
 new file mode 100644
-index 0000000..2795e92
+index 0000000..c11cf22
 --- /dev/null
 +++ b/src/GLX/meson.build
 @@ -0,0 +1,28 @@
@@ -191,9 +197,9 @@ index 0000000..2795e92
 +        winsys_dispatch_dep,
 +        libdl,
 +        utils_misc_dep,
-+        dependency('glproto'),
-+        dependency('x11'),
-+        dependency('xext'),
++        glproto_dep,
++        x11_dep,
++        xext_dep,
 +    ],
 +    version : '0.0.0',
 +    install : true,
@@ -346,6 +352,19 @@ index 0000000..c04f5eb
 +        utils_misc_dep,
 +    ],
 +)
+diff --git a/src/GLdispatch/vnd-glapi/u_execmem.c b/src/GLdispatch/vnd-glapi/u_execmem.c
+index e3ab8c2..b187f7e 100644
+--- a/src/GLdispatch/vnd-glapi/u_execmem.c
++++ b/src/GLdispatch/vnd-glapi/u_execmem.c
+@@ -68,7 +68,7 @@ static unsigned char *exec_mem = NULL;
+ static unsigned char *write_mem = NULL;
+ 
+ 
+-#if defined(__linux__) || defined(__OpenBSD__) || defined(_NetBSD__) || defined(__sun) || defined(__HAIKU__)
++#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(_NetBSD__) || defined(__sun) || defined(__HAIKU__)
+ 
+ #include <unistd.h>
+ #include <sys/mman.h>
 diff --git a/src/OpenGL/meson.build b/src/OpenGL/meson.build
 new file mode 100644
 index 0000000..5d35e39
@@ -371,75 +390,49 @@ index 0000000..5d35e39
 +    install : true,
 +)
 diff --git a/src/generate/eglFunctionList.py b/src/generate/eglFunctionList.py
-index c14dd28..bb13ab3 100644
+index c14dd28..ef08a76 100644
 --- a/src/generate/eglFunctionList.py
 +++ b/src/generate/eglFunctionList.py
 @@ -1,4 +1,4 @@
 -#!/usr/bin/python
-+#!/usr/bin/python3
++#!/usr/bin/env python
  
  """
  Contains a list of EGL functions to generate dispatch functions for.
-diff --git a/src/generate/genCommon.py b/src/generate/genCommon.py
-index b486ad0..82568cb 100644
---- a/src/generate/genCommon.py
-+++ b/src/generate/genCommon.py
-@@ -1,4 +1,4 @@
--#!/usr/bin/env python
-+#!/usr/bin/env python3
- 
- # (C) Copyright 2015, NVIDIA CORPORATION.
- # All Rights Reserved.
 diff --git a/src/generate/gen_egl_dispatch.py b/src/generate/gen_egl_dispatch.py
-index 7c65e0b..3589e90 100755
+index 7c65e0b..393fccf 100755
 --- a/src/generate/gen_egl_dispatch.py
 +++ b/src/generate/gen_egl_dispatch.py
 @@ -1,4 +1,4 @@
 -#!/usr/bin/python
-+#!/usr/bin/python3
++#!/usr/bin/env python
  
  """
  Generates dispatch functions for EGL.
-diff --git a/src/generate/gen_gldispatch_mapi.py b/src/generate/gen_gldispatch_mapi.py
-index 03fb49a..e97177e 100755
---- a/src/generate/gen_gldispatch_mapi.py
-+++ b/src/generate/gen_gldispatch_mapi.py
-@@ -1,4 +1,4 @@
--#!/usr/bin/env python
-+#!/usr/bin/env python3
- 
- # Copyright (C) 2010 LunarG Inc.
- # (C) Copyright 2015, NVIDIA CORPORATION.
 diff --git a/src/generate/gen_libOpenGL_exports.py b/src/generate/gen_libOpenGL_exports.py
-index 92e4e7f..ff1c496 100755
+index 92e4e7f..259f362 100755
 --- a/src/generate/gen_libOpenGL_exports.py
 +++ b/src/generate/gen_libOpenGL_exports.py
-@@ -1,4 +1,4 @@
--#!/usr/bin/env python
-+#!/usr/bin/env python3
- 
- # (C) Copyright 2015, NVIDIA CORPORATION.
- # All Rights Reserved.
-@@ -39,9 +39,11 @@ def _main():
+@@ -39,9 +39,12 @@ def _main():
      xmlFiles = sys.argv[2:]
      roots = [ etree.parse(filename).getroot() for filename in xmlFiles ]
  
 +    print("{ global:")
      names = genCommon.getExportNamesFromRoots(target, roots)
      for name in sorted(names):
--        print(name)
-+        print(name, ";")
+         print(name)
++        print(";")
 +    print("local: *; };")
  
  if (__name__ == "__main__"):
      _main()
 diff --git a/src/generate/gen_libOpenGL_exports_old.py b/src/generate/gen_libOpenGL_exports_old.py
 new file mode 100755
-index 0000000..1d3e991
+index 0000000..92e4e7f
 --- /dev/null
 +++ b/src/generate/gen_libOpenGL_exports_old.py
 @@ -0,0 +1,48 @@
-+#!/usr/bin/env python3
++#!/usr/bin/env python
 +
 +# (C) Copyright 2015, NVIDIA CORPORATION.
 +# All Rights Reserved.
@@ -487,16 +480,6 @@ index 0000000..1d3e991
 +if (__name__ == "__main__"):
 +    _main()
 +
-diff --git a/src/generate/gen_libgl_glxstubs.py b/src/generate/gen_libgl_glxstubs.py
-index acbe731..718d59f 100755
---- a/src/generate/gen_libgl_glxstubs.py
-+++ b/src/generate/gen_libgl_glxstubs.py
-@@ -1,4 +1,4 @@
--#!/usr/bin/env python
-+#!/usr/bin/env python3
- 
- # (C) Copyright 2015, NVIDIA CORPORATION.
- # All Rights Reserved.
 diff --git a/src/generate/glvnd_gen.mk b/src/generate/glvnd_gen.mk
 index c1727c9..5f28a6d 100644
 --- a/src/generate/glvnd_gen.mk
@@ -512,10 +495,10 @@ index c1727c9..5f28a6d 100644
  	$(glapi_gen_gl_deps)
 diff --git a/src/generate/meson.build b/src/generate/meson.build
 new file mode 100644
-index 0000000..b94cc9f
+index 0000000..3bea5ca
 --- /dev/null
 +++ b/src/generate/meson.build
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,133 @@
 +gen_mapi_script = find_program('gen_gldispatch_mapi.py')
 +glapi_gen_gl_core_xml = files('xml/gl.xml')
 +glapi_gen_gl_xml = glapi_gen_gl_core_xml + files('xml/gl_other.xml')
@@ -644,17 +627,20 @@ index 0000000..b94cc9f
 +    ],
 +    include_directories : [inc, egl_inc],
 +    sources : g_egldispatchstubs_h,
++    dependencies : [
++        x11_dep,
++    ],
 +)
 +egl_dispatch_stubs_dep = declare_dependency(link_with : egl_dispatch_stubs)
 diff --git a/src/meson.build b/src/meson.build
 new file mode 100644
-index 0000000..26558cb
+index 0000000..47e5a20
 --- /dev/null
 +++ b/src/meson.build
 @@ -0,0 +1,31 @@
-+cc =meson.get_compiler('c')
-+libdl = cc.find_library('libdl')
-+libm = cc.find_library('libm')
++cc = meson.get_compiler('c')
++libdl = cc.find_library('dl', required : false)
++libm = cc.find_library('m')
 +
 +# TODO: Handle these dynamically
 +c_defines = [
@@ -685,10 +671,10 @@ index 0000000..26558cb
 +subdir('GLESv2')
 diff --git a/src/util/meson.build b/src/util/meson.build
 new file mode 100644
-index 0000000..9290ec1
+index 0000000..ad71747
 --- /dev/null
 +++ b/src/util/meson.build
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,37 @@
 +util_inc = include_directories('.', 'uthash/src')
 +
 +app_error_check = static_library('libapp_error_check', 'app_error_check.c',
@@ -699,9 +685,7 @@ index 0000000..9290ec1
 +    include_directories : util_inc,
 +)
 +
-+cJSON = static_library('cJSON', 'cJSON.c',
-+    c_args : '-Wno-misleading-indentation',
-+)
++cJSON = static_library('cJSON', 'cJSON.c')
 +cJSON_dep = declare_dependency(
 +    link_with : cJSON,
 +)
@@ -728,3 +712,175 @@ index 0000000..9290ec1
 +winsys_dispatch_dep = declare_dependency(
 +    link_with : winsys_dispatch,
 +)
+diff --git a/tests/dummy/GLX_dummy.c b/tests/dummy/GLX_dummy.c
+index 2dfa07f..0eab529 100644
+--- a/tests/dummy/GLX_dummy.c
++++ b/tests/dummy/GLX_dummy.c
+@@ -27,7 +27,9 @@
+  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
+  */
+ 
++#ifdef HAVE_CONFIG_H
+ #include <config.h>
++#endif
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/tests/dummy/meson.build b/tests/dummy/meson.build
+new file mode 100644
+index 0000000..229507c
+--- /dev/null
++++ b/tests/dummy/meson.build
+@@ -0,0 +1,26 @@
++libpatchentrypoints = static_library('patchentrypoints.a', 'patchentrypoints.c',
++    include_directories : [inc, util_inc],
++)
++
++glx_dummy = shared_library('GLX_dummy', 'GLX_dummy.c',
++    include_directories : [inc, util_inc],
++    dependencies : x11_dep,
++    link_with : libpatchentrypoints,
++    version : '0',
++)
++
++egl_dummy0 = shared_library('EGL_dummy0', 'EGL_dummy.c',
++    include_directories : [inc, util_inc],
++    c_args : '-D DUMMY_VENDOR_NAME="dummy0"',
++    dependencies : [x11_dep, glvnd_pthread_dep, libdl],
++    link_with : libpatchentrypoints,
++    version : '0',
++)
++
++egl_dummy1 = shared_library('EGL_dummy1', 'EGL_dummy.c',
++    include_directories : [inc, util_inc],
++    c_args : '-D DUMMY_VENDOR_NAME="dummy1"',
++    dependencies : [x11_dep, glvnd_pthread_dep, libdl],
++    link_with : libpatchentrypoints,
++    version : '0',
++)
+diff --git a/tests/meson.build b/tests/meson.build
+new file mode 100644
+index 0000000..f5f188e
+--- /dev/null
++++ b/tests/meson.build
+@@ -0,0 +1,120 @@
++subdir('dummy')
++
++# The entrypoint patching tests need --smc-check=full when running under
++# Valgrind.
++add_test_setup('valgrind',
++    exe_wrapper : [
++        'valgrind', '--error-exitcode=1', '--leak-check=full', '--smc-check=all',
++    ],
++    timeout_multiplier : 100
++)
++
++env = ['LD_LIBRARY_PATH=@0@/dummy'.format(meson.current_build_dir())]
++glx_env = env + ['__GLX_VENDOR_LIBRARY_NAME=dummy']
++glx_genentry = env + ['__GLX_FORCE_VENDOR_LIBRARY_0=dummy']
++glx_patch = glx_env + ['GLVND_TEST_PATCH_ENTRYPOINTS=1']
++glx_threads = glx_env + ['LD_PRELOAD=libpthread.so.0']
++egl_env = env + ['__EGL_VENDOR_LIBRARY_DIRS=@0@/json'.format(meson.current_source_dir())]
++
++gldispatch = executable('testgldispatch', 'testgldispatch.c',
++    include_directories : [inc, gldispatch_inc],
++    link_with : [opengl, gldispatch, libpatchentrypoints],
++)
++
++glxmakecurrent_src = files('testglxmakecurrent.c', 'test_utils.c')
++glxmakecurrent = executable('testglxmakecurrent', glxmakecurrent_src,
++    include_directories : inc,
++    dependencies : [x11_dep, glvnd_pthread_dep, libdl],
++    link_with : [glx, opengl],
++)
++
++glxmakecurrent_oldlink = executable('testglxmakecurrent_oldlink', glxmakecurrent_src,
++    include_directories : inc,
++    dependencies : [x11_dep, glvnd_pthread_dep, libdl],
++    link_with : gl,
++)
++
++glxgetprocaddress = executable('testglxgetprocaddress', 'testglxgetprocaddress.c',
++    include_directories : inc,
++    dependencies : x11_dep,
++    link_with : glx,
++)
++
++glxgetclientstr = executable('testglxgetclientstr', 'testglxgetclientstr.c',
++    include_directories : inc,
++    dependencies : x11_dep,
++    link_with : glx,
++)
++
++glxqueryversion = executable('testglxqueryversion', 'testglxqueryversion.c',
++    include_directories : inc,
++    dependencies : x11_dep,
++    link_with : glx,
++)
++
++patchentrypoints = executable('patchentrypoints',
++    ['testpatchentrypoints.c', 'test_utils.c'],
++    include_directories : inc,
++    dependencies : [x11_dep, libdl],
++    link_with: [glx, opengl],
++)
++
++egl_test_utils = static_library('egl_test_utils', 'egl_test_utils.c',
++    include_directories : inc,
++)
++
++egldisplay = executable('testegldisplay', 'testegldisplay.c',
++    include_directories : inc,
++    dependencies : x11_dep,
++    link_with : [egl, egl_test_utils],
++)
++
++egldevice = executable('testegldevice', 'testegldevice.c',
++    include_directories : inc,
++    dependencies : x11_dep,
++    link_with : [egl, egl_test_utils],
++)
++
++eglgetprocaddress = executable('testeglgetprocaddress', 'testeglgetprocaddress.c',
++    include_directories : inc,
++    dependencies : x11_dep,
++    link_with : [egl, egl_test_utils],
++)
++
++eglmakecurrent = executable('testeglmakecurrent', 'testeglmakecurrent.c',
++    include_directories : [inc, util_inc],
++    dependencies : x11_dep,
++    link_with : [egl, opengl, egl_test_utils],
++)
++
++eglerror = executable('testeglerror', 'testeglerror.c',
++    include_directories : inc,
++    dependencies : x11_dep,
++    link_with : [egl, egl_test_utils],
++)
++
++egldebug = executable('testegldebug', 'testegldebug.c',
++    include_directories : inc,
++    dependencies : x11_dep,
++    link_with : [egl, egl_test_utils],
++)
++
++test('gldispatch_static',          gldispatch,               args : ['-s'],                        env : env)
++test('gldispatch_generated',       gldispatch,               args : ['-g'],                        env : env)
++test('gldispatch_patched',         gldispatch,               args : ['-s', '-g', '-p'],            env : env)
++test('glxmcbasic',                 glxmakecurrent,           args : ['-t', '1', '-i', '1'],        env : glx_env)
++test('glxmcloop',                  glxmakecurrent,           args : ['-t', '1', '-i', '250'],      env : glx_env)
++test('glxmcthreads',               glxmakecurrent,           args : ['-t', '5', '-i', '20000'],    env : glx_threads)
++test('glxmclate',                  glxmakecurrent,           args : ['-t', '1', '-i', '1', '-l'],  env : glx_env)
++test('glxmcoldlink',               glxmakecurrent_oldlink,   args : ['-t', '1', '-i', '1'],        env : glx_env)
++test('glxgetprocaddress',          glxgetprocaddress,                                              env : glx_env)
++test('glxgetprocaddress_genentry', glxgetprocaddress,                                              env : glx_genentry)
++test('glxgetclientstr',            glxgetclientstr,                                                env : glx_env)
++test('glxqueryversion',            glxqueryversion,                                                env : glx_env)
++test('patchentrypoints',           patchentrypoints,                                               env : glx_patch)
++test('egldisplay',                 egldisplay,                                                     env : egl_env)
++test('egldevice',                  egldevice,                                                      env : egl_env)
++test('eglgetprocaddress',          eglgetprocaddress,                                              env : egl_env)
++test('eglmakecurrent',             eglmakecurrent,                                                 env : egl_env)
++test('eglerror',                   eglerror,                                                       env : egl_env)
++test('egldebug',                   egldebug,                                                       env : egl_env)

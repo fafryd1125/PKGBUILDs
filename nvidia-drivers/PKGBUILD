@@ -7,7 +7,7 @@
 
 pkgbase=nvidia-drivers
 pkgname=('nvidia-utils' 'nvidia-drivers' 'opencl-nvidia')
-pkgver=387.12
+pkgver=387.22
 pkgrel=1
 arch=('i686' 'x86_64')
 url="http://www.nvidia.com/"
@@ -15,8 +15,8 @@ license=('custom')
 options=('!strip')
 source=("http://us.download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
         "http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
-sha256sums=('aabac19b2bbc30ab9fb01954328633ff08b5aa5c2996f03722dd0806b247d536'
-            '6951372a9e805bfe58fdddf9c728bf12a4c5d8cf38d1c8e6b7afaea492ef83f6')
+sha256sums=('39544f0a677838a4fb09668d48b91eadd6ba5babecb0aa0cef41c303b0a4649b'
+            '2056b386f619ed096ee3c2267c495c6b00d1a2a4c933f0635befcf4e69c3856c')
 
 #validpgpkeys=(0xf56acc8f09ba9635) # Aaron Plattner <aplattner@nvidia.com>
 

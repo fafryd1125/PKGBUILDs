@@ -3,26 +3,23 @@
 # Maintainer: Thomas Baechler <thomas@archlinux.org>
 
 pkgname=nvidia
-pkgver=387.22
-_extramodules=extramodules-4.13-ARCH
+pkgver=387.34
+_extramodules=extramodules-4.14-ARCH
 pkgrel=1
 pkgdesc='NVIDIA drivers for linux'
-arch=('i686' 'x86_64')
+arch=('x86_64')
 url="http://www.nvidia.com/"
-depends=('linux>=4.13' 'linux<4.14')
-makedepends=('linux-headers>=4.13' 'linux-headers<4.14')
+depends=('linux>=4.14' 'linux<4.15')
+makedepends=('linux-headers>=4.14' 'linux-headers<4.15')
 provides=("nvidia-module=${pkgver}")
 conflicts=('nvidia-dkms')
 license=('custom')
 install=nvidia.install
 options=(!strip)
-source=("http://us.download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
-        "http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
-sha256sums=('39544f0a677838a4fb09668d48b91eadd6ba5babecb0aa0cef41c303b0a4649b'
-            '2056b386f619ed096ee3c2267c495c6b00d1a2a4c933f0635befcf4e69c3856c')
+source=("http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
+sha256sums=('d540908e76aeecb1f4a2812acf5ad37346934a6b7c8043c8b3ce230a48ceb440')
 
-[[ "$CARCH" = "i686" ]] && _pkg="NVIDIA-Linux-x86-${pkgver}"
-[[ "$CARCH" = "x86_64" ]] && _pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
+_pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
 
 prepare() {
     sh "${_pkg}.run" --extract-only
@@ -43,11 +40,8 @@ package() {
                      "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-drm.ko"
     install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia-modeset.ko" \
                      "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-modeset.ko"
-
-    if [[ "$CARCH" = "x86_64" ]]; then
-        install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia-uvm.ko" \
-                         "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-uvm.ko"
-    fi
+    install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia-uvm.ko" \
+                     "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-uvm.ko"
 
     gzip "${pkgdir}/usr/lib/modules/${_extramodules}/"*.ko
     install -d -m755 "${pkgdir}/usr/lib/modprobe.d"

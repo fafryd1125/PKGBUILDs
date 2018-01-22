@@ -7,14 +7,16 @@
 
 pkgbase=nvidia-drivers
 pkgname=('nvidia-utils' 'nvidia-drivers' 'opencl-nvidia')
-pkgver=387.34
+pkgver=390.12
 pkgrel=1
 arch=('x86_64')
 url="http://www.nvidia.com/"
 license=('custom')
 options=('!strip')
-source=("http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run")
-sha256sums=('d540908e76aeecb1f4a2812acf5ad37346934a6b7c8043c8b3ce230a48ceb440')
+source=("http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run"
+        'nvidia-utils.sysusers')
+sha256sums=('68c744abc7f42eaa9e640d90ecd3c7691a74b84584b83b776488ef1916f8eb43'
+            'd8d1caa5d72c71c6430c2a0d9ce1a674787e9272ccce28b9d5898ca24e60a167')
 
 #validpgpkeys=(0xf56acc8f09ba9635) # Aaron Plattner <aplattner@nvidia.com>
 
@@ -258,6 +260,8 @@ package_nvidia-utils() {
                      "${pkgdir}/usr/lib/systemd/system/nvidia-persistenced.service"
     sed -i 's/__USER__/nvidia-persistenced/' \
            "${pkgdir}/usr/lib/systemd/system/nvidia-persistenced.service"
+
+    install -D -m644 "${srcdir}/nvidia-utils.sysusers" "${pkgdir}/usr/lib/sysusers.d/${pkgname}.conf"
 
     ln -s nvidia "${pkgdir}/usr/share/doc/nvidia-utils"
 }

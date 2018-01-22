@@ -22,7 +22,7 @@ source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
         'meson_build.patch')
 sha1sums=('SKIP'
           'f8c610148d479f79791cd737df86a2ca15c5ff17'
-          '4fef7706381ad5260e5091b91ba39b25d52b96e8')
+          '906d70e7042be7403188611168911661f4f41669')
 
 depends=('lib32-libxext' 'libglvnd-git')
 makedepends=('lib32-libx11' 'git' 'glproto' 'gcc-multilib')
@@ -73,7 +73,7 @@ build() {
     meson \
         --prefix=/usr \
         --libdir=/usr/lib32/ \
-        --buildtype=plain \
+        --buildtype=release \
         ../${_pkgname}
     ninja
   else

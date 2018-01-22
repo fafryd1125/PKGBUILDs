@@ -45,7 +45,7 @@ index 0000000..5e31df8
 +install_subdir('glvnd', install_dir : 'include')
 diff --git a/meson.build b/meson.build
 new file mode 100644
-index 0000000..38614f8
+index 0000000..68ebdf6
 --- /dev/null
 +++ b/meson.build
 @@ -0,0 +1,24 @@
@@ -66,7 +66,7 @@ index 0000000..38614f8
 +
 +import('pkgconfig').generate(
 +    name : 'libglvnd',
-+    version : '0.2.999',
++    version : '1.0.0',
 +    description : 'Vendor-neutral OpenGL dispatch library vendor interface',
 +    variables : [
 +        'datarootdir=${prefix}/@0@'.format(datadir),
@@ -353,18 +353,139 @@ index 0000000..c04f5eb
 +    ],
 +)
 diff --git a/src/GLdispatch/vnd-glapi/u_execmem.c b/src/GLdispatch/vnd-glapi/u_execmem.c
-index e3ab8c2..b187f7e 100644
+index d5f00d1..b187f7e 100644
 --- a/src/GLdispatch/vnd-glapi/u_execmem.c
 +++ b/src/GLdispatch/vnd-glapi/u_execmem.c
-@@ -68,7 +68,7 @@ static unsigned char *exec_mem = NULL;
+@@ -38,8 +38,27 @@
+ #include "u_execmem.h"
+ #include "utils_misc.h"
+ #include "glvnd_pthread.h"
+-#include "entry.h"
+-#include "table.h"
++
++
++/*
++ * Allocate 64 bytes for each stub so that they're large enough to hold the
++ * x86-64 TSD stubs. The x86 TSD and x86-64 TLS stubs both take 32 bytes each.
++ *
++ * The x86-64 TSD stubs are larger than the others because it has to deal with
++ * 64-bit addresses and preserving the function arguments.
++ *
++ * The generated stubs may not be within 2GB of u_current or
++ * u_current_get_internal, so we can't use RIP-relative addressing for them.
++ * Instead we have to use movabs instructions to load the 64-bit absolute
++ * addresses, which take 10 bytes each.
++ *
++ * In addition, x86-64 passes the first 6 parameters in registers, which the
++ * callee does not have to preserve. Since the stub has to pass those same
++ * parameters to the real function, we have to preserve them across the call to
++ * u_current_get_internal. Pushing and popping those registers takes another 24
++ * bytes.
++ */
++#define EXEC_MAP_SIZE (64*4096) // DISPATCH_FUNCTION_SIZE * MAPI_TABLE_NUM_DYNAMIC
+ 
+ static glvnd_mutex_t exec_mutex = GLVND_MUTEX_INITIALIZER;
+ 
+@@ -48,6 +67,17 @@ static unsigned int head = 0;
+ static unsigned char *exec_mem = NULL;
  static unsigned char *write_mem = NULL;
  
- 
--#if defined(__linux__) || defined(__OpenBSD__) || defined(_NetBSD__) || defined(__sun) || defined(__HAIKU__)
++
 +#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(_NetBSD__) || defined(__sun) || defined(__HAIKU__)
++
++#include <unistd.h>
++#include <sys/mman.h>
++
++#ifndef MAP_ANONYMOUS
++#define MAP_ANONYMOUS MAP_ANON
++#endif
++
++
+ /*
+  * Dispatch stubs are of fixed size and never freed. Thus, we do not need to
+  * overlay a heap, we just mmap a page and manage through an index.
+@@ -56,13 +86,9 @@ static unsigned char *write_mem = NULL;
+ static int
+ init_map(void)
+ {
+-    if (entry_stub_size == 0) {
+-        return 0;
+-    }
+-
+     if (exec_mem == NULL) {
+         void *writePtr, *execPtr;
+-        if (AllocExecPages(entry_stub_size * MAPI_TABLE_NUM_DYNAMIC, &writePtr, &execPtr) == 0) {
++        if (AllocExecPages(EXEC_MAP_SIZE, &writePtr, &execPtr) == 0) {
+             exec_mem = (unsigned char *) execPtr;
+             write_mem = (unsigned char *) writePtr;
+             head = 0;
+@@ -75,12 +101,47 @@ init_map(void)
+ void u_execmem_free(void)
+ {
+     if (exec_mem != NULL) {
+-        FreeExecPages(entry_stub_size * MAPI_TABLE_NUM_DYNAMIC, write_mem, exec_mem);
++        FreeExecPages(EXEC_MAP_SIZE, write_mem, exec_mem);
+         write_mem = NULL;
+         exec_mem = NULL;
+     }
+ }
  
- #include <unistd.h>
- #include <sys/mman.h>
++#elif defined(_WIN32)
++
++#include <windows.h>
++
++
++/*
++ * Avoid Data Execution Prevention.
++ */
++
++static int
++init_map(void)
++{
++   exec_mem = VirtualAlloc(NULL, EXEC_MAP_SIZE, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
++   write_mem = exec_mem;
++
++   return (exec_mem != NULL);
++}
++
++
++#else
++
++#include <stdlib.h>
++
++static int
++init_map(void)
++{
++   exec_mem = malloc(EXEC_MAP_SIZE);
++   write_mem = exec_mem;
++
++   return (exec_mem != NULL);
++}
++
++
++#endif
++
+ void *
+ u_execmem_alloc(unsigned int size)
+ {
+@@ -92,7 +153,7 @@ u_execmem_alloc(unsigned int size)
+       goto bail;
+ 
+    /* free space check, assumes no integer overflow */
+-   if (head + size > entry_stub_size * MAPI_TABLE_NUM_DYNAMIC)
++   if (head + size > EXEC_MAP_SIZE)
+       goto bail;
+ 
+    /* allocation, assumes proper addr and size alignement */
+@@ -112,7 +173,7 @@ void *u_execmem_get_writable(void *execPtr)
+     if (((uintptr_t) execPtr) >= ((uintptr_t) exec_mem))
+     {
+         uintptr_t offset = ((uintptr_t) execPtr) - ((uintptr_t) exec_mem);
+-        if (offset < entry_stub_size * MAPI_TABLE_NUM_DYNAMIC)
++        if (offset < EXEC_MAP_SIZE)
+         {
+             return (void *) (((uintptr_t) write_mem) + offset);
+         }
 diff --git a/src/OpenGL/meson.build b/src/OpenGL/meson.build
 new file mode 100644
 index 0000000..5d35e39
@@ -713,7 +834,7 @@ index 0000000..ad71747
 +    link_with : winsys_dispatch,
 +)
 diff --git a/tests/dummy/GLX_dummy.c b/tests/dummy/GLX_dummy.c
-index 2dfa07f..0eab529 100644
+index 2f76082..539c5d9 100644
 --- a/tests/dummy/GLX_dummy.c
 +++ b/tests/dummy/GLX_dummy.c
 @@ -27,7 +27,9 @@
@@ -760,10 +881,10 @@ index 0000000..229507c
 +)
 diff --git a/tests/meson.build b/tests/meson.build
 new file mode 100644
-index 0000000..f5f188e
+index 0000000..f93dd25
 --- /dev/null
 +++ b/tests/meson.build
-@@ -0,0 +1,120 @@
+@@ -0,0 +1,128 @@
 +subdir('dummy')
 +
 +# The entrypoint patching tests need --smc-check=full when running under
@@ -785,6 +906,13 @@ index 0000000..f5f188e
 +gldispatch = executable('testgldispatch', 'testgldispatch.c',
 +    include_directories : [inc, gldispatch_inc],
 +    link_with : [opengl, gldispatch, libpatchentrypoints],
++)
++
++glxcreatecontext_src = files('testglxcreatecontext.c', 'test_utils.c')
++glxcreatecontext = executable('testglxcreatecontext', glxcreatecontext_src,
++    include_directories : inc,
++    dependencies : [x11_dep, glvnd_pthread_dep, libdl],
++    link_with : [glx, opengl],
 +)
 +
 +glxmakecurrent_src = files('testglxmakecurrent.c', 'test_utils.c')
@@ -868,6 +996,7 @@ index 0000000..f5f188e
 +test('gldispatch_static',          gldispatch,               args : ['-s'],                        env : env)
 +test('gldispatch_generated',       gldispatch,               args : ['-g'],                        env : env)
 +test('gldispatch_patched',         gldispatch,               args : ['-s', '-g', '-p'],            env : env)
++test('glxcreatecontext',           glxcreatecontext,                                               env : glx_env)
 +test('glxmcbasic',                 glxmakecurrent,           args : ['-t', '1', '-i', '1'],        env : glx_env)
 +test('glxmcloop',                  glxmakecurrent,           args : ['-t', '1', '-i', '250'],      env : glx_env)
 +test('glxmcthreads',               glxmakecurrent,           args : ['-t', '5', '-i', '20000'],    env : glx_threads)

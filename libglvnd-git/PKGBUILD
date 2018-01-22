@@ -10,10 +10,10 @@ _meson=1
 
 _pkgname=libglvnd
 pkgname=libglvnd-git
-pkgver=r551.e202ebf
+pkgver=r563.398e807
 pkgrel=1
 pkgdesc="The GL Vendor-Neutral Dispatch library"
-arch=('i686' 'x86_64')
+arch=('x86_64')
 url="https://github.com/NVIDIA/libglvnd"
 license=('custom:BSD-like')
 source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
@@ -23,7 +23,7 @@ source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
 sha1sums=('SKIP'
           'c88e07f333fcf8dcdbef370b85372b4d88ad8a66'
           'f8c610148d479f79791cd737df86a2ca15c5ff17'
-          '4fef7706381ad5260e5091b91ba39b25d52b96e8')
+          '906d70e7042be7403188611168911661f4f41669')
 
 depends=('libxext')
 makedepends=('libx11' 'git' 'glproto')
@@ -64,11 +64,14 @@ prepare() {
 }
 
 build() {
+  export 'CC=clang'
+  export 'CXX=clang++'
+
   if [[ ${_meson} = 1 ]]; then
     cd build
     meson \
         --prefix=/usr \
-        --buildtype=plain \
+        --buildtype=releas \
         ../${_pkgname}
     ninja
   else

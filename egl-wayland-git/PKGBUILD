@@ -3,16 +3,17 @@
 
 _pkgname=egl-wayland
 pkgname=egl-wayland-git
-pkgver=r1.743d702
+pkgver=r26.734c197
 pkgrel=1
 pkgdesc="The EGLStream-based Wayland external platform"
-arch=('i686' 'x86_64')
+arch=('x86_64')
 url="https://github.com/NVIDIA/egl-wayland"
-license=('custom:BSD-like')
-makedepends=('eglexternalplatform' 'wayland' 'mesa' 'git')
+license=('MIT')
+makedepends=('eglexternalplatform' 'wayland' 'mesa' 'git' 'meson')
 provides=('egl-wayland')
 conflicts=('egl-wayland')
-source=("egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git"
+source=(#"egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git"
+        "egl-wayland::git+https://github.com/fafryd1125/egl-wayland.git#branch=meson"
         '10_nvidia_wayland.json')
 sha256sums=('SKIP'
             '5cccf1905a266e8e34d5ad4aad4be85390e60b1a0850a29dd9d64adc641de412')
@@ -22,17 +23,30 @@ pkgver() {
   printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
-build() {
-  cd "${_pkgname}"
+prepare() {
+    mkdir build
 
-  ./autogen.sh
-  ./configure --prefix=/usr
-  make
+#    cd "${_pkgname}"
+#    patch -p1 -i ../
+}
+
+build() {
+    export CC=clang
+    export CXX=clang++
+
+    cd build
+    meson \
+        --prefix=/usr \
+        --buildtype=release \
+        ../${_pkgname}
+    ninja
 }
 
 package() {
-  cd "${_pkgname}"
-  make DESTDIR="${pkgdir}" install
+  cd build
+  DESTDIR="${pkgdir}" ninja install
+
+  cd ../${_pkgname}
 
   # The NVIDIA EGL driver uses a JSON-based loader to load all EGL External platforms available on the system.
   # If this library is not installed as part of a NVIDIA driver installation, a JSON configuration file  must be

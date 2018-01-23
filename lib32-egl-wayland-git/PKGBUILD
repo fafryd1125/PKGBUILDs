@@ -3,17 +3,18 @@
 
 _pkgname=egl-wayland
 pkgname=lib32-egl-wayland-git
-pkgver=r1.743d702
+pkgver=r26.734c197
 pkgrel=1
 pkgdesc="The EGLStream-based Wayland external platform (32-bit)"
 arch=('x86_64')
 url="https://github.com/NVIDIA/egl-wayland"
-license=('custom:BSD-like')
+license=('MIT')
 depends=('egl-wayland')
-makedepends=('eglexternalplatform' 'lib32-wayland' 'mesa' 'gcc-multilib' 'git')
+makedepends=('eglexternalplatform' 'lib32-wayland' 'mesa' 'lib32-clang' 'git' 'meson')
 provides=('lib32-egl-wayland')
 conflicts=('lib32-egl-wayland')
-source=("egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git")
+source=(#"egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git"
+        "egl-wayland::git+https://github.com/fafryd1125/egl-wayland.git#branch=meson")
 sha256sums=('SKIP')
 
 pkgver() {
@@ -21,22 +22,35 @@ pkgver() {
   printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
+prepare() {
+  mkdir build
+
+#  cd "${_pkgname}"
+#  patch -p1 -i ../
+}
+
 build() {
-  export CC='gcc -m32'
-  export CXX='g++ -m32'
+  export CC='clang -m32'
+  export CXX='clang++ -m32'
 
-  cd "${_pkgname}"
-
-  ./autogen.sh
-  ./configure \
+  cd build
+  meson \
       --prefix=/usr \
-      --libdir=/usr/lib32/
-  make
+      --libdir=/usr/lib32 \
+      --datadir=/usr/lib32 \
+      --buildtype=release \
+      ../${_pkgname}
+  ninja
+
 }
 
 package() {
-  cd "${_pkgname}"
-  make DESTDIR="${pkgdir}" install
+  cd build
+  DESTDIR="${pkgdir}" ninja install
+
+  cd ../${_pkgname}
+
+  rm -rfv "${pkgdir}/usr/lib32/wayland-eglstream"
 
   mkdir -p "${pkgdir}/usr/share/licenses"
   ln -s "${pkgname#*-}" "${pkgdir}/usr/share/licenses/${pkgname}"

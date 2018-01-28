@@ -4,27 +4,35 @@
 
 pkgbase=mesa
 pkgname=('mesa-vdpau' 'mesa-glvnd'  'mesa')
-pkgver=17.2.6
+_rc=rc2
+pkgver=18.0.0${_rc}
+_pkgver=18.0.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
-             'libxshmfence' 'libxxf86vm' 'libxdamage' 'libvdpau' 'libva' 'wayland' 'wayland-protocols' 
-             'elfutils' 'llvm' 'libomxil-bellagio' 'libclc' 'clang' 'libunwind' 'libglvnd')
+             'libxshmfence' 'libxxf86vm' 'libxdamage' 'libvdpau' 'libva' 'wayland' 'wayland-protocols'
+             'elfutils' 'llvm' 'libomxil-bellagio' 'libclc' 'clang' 'libunwind'  'libglvnd' 'meson'
+             'lm_sensors')
 url="https://www.mesa3d.org/"
 license=('custom')
-source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
-        'LICENSE'
-        '0002-glvnd-fix-gl-dot-pc.patch')
-sha256sums=('6ad85224620330be26ab68c8fc78381b12b38b610ade2db8716b38faaa8f30de'
+source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
+        https://mesa.freedesktop.org/archive/mesa-${_pkgver}-${_rc}.tar.xz{,.sig}
+        '0002-glvnd-fix-gl-dot-pc.patch'
+        'LICENSE')
+sha256sums=('0eb88a367aea65226e9c5c2073b35b8f9fa65eb1149bf38ec5e27e61955c5d78'
             'SKIP'
-            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2'
-            '64a77944a28026b066c1682c7258d02289d257b24b6f173a9f7580c48beed966')
+            '64a77944a28026b066c1682c7258d02289d257b24b6f173a9f7580c48beed966'
+            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
 
 prepare() {
-  cd "${pkgbase}-${pkgver}"
+  mkdir build
+
+  cd "${pkgbase}-${_pkgver}-${_rc}"
+
+#  patch -Np1 -i ../
 
   # glvnd support patches - from Fedora
   # non-upstreamed ones
@@ -32,42 +40,41 @@ prepare() {
 }
 
 build() {
-  cd "${pkgbase}-${pkgver}"
+  cd build
 
-  ./configure \
-      --prefix=/usr \
-      --sysconfdir=/etc \
-      --with-dri-driverdir=/usr/lib/xorg/modules/dri \
-      --with-gallium-drivers=nouveau,swrast \
-      --with-dri-drivers=nouveau,swrast \
-      --with-platforms=x11,drm,wayland \
-      --enable-llvm \
-      --enable-llvm-shared-libs \
-      --enable-shared-glapi \
-      --enable-libglvnd \
-      --enable-libunwind \
-      --disable-gles1 \
-      --enable-glx-tls \
-      --enable-gbm \
-      --enable-dri \
-      --enable-dri3 \
-      --enable-gallium-osmesa \
-      --enable-texture-float \
-      --enable-xa \
-      --enable-vdpau \
-      --enable-omx \
-      --enable-nine \
-      --with-clang-libdir=/usr/lib
-  make
+   local meson_options=(
+   -Ddri3=true
+   -Ddri-drivers=nouveau
+   -Dgallium-drivers=nouveau,swrast
+   -Dgallium-nine=true
+   -Dvulkan-drivers=''
+   -Dvulkan-icd-dir=''
+   -Dgles1=false
+   -Dglvnd=true
+   -Dllvm=true
+   -Dosmesa=gallium
+   -Dplatforms=x11,wayland,drm
+   -Dgbm=true
+   -Dtexture-float=true
+    )
+
+  meson                       \
+        --buildtype=release   \
+        --sysconfdir=/etc     \
+        --prefix=/usr         \
+        "${meson_options[@]}" \
+        ../${pkgbase}-${_pkgver}-${_rc}
+  meson configure
+  ninja
 
   # fake installation
   mkdir $srcdir/fakeinstall
-  make DESTDIR=${srcdir}/fakeinstall install
+  DESTDIR="${srcdir}/fakeinstall" ninja install
 }
 
 package_mesa-vdpau() {
   pkgdesc="Mesa VDPAU drivers"
-  depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'libxshmfence' 'libunwind')
+  depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'lm_sensors' 'libxshmfence' 'libunwind')
 
   install -m755 -d ${pkgdir}/usr/lib/vdpau
   cp -rv ${srcdir}/fakeinstall/usr/lib/vdpau ${pkgdir}/usr/lib/vdpau
@@ -99,7 +106,7 @@ package_mesa-glvnd() {
 package_mesa() {
   pkgdesc="an open-source implementation of the OpenGL specification"
   depends=('libdrm' 'wayland' 'libxxf86vm' 'libxdamage' 'libxshmfence' 'libelf'
-           'libomxil-bellagio' 'libtxc_dxtn' 'libunwind' 'llvm-libs')
+           'libomxil-bellagio' 'libunwind' 'llvm-libs' 'lm_sensors')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'mesa-vdpau: for accelerated video playback'
               'libva-mesa-driver: for accelerated video playback')
@@ -109,9 +116,9 @@ package_mesa() {
   install -m755 -d ${pkgdir}/etc
   cp -rv ${srcdir}/fakeinstall/etc/drirc ${pkgdir}/etc
 
-  install -m755 -d ${pkgdir}/usr/lib/xorg/modules/dri
+  install -m755 -d ${pkgdir}/usr/lib/dri
   # nouveau-dri, swrast
-  cp -av ${srcdir}/fakeinstall/usr/lib/xorg/modules/dri/* ${pkgdir}/usr/lib/xorg/modules/dri
+  cp -av ${srcdir}/fakeinstall/usr/lib/dri/*_dri.so ${pkgdir}/usr/lib/dri
 
   cp -rv ${srcdir}/fakeinstall/usr/lib/bellagio  ${pkgdir}/usr/lib
   cp -rv ${srcdir}/fakeinstall/usr/lib/d3d  ${pkgdir}/usr/lib

@@ -25,7 +25,7 @@ sha1sums=('SKIP'
           '906d70e7042be7403188611168911661f4f41669')
 
 depends=('lib32-libxext' 'libglvnd-git')
-makedepends=('lib32-libx11' 'git' 'glproto' 'gcc-multilib')
+makedepends=('lib32-libx11' 'git' 'glproto' 'lib32-clang')
 provides=('lib32-libglvnd' 'lib32-libgl' 'lib32-libegl' 'lib32-libgles')
 conflicts=('lib32-libglvnd')
 

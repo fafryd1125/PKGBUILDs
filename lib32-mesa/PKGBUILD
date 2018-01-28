@@ -5,17 +5,20 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-mesa-vdpau' 'lib32-mesa-glvnd'  'lib32-mesa')
-pkgver=17.2.6
+_rc=rc2
+pkgver=18.0.0${_rc}
+_pkgver=18.0.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
              'lib32-libxshmfence' 'lib32-libxxf86vm' 'lib32-libxdamage' 'gcc-multilib' 'lib32-libelf' 'lib32-llvm' 'lib32-libvdpau'
-             'lib32-wayland' 'wayland-protocols' 'lib32-libglvnd')
-url="http://mesa3d.sourceforge.net"
+             'lib32-wayland' 'wayland-protocols' 'lib32-libglvnd' 'lib32-lm_sensors' 'meson')
+url="https://www.mesa3d.org/"
 license=('custom')
-source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
+source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
+        https://mesa.freedesktop.org/archive/mesa-${_pkgver}-${_rc}.tar.xz{,.sig}
         '0002-glvnd-fix-gl-dot-pc.patch')
-sha256sums=('6ad85224620330be26ab68c8fc78381b12b38b610ade2db8716b38faaa8f30de'
+sha256sums=('0eb88a367aea65226e9c5c2073b35b8f9fa65eb1149bf38ec5e27e61955c5d78'
             'SKIP'
             '64a77944a28026b066c1682c7258d02289d257b24b6f173a9f7580c48beed966')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
@@ -23,7 +26,11 @@ validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
 
 prepare() {
-  cd "${_pkgname}-${pkgver}"
+  mkdir build
+
+  cd "${_pkgname}-${_pkgver}-${_rc}"
+
+#  patch -Np1 -i ../
 
   # glvnd support patches - from Fedora
   # non-upstreamed ones
@@ -36,45 +43,51 @@ build() {
   export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
   export LLVM_CONFIG="/usr/bin/llvm-config32"
 
-  cd "${_pkgname}-${pkgver}"
+  cd build
 
-  ./configure \
-      --build=i686-pc-linux-gnu \
-      --host=i686-pc-linux-gnu \
-      --prefix=/usr \
-      --libdir=/usr/lib32 \
-      --sysconfdir=/etc \
-      --with-dri-driverdir=/usr/lib32/xorg/modules/dri \
-      --with-gallium-drivers=nouveau,swrast \
-      --with-dri-drivers=nouveau,swrast \
-      --with-platforms=x11,drm,wayland \
-      --enable-llvm \
-      --enable-llvm-shared-libs \
-      --enable-shared-glapi \
-      --enable-libglvnd \
-      --disable-libunwind \
-      --disable-gles1 \
-      --enable-glx-tls \
-      --enable-gbm \
-      --enable-dri \
-      --enable-dri3 \
-      --enable-osmesa \
-      --enable-texture-float \
-      --enable-vdpau \
-      --enable-nine
-  make
+   local meson_options=(
+   -Ddri3=true
+   -Ddri-drivers=nouveau
+   -Dgallium-drivers=nouveau,swrast
+   -Dgallium-nine=true
+   -Dgallium-xvmc=false
+   -Dvulkan-drivers=''
+   -Dvulkan-icd-dir=''
+   -Dgles1=false
+   -Dglvnd=true
+   -Dlibunwind=false
+   -Dllvm=true
+   -Dosmesa=gallium
+   -Dplatforms=x11,wayland,drm
+   -Dgbm=true
+   -Dtexture-float=true
+    )
+
+  meson                       \
+        --buildtype=release   \
+        --sysconfdir=/etc     \
+        --prefix=/usr         \
+        --libdir=/usr/lib32   \
+        "${meson_options[@]}" \
+        ../${_pkgname}-${_pkgver}-${_rc}
+  meson configure
+  ninja
 
   # fake installation
   mkdir $srcdir/fakeinstall
-  make DESTDIR=${srcdir}/fakeinstall install
+  DESTDIR="${srcdir}/fakeinstall" ninja install
+
+#      --build=i686-pc-linux-gnu \
+#      --host=i686-pc-linux-gnu \
 }
 
 package_lib32-mesa-vdpau() {
   pkgdesc="Mesa VDPAU drivers (32-bit)"
-  depends=('lib32-libdrm' 'lib32-libx11' 'lib32-expat' 'lib32-llvm-libs' 'lib32-libelf' 'lib32-libxshmfence')
+  depends=('lib32-libdrm' 'lib32-libx11' 'lib32-expat' 'lib32-llvm-libs' 'lib32-libelf' 'lib32-lm_sensors'
+           'lib32-libxshmfence')
 
   install -m755 -d ${pkgdir}/usr/lib32/vdpau
-  cp -rv ${srcdir}/fakeinstall/usr/lib32/vdpau ${pkgdir}/usr/lib32/vdpau
+  cp -rv ${srcdir}/fakeinstall/usr/lib32/vdpau/* ${pkgdir}/usr/lib32/vdpau
 
   install -m755 -d "${pkgdir}/usr/share/licenses"
   ln -s "${_pkgname}" "${pkgdir}/usr/share/licenses/${pkgname}"
@@ -90,7 +103,6 @@ package_lib32-mesa-glvnd() {
   cp -rv ${srcdir}/fakeinstall/usr/lib32/libEGL*.so* ${pkgdir}/usr/lib32/
 
   # indirect rendering
-  # uncomment if needed - provided by lib32-nvidia-drivers
 #  ln -s /usr/lib32/libGLX_mesa.so.0 ${pkgdir}/usr/lib32/libGLX_indirect.so.0
 
   install -m755 -d "${pkgdir}/usr/share/licenses"
@@ -100,25 +112,25 @@ package_lib32-mesa-glvnd() {
 package_lib32-mesa() {
   pkgdesc="an open-source implementation of the OpenGL specification (32-bit)"
   depends=('lib32-libdrm' 'lib32-libxxf86vm' 'lib32-libxdamage' 'lib32-libxshmfence' 'lib32-libelf'
-           'lib32-llvm-libs' 'lib32-wayland' 'lib32-libtxc_dxtn' 'mesa')
+           'lib32-llvm-libs' 'lib32-wayland' 'lib32-lm_sensors' 'mesa')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'lib32-mesa-vdpau: for accelerated video playback')
   provides=('lib32-nouveau-dri' 'lib32-mesa-dri')
   conflicts=('lib32-nouveau-dri' 'lib32-mesa-dri')
 
-  install -m755 -d ${pkgdir}/usr/lib32/xorg/modules/dri
+  install -m755 -d ${pkgdir}/usr/lib32/dri
   # nouveau-dri, swrast
-  cp -av ${srcdir}/fakeinstall/usr/lib32/xorg/modules/dri/* ${pkgdir}/usr/lib32/xorg/modules/dri
+  cp -av ${srcdir}/fakeinstall/usr/lib32/dri/*_dri.so ${pkgdir}/usr/lib32/dri
 
   install -m755 -d ${pkgdir}/usr/lib32
   cp -rv ${srcdir}/fakeinstall/usr/lib32/d3d  ${pkgdir}/usr/lib32
 
   cp -rv ${srcdir}/fakeinstall/usr/lib32/*.so* ${pkgdir}/usr/lib32/
-  # provided by lib32-mesa-glvnd
-  rm -fv ${pkgdir}/usr/lib32/{libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
+  # provided by lib32-opencl-mesa (lib*OpenCL*) , lib32-mesa-glvnd
+  rm -fv ${pkgdir}/usr/lib32/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
 
   cp -rv ${srcdir}/fakeinstall/usr/lib32/pkgconfig ${pkgdir}/usr/lib32/
 
   install -m755 -d "${pkgdir}/usr/share/licenses"
-  ln -s "${_pkgname}" "${pkgdir}/usr/share/licenses/${pkgname}"
+  ln -s "${_pkgname}" "$pkgdir/usr/share/licenses/${pkgname}"
 }

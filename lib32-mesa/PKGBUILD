@@ -5,7 +5,7 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-mesa-vdpau' 'lib32-mesa-glvnd'  'lib32-mesa')
-_rc=rc2
+_rc=rc3
 pkgver=18.0.0${_rc}
 _pkgver=18.0.0
 pkgrel=1
@@ -18,7 +18,7 @@ license=('custom')
 source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
         https://mesa.freedesktop.org/archive/mesa-${_pkgver}-${_rc}.tar.xz{,.sig}
         '0002-glvnd-fix-gl-dot-pc.patch')
-sha256sums=('0eb88a367aea65226e9c5c2073b35b8f9fa65eb1149bf38ec5e27e61955c5d78'
+sha256sums=('27c1ade098d9e0afaa7ecaa2d4ce7fe1e84f105b82c0d19926f9694087ea5758'
             'SKIP'
             '64a77944a28026b066c1682c7258d02289d257b24b6f173a9f7580c48beed966')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
@@ -76,9 +76,6 @@ build() {
   # fake installation
   mkdir $srcdir/fakeinstall
   DESTDIR="${srcdir}/fakeinstall" ninja install
-
-#      --build=i686-pc-linux-gnu \
-#      --host=i686-pc-linux-gnu \
 }
 
 package_lib32-mesa-vdpau() {

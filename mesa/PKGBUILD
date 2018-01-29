@@ -4,7 +4,7 @@
 
 pkgbase=mesa
 pkgname=('mesa-vdpau' 'mesa-glvnd'  'mesa')
-_rc=rc2
+_rc=rc3
 pkgver=18.0.0${_rc}
 _pkgver=18.0.0
 pkgrel=1
@@ -19,7 +19,7 @@ source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.
         https://mesa.freedesktop.org/archive/mesa-${_pkgver}-${_rc}.tar.xz{,.sig}
         '0002-glvnd-fix-gl-dot-pc.patch'
         'LICENSE')
-sha256sums=('0eb88a367aea65226e9c5c2073b35b8f9fa65eb1149bf38ec5e27e61955c5d78'
+sha256sums=('27c1ade098d9e0afaa7ecaa2d4ce7fe1e84f105b82c0d19926f9694087ea5758'
             'SKIP'
             '64a77944a28026b066c1682c7258d02289d257b24b6f173a9f7580c48beed966'
             '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2')

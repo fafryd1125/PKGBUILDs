@@ -149,7 +149,7 @@ package_lib32-opencl-nvidia-340xx() {
 
 package_lib32-nvidia-340xx-drivers() {
     pkgdesc="NVIDIA drivers libraries (32-bit)"
-    depends=('nvidia-340xx-libgl')
+    depends=('nvidia-340xx-drivers')
     optdepends=('lib32-libvdpau: VDPAU wrapper library')
     provides=('lib32-libgl' 'lib32-libegl' 'lib32-libgles')
     conflicts=('lib32-libgl' 'lib32-libegl' 'lib32-libgles' 'lib32-libglvnd')

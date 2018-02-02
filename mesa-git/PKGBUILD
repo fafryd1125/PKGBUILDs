@@ -5,12 +5,13 @@
 pkgbase=mesa-git
 _pkgbase=mesa
 pkgname=('mesa-vdpau-git' 'mesa-glvnd-git'  'mesa-git')
-pkgver=18.1.0_devel.99546.4a0bab1d7f
+pkgver=18.1.0_devel.99748.df1d5174fc
 pkgrel=1
 arch=('x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
              'libxshmfence' 'libxxf86vm' 'libxdamage' 'libvdpau' 'libva' 'wayland' 'elfutils' 'llvm'
-             'libomxil-bellagio' 'libclc' 'clang' 'libunwind'  'libglvnd' 'git' 'meson' 'lm_sensors')
+             'libomxil-bellagio' 'libclc' 'clang' 'libunwind'  'libglvnd' 'git' 'meson' 'lm_sensors'
+             'libxvmc')
 url="https://www.mesa3d.org/"
 license=('custom')
 source=('mesa::git+http://anongit.freedesktop.org/git/mesa/mesa.git#branch=master'

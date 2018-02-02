@@ -7,20 +7,19 @@
 
 pkgbase=nvidia-340xx-drivers
 pkgname=('nvidia-340xx-utils' 'nvidia-340xx-drivers' 'opencl-nvidia-340xx')
-pkgver=340.104
+pkgver=340.106
 pkgrel=1
-arch=('i686' 'x86_64')
+arch=('x86_64')
 url="http://www.nvidia.com/"
 license=('custom')
 options=('!strip')
-source=("http://us.download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
-        "http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run"
-        'nvidia-drm-outputclass.conf')
-sha256sums=('e39015f8e2c6c87037be340fd1899f703ac15356c5694ad8187cd67e71491cd1'
-            'ed112523ae424aea46904d2dcfc769b0263cf552f5bfec0e30601f6f0f95eada'
-            '97dd3971c90fefe16189dd70c481890b095505b3b6ae7f7f5674ae57f2c4f796')
+source=("http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run"
+        'nvidia-drm-outputclass.conf'
+        'nvidia-340xx-utils.sysusers')
+sha256sums=('c0d5dacd7be6c096400b9a5fd54676af36210ab480f2498335a612cfd1814467'
+            '97dd3971c90fefe16189dd70c481890b095505b3b6ae7f7f5674ae57f2c4f796'
+            'd8d1caa5d72c71c6430c2a0d9ce1a674787e9272ccce28b9d5898ca24e60a167')
 
-[[ "$CARCH" = "i686" ]] && _pkg="NVIDIA-Linux-x86-${pkgver}"
 [[ "$CARCH" = "x86_64" ]] && _pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
 
 prepare() {
@@ -233,6 +232,8 @@ package_nvidia-340xx-utils() {
                      "${pkgdir}/usr/lib/systemd/system/nvidia-persistenced.service"
     sed -i 's/__USER__/nvidia-persistenced/' \
            "${pkgdir}/usr/lib/systemd/system/nvidia-persistenced.service"
+
+    install -D -m644 "${srcdir}/${pkgname}.sysusers" "${pkgdir}/usr/lib/sysusers.d/${pkgname}.conf"
 
     ln -s nvidia "${pkgdir}/usr/share/doc/${pkgname}"
 }

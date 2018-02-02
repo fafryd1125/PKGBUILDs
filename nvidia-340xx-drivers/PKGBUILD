@@ -20,7 +20,7 @@ sha256sums=('c0d5dacd7be6c096400b9a5fd54676af36210ab480f2498335a612cfd1814467'
             '97dd3971c90fefe16189dd70c481890b095505b3b6ae7f7f5674ae57f2c4f796'
             'd8d1caa5d72c71c6430c2a0d9ce1a674787e9272ccce28b9d5898ca24e60a167')
 
-[[ "$CARCH" = "x86_64" ]] && _pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
+_pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
 
 prepare() {
     sh "${_pkg}.run" --extract-only
@@ -202,7 +202,7 @@ package_nvidia-340xx-drivers() {
     optdepends=('libvdpau: VDPAU wrapper library'
                 'nvidia-340xx-utils: NVIDIA drivers utilities')
     provides=('libgl' 'libegl' 'libgles')
-    conflicts=('libgl' 'libegl' 'libgles' 'nvidia-libgl' 'libglvnd')
+    conflicts=('libgl' 'libegl' 'libgles' 'nvidia-drivers' 'libglvnd')
     cd "${_pkg}"
 
     process_manifest_340xx

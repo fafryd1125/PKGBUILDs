@@ -2,7 +2,7 @@
 # Contributor: Timothée Ravier <tim[at]siosm[dot]fr>
 
 pkgname=nouveau-fw
-pkgver=340.104
+pkgver=340.106
 pkgrel=1
 pkgdesc="This package provides video & pgraph firmwares for all NVIDIA chipsets that need them"
 url='http://nouveau.freedesktop.org/wiki/'
@@ -12,8 +12,8 @@ makedepends=('python2')
 source=(#"https://raw.github.com/imirkin/re-vp2/master/extract_firmware.py"
         "http://us.download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
         'extract_firmware.py')
-sha256sums=('e39015f8e2c6c87037be340fd1899f703ac15356c5694ad8187cd67e71491cd1'
-            'cdb9e065d4049d9465bc75d77247434af0701d9a094402469abc92329c0ed8f0')
+sha256sums=('5d5bddf28f4462b1d024110152e74e131a602e175e0e99822d8474d0a751d2a4'
+            'a05a3d0807263148d8bd4f71afb3e3eabc71cab8a568e7b281a2aed7d5d66989')
 
 build() {
   sh NVIDIA-Linux-x86-${pkgver}.run --extract-only

@@ -33,18 +33,15 @@ build() {
 }
 
 package() {
-    install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia.ko" \
-                     "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia.ko"
-    install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia-drm.ko" \
-                     "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-drm.ko"
-    install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia-modeset.ko" \
-                     "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-modeset.ko"
-    install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia-uvm.ko" \
-                     "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-uvm.ko"
+    install -Dt "${pkgdir}/usr/lib/modules/${_extramodules}" -m644 \
+      "${srcdir}/${_pkg}/kernel"/nvidia{,-drm,-modeset,-uvm}.ko
 
-    gzip "${pkgdir}/usr/lib/modules/${_extramodules}/"*.ko
-    install -d -m755 "${pkgdir}/usr/lib/modprobe.d"
+    find "${pkgdir}" -name '*.ko' -exec gzip -n {} +
 
-    echo "blacklist nouveau" >> "${pkgdir}/usr/lib/modprobe.d/${pkgname}.conf"
-    echo "options nouveau modeset=0" >> "${pkgdir}/usr/lib/modprobe.d/${pkgname}.conf"
+    install -Dm644 /dev/stdin "${pkgdir}/usr/lib/modprobe.d/${pkgname}.conf" <<END
+blacklist nouveau
+options nouveau modeset=0
+blacklist nvidiafb
+blacklist rivafb
+END
 }

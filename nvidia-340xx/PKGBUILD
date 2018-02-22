@@ -3,32 +3,29 @@
 # Maintainer: Thomas Baechler <thomas@archlinux.org>
 
 pkgname=nvidia-340xx
-pkgver=340.102
-_extramodules=extramodules-4.9-ARCH
+pkgver=340.106
+_extramodules=extramodules-4.15-ARCH
 pkgrel=1
 pkgdesc="NVIDIA drivers for linux, 340xx legacy branch."
-arch=('i686' 'x86_64')
+arch=('x86_64')
 url="http://www.nvidia.com/"
-depends=('linux>=4.9' 'linux<4.10' 'libgl')
-makedepends=('linux-headers>=4.9' 'linux-headers<4.10')
+depends=('linux>=4.15' 'linux<4.16' 'libgl')
+makedepends=('linux-headers>=4.15' 'linux-headers<4.16')
 license=('custom')
-install="${pkgname}.install"
 options=(!strip)
-source=("ftp://download.nvidia.com/XFree86/Linux-x86/${pkgver}/NVIDIA-Linux-x86-${pkgver}.run"
-        "ftp://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run"
-        'fs52243.patch')
+source=("ftp://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run"
+        'kernel-4.11.patch')
 sha256sums=('61b13d5dae0f6f5d788a4d8c4c98e8d971d19cb90b606058060d007946248828'
             '6a36bd9a0033769ecd11ce2aa60aeb41b50b20616c43fd19c55e027c451f585e'
             'd1741377218e512063434c52a62a4fe3cfb23ab0a0ebc9fc817567692541e73e')
 
-[[ "$CARCH" = "i686" ]] && _pkg="NVIDIA-Linux-x86-${pkgver}"
-[[ "$CARCH" = "x86_64" ]] && _pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
+_pkg="NVIDIA-Linux-x86_64-${pkgver}-no-compat32"
 
 prepare() {
     sh "${_pkg}.run" --extract-only
     cd "${_pkg}"
     # patches here
-    patch -Np0 < "${srcdir}"/fs52243.patch
+    patch -Np0 < "${srcdir}"/kernel-4.11.patch
 }
 
 build() {
@@ -41,13 +38,14 @@ build() {
 }
 
 package() {
-    install -D -m644 "${srcdir}/${_pkg}/kernel/nvidia.ko" \
-                     "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia.ko"
-    install -D -m644 "${srcdir}/${_pkg}/kernel/uvm/nvidia-uvm.ko" \
-                     "${pkgdir}/usr/lib/modules/${_extramodules}/nvidia-uvm.ko"
+    install -Dt "${pkgdir}/usr/lib/modules/${_extramodules}" -m644 \
+      "${srcdir}/${_pkg}/kernel"/{nvidia,uvm/nvidia-uvm}.ko
 
-    gzip "${pkgdir}/usr/lib/modules/${_extramodules}/"*.ko
+    find "${pkgdir}" -name '*.ko' -exec gzip -n {} +
 
-    install -d -m755 "${pkgdir}/usr/lib/modprobe.d"
-    echo "blacklist nouveau" >> "${pkgdir}/usr/lib/modprobe.d/${pkgname}.conf"
+    install -Dm644 /dev/stdin "${pkgdir}/usr/lib/modprobe.d/${pkgname}.conf" <<END
+blacklist nouveau
+blacklist nvidiafb
+blacklist rivafb
+END
 }

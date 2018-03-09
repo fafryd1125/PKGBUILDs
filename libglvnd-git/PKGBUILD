@@ -10,7 +10,7 @@ _meson=1
 
 _pkgname=libglvnd
 pkgname=libglvnd-git
-pkgver=r563.398e807
+pkgver=r571.f6d236e
 pkgrel=1
 pkgdesc="The GL Vendor-Neutral Dispatch library"
 arch=('x86_64')
@@ -22,18 +22,18 @@ source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
         'meson_build.patch')
 sha1sums=('SKIP'
           'c88e07f333fcf8dcdbef370b85372b4d88ad8a66'
-          'f8c610148d479f79791cd737df86a2ca15c5ff17'
-          '906d70e7042be7403188611168911661f4f41669')
+          '88b8f2e4d517ba34a46c4f64ce96840eab28dc4a'
+          'ccc9d8af5b66f5d9902aebc131939c5d9cc42374')
 
 depends=('libxext')
-makedepends=('libx11' 'git' 'glproto' 'clang')
+_makedepends=('libx11' 'git' 'glproto' 'clang')
 provides=('libglvnd' 'libgl' 'libegl' 'libgles')
 conflicts=('libglvnd')
 
 if [[ ${_meson} = 1 ]]; then
-  makedepends=("${makedepends[@]}" 'meson')
+  makedepends=("${_makedepends[@]}" 'meson')
 else
-  makedepends=("${makedepends[@]}" 'python')
+  makedepends=("${_makedepends[@]}" 'python')
 fi
 
 pkgver() {
@@ -51,8 +51,6 @@ prepare() {
   else
     cd "${_pkgname}"
     # Uncomment if needed
-
-    ##  patch -p1 -i ../
 
     # *.xml - https://www.khronos.org/
     # *.m4  - https://www.gnu.org/software/autoconf-archive/The-Macros.html#The-Macros

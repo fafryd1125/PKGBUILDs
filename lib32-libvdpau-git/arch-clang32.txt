@@ -9,7 +9,6 @@ pkgconfig = '/usr/bin/pkg-config'
 c_args = ['-m32', '-march=i686', '-mtune=native', '-O2', '-pipe', '-fstack-protector-strong', '-fno-plt']
 c_link_args = ['-m32', '-march=i686', '-mtune=native', '-O2', '-pipe', '-fstack-protector-strong', '-fno-plt']
 
-
 [host_machine]
 system = 'linux'
 cpu_family = 'x86'

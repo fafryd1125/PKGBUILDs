@@ -11,7 +11,7 @@ arch=('x86_64')
 url='https://www.freedesktop.org/wiki/Software/VDPAU/'
 license=('MIT')
 depends=('lib32-gcc-libs' 'lib32-libxext' 'libvdpau-git')
-makedepends=('dri2proto' 'git' 'lib32-clang')
+makedepends=('dri2proto' 'git' 'lib32-clang' 'meson')
 provides=('lib32-libvdpau')
 conflicts=('lib32-libvdpau')
 source=("git+https://anongit.freedesktop.org/git/vdpau/libvdpau.git"
@@ -37,7 +37,6 @@ prepare() {
 build() {
   export PKG_CONFIG_PATH='/usr/lib32/pkgconfig'
 
-
   cd build
   meson \
       --prefix=/usr \
@@ -45,7 +44,6 @@ build() {
       --buildtype=release \
       --cross-file ../arch-clang32.txt \
       ../${_pkgname}
-  meson configure
   ninja
 }
 

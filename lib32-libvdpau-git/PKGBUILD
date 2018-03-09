@@ -11,11 +11,15 @@ arch=('x86_64')
 url='https://www.freedesktop.org/wiki/Software/VDPAU/'
 license=('MIT')
 depends=('lib32-gcc-libs' 'lib32-libxext' 'libvdpau-git')
-makedepends=('dri2proto' 'git')
+makedepends=('dri2proto' 'git' 'lib32-clang')
 provides=('lib32-libvdpau')
 conflicts=('lib32-libvdpau')
-source=("git+https://anongit.freedesktop.org/git/vdpau/libvdpau.git")
-sha256sums=('SKIP')
+source=("git+https://anongit.freedesktop.org/git/vdpau/libvdpau.git"
+        "${_pkgname}-meson.patch::https://github.com/aaronp24/libvdpau/compare/meson.patch"
+        'arch-clang32.txt')
+sha256sums=('SKIP'
+            '08af406f88040e2892c285320637db6748d4e8e8a86a026159ec0e7fce304780'
+            'd3d22034971ce44ab5fcd07ed69a4ffe712ff65f35bc8ab8e1132e74eb31fc9a')
 #validpgpkeys=('BD68A042C603DDAD9AA354B0F56ACC8F09BA9635') # Aaron Plattner
 
 pkgver() {
@@ -23,24 +27,33 @@ pkgver() {
   git describe --long | sed 's/^libvdpau-//;s/\([^-]*-g\)/r\1/;s/-/./g'
 }
 
-build() {
-  cd "${_pkgname}"
+prepare() {
+  mkdir build
 
-  export CC='gcc -m32'
-  export CXX='g++ -m32'
+  cd "${_pkgname}"
+  patch -Np1 -i ../${_pkgname}-meson.patch
+}
+
+build() {
   export PKG_CONFIG_PATH='/usr/lib32/pkgconfig'
 
-  ./autogen.sh
-  ./configure \
-      --prefix='/usr' \
-      --libdir='/usr/lib32' \
-      --sysconfdir='/etc'
-  make
+
+  cd build
+  meson \
+      --prefix=/usr \
+      --libdir=/usr/lib32 \
+      --buildtype=release \
+      --cross-file ../arch-clang32.txt \
+      ../${_pkgname}
+  meson configure
+  ninja
 }
 
 package() {
-  cd "${_pkgname}"
-  make DESTDIR="${pkgdir}" install
+  cd build
+  DESTDIR="${pkgdir}" ninja install
+
+  cd "${srcdir}/${_pkgname}"
 
   rm -rf "${pkgdir}"/{etc,usr/include}
 

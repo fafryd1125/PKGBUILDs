@@ -4,14 +4,13 @@
 
 # The Meson Build system:     http://mesonbuild.com/index.html
 # This is a work-in-progress: https://github.com/aaronp24/libglvnd/tree/meson
-# TODO:                       https://github.com/aaronp24/libglvnd/blob/meson/src/meson.build#L5
 # Set "1" to enable
 
-_meson=0
+_meson=1
 
 _pkgname=libglvnd
 pkgname=lib32-libglvnd-git
-pkgver=r551.e202ebf
+pkgver=r571.f6d236e
 pkgrel=1
 pkgdesc="The GL Vendor-Neutral Dispatch library"
 arch=('x86_64')
@@ -19,20 +18,22 @@ url="https://github.com/NVIDIA/libglvnd"
 license=('custom:BSD-like')
 source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
         '0001-khronos-xml-m4.patch'
-        'meson_build.patch')
+        'meson_build.patch'
+        'arch-clang32.txt')
 sha1sums=('SKIP'
-          'f8c610148d479f79791cd737df86a2ca15c5ff17'
-          '906d70e7042be7403188611168911661f4f41669')
+          '88b8f2e4d517ba34a46c4f64ce96840eab28dc4a'
+          'ccc9d8af5b66f5d9902aebc131939c5d9cc42374'
+          'e7f11cd0fd68e8dc6c9b2a8e1262c05c473a51b2')
 
 depends=('lib32-libxext' 'libglvnd-git')
-makedepends=('lib32-libx11' 'git' 'glproto' 'lib32-clang')
+_makedepends=('lib32-libx11' 'git' 'glproto' 'lib32-clang')
 provides=('lib32-libglvnd' 'lib32-libgl' 'lib32-libegl' 'lib32-libgles')
 conflicts=('lib32-libglvnd')
 
 if [[ ${_meson} = 1 ]]; then
-  makedepends=(${makedepends[@]} 'meson')
+  makedepends=(${_makedepends[@]} 'meson')
 else
-  makedepends=(${makedepends[@]} 'python')
+  makedepends=(${_makedepends[@]} 'python')
 fi
 
 pkgver() {
@@ -51,8 +52,6 @@ prepare() {
     cd "${_pkgname}"
     # Uncomment if needed
 
-    ##  patch -p1 -i ../
-
     # *.xml - https://www.khronos.org/
     # *.m4  - https://www.gnu.org/software/autoconf-archive/The-Macros.html#The-Macros
     patch -p1 -i ../0001-khronos-xml-m4.patch
@@ -63,20 +62,21 @@ prepare() {
 }
 
 build() {
-  export CC='gcc -m32'
-  export CXX='g++ -m32'
   export PKG_CONFIG_PATH='/usr/lib32/pkgconfig'
 
   if [[ ${_meson} = 1 ]]; then
-    # TODO
     cd build
     meson \
         --prefix=/usr \
         --libdir=/usr/lib32/ \
         --buildtype=release \
+        --cross-file ../arch-clang32.txt \
         ../${_pkgname}
     ninja
   else
+    export CC='clang -m32'
+    export CXX='clang++ -m32'
+
     cd "${_pkgname}"
     ./autogen.sh
     ./configure \
@@ -86,6 +86,16 @@ build() {
         --enable-shared \
         --enable-static=no
     make
+  fi
+}
+
+check() {
+  if [[ ${_meson} = 1 ]]; then
+    cd build
+    ninja test
+  else
+    cd "${_pkgname}"
+    make check
   fi
 }
 

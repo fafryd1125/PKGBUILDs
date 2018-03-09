@@ -45,15 +45,15 @@ index 0000000..5e31df8
 +install_subdir('glvnd', install_dir : 'include')
 diff --git a/meson.build b/meson.build
 new file mode 100644
-index 0000000..68ebdf6
+index 0000000..ce3b5df
 --- /dev/null
 +++ b/meson.build
 @@ -0,0 +1,24 @@
 +project('libglvnd', 'c', meson_version : '>=0.41')
 +
-+glproto_dep = dependency('glproto', required : true)
-+x11_dep = dependency('x11', required : true)
-+xext_dep = dependency('xext', required : true)
++glproto_dep = dependency('glproto')
++x11_dep = dependency('x11')
++xext_dep = dependency('xext')
 +
 +inc = include_directories('include')
 +
@@ -73,9 +73,21 @@ index 0000000..68ebdf6
 +        'datadir=${datarootdir}',
 +    ],
 +)
+diff --git a/meson_options.txt b/meson_options.txt
+new file mode 100644
+index 0000000..8a6592d
+--- /dev/null
++++ b/meson_options.txt
+@@ -0,0 +1,6 @@
++option('egl',  type : 'boolean', value : true, description : 'build support for EGL')
++option('glx',  type : 'boolean', value : true, description : 'build support for GLX')
++option('gles', type : 'boolean', value : true, description : 'build support for libGLES*.so libraries')
++
++option('asm',  type : 'boolean', value : true, description : 'assembly usage [on supported platforms]')
++option('tls',  type : 'boolean', value : true, description : 'TLS usage [on supported platforms]')
 diff --git a/src/EGL/meson.build b/src/EGL/meson.build
 new file mode 100644
-index 0000000..c9620c4
+index 0000000..ff35569
 --- /dev/null
 +++ b/src/EGL/meson.build
 @@ -0,0 +1,28 @@
@@ -104,12 +116,12 @@ index 0000000..c9620c4
 +    ],
 +    include_directories : [inc, util_inc],
 +    sources : g_egldispatchstubs_h,
-+    version : '1.0.0',
++    version : '1.1.0',
 +    install : true,
 +)
 diff --git a/src/GL/meson.build b/src/GL/meson.build
 new file mode 100644
-index 0000000..90272b9
+index 0000000..5fb9824
 --- /dev/null
 +++ b/src/GL/meson.build
 @@ -0,0 +1,17 @@
@@ -127,12 +139,12 @@ index 0000000..90272b9
 +        x11_dep,
 +    ],
 +    include_directories : [inc, glx_inc, util_inc],
-+    version : '1.0.0',
++    version : '1.7.0',
 +    install : true,
 +)
 diff --git a/src/GLESv1/meson.build b/src/GLESv1/meson.build
 new file mode 100644
-index 0000000..cdb488c
+index 0000000..2e0a1c2
 --- /dev/null
 +++ b/src/GLESv1/meson.build
 @@ -0,0 +1,15 @@
@@ -148,12 +160,12 @@ index 0000000..cdb488c
 +        gldispatch_dep,
 +        g_glesv1_exports_sym_dep,
 +    ],
-+    version : '1.0.0',
++    version : '1.2.0',
 +    install : true,
 +)
 diff --git a/src/GLESv2/meson.build b/src/GLESv2/meson.build
 new file mode 100644
-index 0000000..a1baaf0
+index 0000000..bbdabea
 --- /dev/null
 +++ b/src/GLESv2/meson.build
 @@ -0,0 +1,15 @@
@@ -169,7 +181,7 @@ index 0000000..a1baaf0
 +        gldispatch_dep,
 +        g_glesv2_exports_sym_dep,
 +    ],
-+    version : '2.0.0',
++    version : '2.1.0',
 +    install : true,
 +)
 diff --git a/src/GLX/meson.build b/src/GLX/meson.build
@@ -272,22 +284,45 @@ index 0000000..a0e386a
 +)
 diff --git a/src/GLdispatch/vnd-glapi/meson.build b/src/GLdispatch/vnd-glapi/meson.build
 new file mode 100644
-index 0000000..c04f5eb
+index 0000000..d3f39f8
 --- /dev/null
 +++ b/src/GLdispatch/vnd-glapi/meson.build
-@@ -0,0 +1,76 @@
-+entry_src = [
-+    'entry_x86_64_tls.c',
-+    'entry_simple_asm.c',
-+    'entry_common.c',
-+]
+@@ -0,0 +1,99 @@
++entry_src = []
 +
-+glapi_src = entry_src + [
++pre_glapi_src = []
++
++if dispatch_entry_type == 'x86_tls'
++  entry_src += ['entry_x86_tls.c', 'entry_simple_asm.c', 'entry_common.c']
++elif dispatch_entry_type == 'x86_tsd'
++  entry_src += ['entry_x86_tsd.c', 'entry_simple_asm.c', 'entry_common.c']
++elif dispatch_entry_type == 'x86_64_tls'
++  entry_src += ['entry_x86_64_tls.c', 'entry_simple_asm.c', 'entry_common.c']
++elif dispatch_entry_type == 'x86_64_tsd'
++  entry_src += ['entry_x86_64_tsd.c', 'entry_simple_asm.c', 'entry_common.c']
++elif dispatch_entry_type == 'armv7_tsd'
++  entry_src += ['entry_armv7_tsd.c', 'entry_common.c']
++elif dispatch_entry_type == 'aarch64_tsd'
++  entry_src += ['entry_aarch64_tsd.c', 'entry_simple_asm.c', 'entry_common.c']
++elif dispatch_entry_type == 'ppc64le_tls'
++  entry_src += ['entry_ppc64le_tls.c', 'entry_simple_asm.c', 'entry_common.c']
++elif dispatch_entry_type == 'ppc64le_tsd'
++  entry_src += ['entry_ppc64le_tsd.c', 'entry_simple_asm.c', 'entry_common.c']
++elif dispatch_entry_type == 'pure_c'
++  entry_src += 'entry_pure_c.c'
++endif
++
++if use_tls
++  pre_glapi_src += 'u_current_tls.c'
++else
++  pre_glapi_src += 'u_current_tsd.c'
++endif
++
++glapi_src = entry_src + pre_glapi_src + [
 +    'mapi_glapi.c',
 +    'stub.c',
 +    'table.c',
 +    'u_execmem.c',
-+    'u_current_tls.c',
 +]
 +
 +glapi = static_library('glapi',
@@ -352,140 +387,6 @@ index 0000000..c04f5eb
 +        utils_misc_dep,
 +    ],
 +)
-diff --git a/src/GLdispatch/vnd-glapi/u_execmem.c b/src/GLdispatch/vnd-glapi/u_execmem.c
-index d5f00d1..b187f7e 100644
---- a/src/GLdispatch/vnd-glapi/u_execmem.c
-+++ b/src/GLdispatch/vnd-glapi/u_execmem.c
-@@ -38,8 +38,27 @@
- #include "u_execmem.h"
- #include "utils_misc.h"
- #include "glvnd_pthread.h"
--#include "entry.h"
--#include "table.h"
-+
-+
-+/*
-+ * Allocate 64 bytes for each stub so that they're large enough to hold the
-+ * x86-64 TSD stubs. The x86 TSD and x86-64 TLS stubs both take 32 bytes each.
-+ *
-+ * The x86-64 TSD stubs are larger than the others because it has to deal with
-+ * 64-bit addresses and preserving the function arguments.
-+ *
-+ * The generated stubs may not be within 2GB of u_current or
-+ * u_current_get_internal, so we can't use RIP-relative addressing for them.
-+ * Instead we have to use movabs instructions to load the 64-bit absolute
-+ * addresses, which take 10 bytes each.
-+ *
-+ * In addition, x86-64 passes the first 6 parameters in registers, which the
-+ * callee does not have to preserve. Since the stub has to pass those same
-+ * parameters to the real function, we have to preserve them across the call to
-+ * u_current_get_internal. Pushing and popping those registers takes another 24
-+ * bytes.
-+ */
-+#define EXEC_MAP_SIZE (64*4096) // DISPATCH_FUNCTION_SIZE * MAPI_TABLE_NUM_DYNAMIC
- 
- static glvnd_mutex_t exec_mutex = GLVND_MUTEX_INITIALIZER;
- 
-@@ -48,6 +67,17 @@ static unsigned int head = 0;
- static unsigned char *exec_mem = NULL;
- static unsigned char *write_mem = NULL;
- 
-+
-+#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(_NetBSD__) || defined(__sun) || defined(__HAIKU__)
-+
-+#include <unistd.h>
-+#include <sys/mman.h>
-+
-+#ifndef MAP_ANONYMOUS
-+#define MAP_ANONYMOUS MAP_ANON
-+#endif
-+
-+
- /*
-  * Dispatch stubs are of fixed size and never freed. Thus, we do not need to
-  * overlay a heap, we just mmap a page and manage through an index.
-@@ -56,13 +86,9 @@ static unsigned char *write_mem = NULL;
- static int
- init_map(void)
- {
--    if (entry_stub_size == 0) {
--        return 0;
--    }
--
-     if (exec_mem == NULL) {
-         void *writePtr, *execPtr;
--        if (AllocExecPages(entry_stub_size * MAPI_TABLE_NUM_DYNAMIC, &writePtr, &execPtr) == 0) {
-+        if (AllocExecPages(EXEC_MAP_SIZE, &writePtr, &execPtr) == 0) {
-             exec_mem = (unsigned char *) execPtr;
-             write_mem = (unsigned char *) writePtr;
-             head = 0;
-@@ -75,12 +101,47 @@ init_map(void)
- void u_execmem_free(void)
- {
-     if (exec_mem != NULL) {
--        FreeExecPages(entry_stub_size * MAPI_TABLE_NUM_DYNAMIC, write_mem, exec_mem);
-+        FreeExecPages(EXEC_MAP_SIZE, write_mem, exec_mem);
-         write_mem = NULL;
-         exec_mem = NULL;
-     }
- }
- 
-+#elif defined(_WIN32)
-+
-+#include <windows.h>
-+
-+
-+/*
-+ * Avoid Data Execution Prevention.
-+ */
-+
-+static int
-+init_map(void)
-+{
-+   exec_mem = VirtualAlloc(NULL, EXEC_MAP_SIZE, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-+   write_mem = exec_mem;
-+
-+   return (exec_mem != NULL);
-+}
-+
-+
-+#else
-+
-+#include <stdlib.h>
-+
-+static int
-+init_map(void)
-+{
-+   exec_mem = malloc(EXEC_MAP_SIZE);
-+   write_mem = exec_mem;
-+
-+   return (exec_mem != NULL);
-+}
-+
-+
-+#endif
-+
- void *
- u_execmem_alloc(unsigned int size)
- {
-@@ -92,7 +153,7 @@ u_execmem_alloc(unsigned int size)
-       goto bail;
- 
-    /* free space check, assumes no integer overflow */
--   if (head + size > entry_stub_size * MAPI_TABLE_NUM_DYNAMIC)
-+   if (head + size > EXEC_MAP_SIZE)
-       goto bail;
- 
-    /* allocation, assumes proper addr and size alignement */
-@@ -112,7 +173,7 @@ void *u_execmem_get_writable(void *execPtr)
-     if (((uintptr_t) execPtr) >= ((uintptr_t) exec_mem))
-     {
-         uintptr_t offset = ((uintptr_t) execPtr) - ((uintptr_t) exec_mem);
--        if (offset < entry_stub_size * MAPI_TABLE_NUM_DYNAMIC)
-+        if (offset < EXEC_MAP_SIZE)
-         {
-             return (void *) (((uintptr_t) write_mem) + offset);
-         }
 diff --git a/src/OpenGL/meson.build b/src/OpenGL/meson.build
 new file mode 100644
 index 0000000..5d35e39
@@ -755,41 +656,92 @@ index 0000000..3bea5ca
 +egl_dispatch_stubs_dep = declare_dependency(link_with : egl_dispatch_stubs)
 diff --git a/src/meson.build b/src/meson.build
 new file mode 100644
-index 0000000..47e5a20
+index 0000000..8e3e2bb
 --- /dev/null
 +++ b/src/meson.build
-@@ -0,0 +1,31 @@
+@@ -0,0 +1,82 @@
 +cc = meson.get_compiler('c')
 +libdl = cc.find_library('dl', required : false)
 +libm = cc.find_library('m')
 +
 +# TODO: Handle these dynamically
 +c_defines = [
-+    'GLDISPATCH_USE_TLS',
 +    'HAVE_MINCORE',
 +    'HAVE_PTHREAD_RWLOCK_T',
 +    'HAVE_RTLD_NOLOAD',
 +    'HAVE_SYNC_INTRINSICS',
 +    'HAVE_TYPEOF',
 +    'USE_ATTRIBUTE_CONSTRUCTOR',
-+    'USE_X86_64_ASM',
 +]
++
++if get_option('asm')
++  if host_machine.cpu_family() == 'x86'
++    c_defines += ['USE_X86_ASM', 'USE_MMX_ASM', 'USE_3DNOW_ASM', 'USE_SSE_ASM']
++  elif host_machine.cpu_family() == 'x86_64'
++    c_defines += ['USE_X86_64_ASM']
++  elif host_machine.cpu_family() == 'armv7l'
++    c_defines += ['USE_ARMV7_ASM']
++  elif host_machine.cpu_family() == 'aarch64'
++    c_defines += ['USE_AARCH64_ASM']
++  elif host_machine.cpu_family() == 'ppc64le'
++    c_defines += ['USE_PPC64LE_ASM']
++  endif
++endif
++
++if get_option('tls')
++  use_tls = cc.compiles('__thread int foo __attribute__((tls_model("initial-exec")));', name : 'TLS detection')
++else
++  use_tls = false
++endif
++
++if ['x86', 'x86_64'].contains(host_machine.cpu_family())
++  if use_tls
++    c_defines += ['GLDISPATCH_USE_TLS']
++    dispatch_entry_type = '@0@_tls'.format(host_machine.cpu_family())
++  else
++    dispatch_entry_type = '@0@_tsd'.format(host_machine.cpu_family())
++  endif
++elif host_machine.cpu_family() == 'armv7l'
++  dispatch_entry_type = 'armv7_tsd'
++elif host_machine.cpu_family() == 'aarch64'
++  dispatch_entry_type = 'aarch64_tsd'
++elif host_machine.cpu_family() == 'ppc64le'
++  if use_tls
++    c_defines += ['GLDISPATCH_USE_TLS']
++    dispatch_entry_type = 'ppc64le_tls'
++  else
++    dispatch_entry_type = 'ppc64le_tsd'
++  endif
++else
++  # The C stubs will work with either TLS or TSD.
++  gldispatch_entry_type = 'pure_c'
++endif
++
 +foreach d : c_defines
-+  add_global_arguments('-D' + d + '=1', language : 'c')
++  add_project_arguments('-D' + d + '=1', language : 'c')
 +endforeach
 +
-+add_global_arguments('-fvisibility=hidden', language : 'c')
-+add_global_link_arguments('-Wl,-Bsymbolic', language : 'c')
++add_project_arguments('-fvisibility=hidden', language : 'c')
++add_project_link_arguments('-Wl,-Bsymbolic', language : 'c')
 +
 +subdir('generate')
 +subdir('util')
 +subdir('GLdispatch')
 +subdir('OpenGL')
-+subdir('EGL')
-+subdir('GLX')
-+subdir('GL')
-+subdir('GLESv1')
-+subdir('GLESv2')
++
++if get_option('egl')
++  subdir('EGL')
++endif
++
++if get_option('glx')
++  subdir('GLX')
++  subdir('GL')
++endif
++
++if get_option('gles')
++  subdir('GLESv1')
++  subdir('GLESv2')
++endif
 diff --git a/src/util/meson.build b/src/util/meson.build
 new file mode 100644
 index 0000000..ad71747
@@ -849,42 +801,46 @@ index 2f76082..539c5d9 100644
  #include <stdlib.h>
 diff --git a/tests/dummy/meson.build b/tests/dummy/meson.build
 new file mode 100644
-index 0000000..229507c
+index 0000000..b3d0f77
 --- /dev/null
 +++ b/tests/dummy/meson.build
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,30 @@
 +libpatchentrypoints = static_library('patchentrypoints.a', 'patchentrypoints.c',
 +    include_directories : [inc, util_inc],
 +)
 +
-+glx_dummy = shared_library('GLX_dummy', 'GLX_dummy.c',
-+    include_directories : [inc, util_inc],
-+    dependencies : x11_dep,
-+    link_with : libpatchentrypoints,
-+    version : '0',
-+)
++if get_option('glx')
++  glx_dummy = shared_library('GLX_dummy', 'GLX_dummy.c',
++      include_directories : [inc, util_inc],
++      dependencies : x11_dep,
++      link_with : libpatchentrypoints,
++      version : '0',
++  )
++endif
 +
-+egl_dummy0 = shared_library('EGL_dummy0', 'EGL_dummy.c',
-+    include_directories : [inc, util_inc],
-+    c_args : '-D DUMMY_VENDOR_NAME="dummy0"',
-+    dependencies : [x11_dep, glvnd_pthread_dep, libdl],
-+    link_with : libpatchentrypoints,
-+    version : '0',
-+)
++if get_option('egl')
++  egl_dummy0 = shared_library('EGL_dummy0', 'EGL_dummy.c',
++      include_directories : [inc, util_inc],
++      c_args : '-D DUMMY_VENDOR_NAME="dummy0"',
++      dependencies : [x11_dep, glvnd_pthread_dep, libdl],
++      link_with : libpatchentrypoints,
++      version : '0',
++  )
 +
-+egl_dummy1 = shared_library('EGL_dummy1', 'EGL_dummy.c',
-+    include_directories : [inc, util_inc],
-+    c_args : '-D DUMMY_VENDOR_NAME="dummy1"',
-+    dependencies : [x11_dep, glvnd_pthread_dep, libdl],
-+    link_with : libpatchentrypoints,
-+    version : '0',
-+)
++  egl_dummy1 = shared_library('EGL_dummy1', 'EGL_dummy.c',
++      include_directories : [inc, util_inc],
++      c_args : '-D DUMMY_VENDOR_NAME="dummy1"',
++      dependencies : [x11_dep, glvnd_pthread_dep, libdl],
++      link_with : libpatchentrypoints,
++      version : '0',
++  )
++endif
 diff --git a/tests/meson.build b/tests/meson.build
 new file mode 100644
-index 0000000..f93dd25
+index 0000000..136f36a
 --- /dev/null
 +++ b/tests/meson.build
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,138 @@
 +subdir('dummy')
 +
 +# The entrypoint patching tests need --smc-check=full when running under
@@ -908,108 +864,118 @@ index 0000000..f93dd25
 +    link_with : [opengl, gldispatch, libpatchentrypoints],
 +)
 +
-+glxcreatecontext_src = files('testglxcreatecontext.c', 'test_utils.c')
-+glxcreatecontext = executable('testglxcreatecontext', glxcreatecontext_src,
-+    include_directories : inc,
-+    dependencies : [x11_dep, glvnd_pthread_dep, libdl],
-+    link_with : [glx, opengl],
-+)
++if get_option('glx')
++  glxcreatecontext_src = files('testglxcreatecontext.c', 'test_utils.c')
++  glxcreatecontext = executable('testglxcreatecontext', glxcreatecontext_src,
++      include_directories : inc,
++      dependencies : [x11_dep, glvnd_pthread_dep, libdl],
++      link_with : [glx, opengl],
++  )
 +
-+glxmakecurrent_src = files('testglxmakecurrent.c', 'test_utils.c')
-+glxmakecurrent = executable('testglxmakecurrent', glxmakecurrent_src,
-+    include_directories : inc,
-+    dependencies : [x11_dep, glvnd_pthread_dep, libdl],
-+    link_with : [glx, opengl],
-+)
++  glxmakecurrent_src = files('testglxmakecurrent.c', 'test_utils.c')
++  glxmakecurrent = executable('testglxmakecurrent', glxmakecurrent_src,
++      include_directories : inc,
++      dependencies : [x11_dep, glvnd_pthread_dep, libdl],
++      link_with : [glx, opengl],
++  )
 +
-+glxmakecurrent_oldlink = executable('testglxmakecurrent_oldlink', glxmakecurrent_src,
-+    include_directories : inc,
-+    dependencies : [x11_dep, glvnd_pthread_dep, libdl],
-+    link_with : gl,
-+)
++  glxmakecurrent_oldlink = executable('testglxmakecurrent_oldlink', glxmakecurrent_src,
++      include_directories : inc,
++      dependencies : [x11_dep, glvnd_pthread_dep, libdl],
++      link_with : gl,
++  )
 +
-+glxgetprocaddress = executable('testglxgetprocaddress', 'testglxgetprocaddress.c',
-+    include_directories : inc,
-+    dependencies : x11_dep,
-+    link_with : glx,
-+)
++  glxgetprocaddress = executable('testglxgetprocaddress', 'testglxgetprocaddress.c',
++      include_directories : inc,
++      dependencies : x11_dep,
++      link_with : glx,
++  )
 +
-+glxgetclientstr = executable('testglxgetclientstr', 'testglxgetclientstr.c',
-+    include_directories : inc,
-+    dependencies : x11_dep,
-+    link_with : glx,
-+)
++  glxgetclientstr = executable('testglxgetclientstr', 'testglxgetclientstr.c',
++      include_directories : inc,
++      dependencies : x11_dep,
++      link_with : glx,
++  )
 +
-+glxqueryversion = executable('testglxqueryversion', 'testglxqueryversion.c',
-+    include_directories : inc,
-+    dependencies : x11_dep,
-+    link_with : glx,
-+)
++  glxqueryversion = executable('testglxqueryversion', 'testglxqueryversion.c',
++      include_directories : inc,
++      dependencies : x11_dep,
++      link_with : glx,
++  )
 +
-+patchentrypoints = executable('patchentrypoints',
-+    ['testpatchentrypoints.c', 'test_utils.c'],
-+    include_directories : inc,
-+    dependencies : [x11_dep, libdl],
-+    link_with: [glx, opengl],
-+)
++  patchentrypoints = executable('patchentrypoints',
++      ['testpatchentrypoints.c', 'test_utils.c'],
++      include_directories : inc,
++      dependencies : [x11_dep, libdl],
++      link_with: [glx, opengl],
++  )
++endif
 +
-+egl_test_utils = static_library('egl_test_utils', 'egl_test_utils.c',
-+    include_directories : inc,
-+)
++if get_option('egl')
++  egl_test_utils = static_library('egl_test_utils', 'egl_test_utils.c',
++      include_directories : inc,
++  )
 +
-+egldisplay = executable('testegldisplay', 'testegldisplay.c',
-+    include_directories : inc,
-+    dependencies : x11_dep,
-+    link_with : [egl, egl_test_utils],
-+)
++  egldisplay = executable('testegldisplay', 'testegldisplay.c',
++      include_directories : inc,
++      dependencies : x11_dep,
++      link_with : [egl, egl_test_utils],
++  )
 +
-+egldevice = executable('testegldevice', 'testegldevice.c',
-+    include_directories : inc,
-+    dependencies : x11_dep,
-+    link_with : [egl, egl_test_utils],
-+)
++  egldevice = executable('testegldevice', 'testegldevice.c',
++      include_directories : inc,
++      dependencies : x11_dep,
++      link_with : [egl, egl_test_utils],
++  )
 +
-+eglgetprocaddress = executable('testeglgetprocaddress', 'testeglgetprocaddress.c',
-+    include_directories : inc,
-+    dependencies : x11_dep,
-+    link_with : [egl, egl_test_utils],
-+)
++  eglgetprocaddress = executable('testeglgetprocaddress', 'testeglgetprocaddress.c',
++      include_directories : inc,
++      dependencies : x11_dep,
++      link_with : [egl, egl_test_utils],
++  )
 +
-+eglmakecurrent = executable('testeglmakecurrent', 'testeglmakecurrent.c',
-+    include_directories : [inc, util_inc],
-+    dependencies : x11_dep,
-+    link_with : [egl, opengl, egl_test_utils],
-+)
++  eglmakecurrent = executable('testeglmakecurrent', 'testeglmakecurrent.c',
++      include_directories : [inc, util_inc],
++      dependencies : x11_dep,
++      link_with : [egl, opengl, egl_test_utils],
++  )
 +
-+eglerror = executable('testeglerror', 'testeglerror.c',
-+    include_directories : inc,
-+    dependencies : x11_dep,
-+    link_with : [egl, egl_test_utils],
-+)
++  eglerror = executable('testeglerror', 'testeglerror.c',
++      include_directories : inc,
++      dependencies : x11_dep,
++      link_with : [egl, egl_test_utils],
++  )
 +
-+egldebug = executable('testegldebug', 'testegldebug.c',
-+    include_directories : inc,
-+    dependencies : x11_dep,
-+    link_with : [egl, egl_test_utils],
-+)
++  egldebug = executable('testegldebug', 'testegldebug.c',
++      include_directories : inc,
++      dependencies : x11_dep,
++      link_with : [egl, egl_test_utils],
++  )
++endif
 +
 +test('gldispatch_static',          gldispatch,               args : ['-s'],                        env : env)
 +test('gldispatch_generated',       gldispatch,               args : ['-g'],                        env : env)
 +test('gldispatch_patched',         gldispatch,               args : ['-s', '-g', '-p'],            env : env)
-+test('glxcreatecontext',           glxcreatecontext,                                               env : glx_env)
-+test('glxmcbasic',                 glxmakecurrent,           args : ['-t', '1', '-i', '1'],        env : glx_env)
-+test('glxmcloop',                  glxmakecurrent,           args : ['-t', '1', '-i', '250'],      env : glx_env)
-+test('glxmcthreads',               glxmakecurrent,           args : ['-t', '5', '-i', '20000'],    env : glx_threads)
-+test('glxmclate',                  glxmakecurrent,           args : ['-t', '1', '-i', '1', '-l'],  env : glx_env)
-+test('glxmcoldlink',               glxmakecurrent_oldlink,   args : ['-t', '1', '-i', '1'],        env : glx_env)
-+test('glxgetprocaddress',          glxgetprocaddress,                                              env : glx_env)
-+test('glxgetprocaddress_genentry', glxgetprocaddress,                                              env : glx_genentry)
-+test('glxgetclientstr',            glxgetclientstr,                                                env : glx_env)
-+test('glxqueryversion',            glxqueryversion,                                                env : glx_env)
-+test('patchentrypoints',           patchentrypoints,                                               env : glx_patch)
-+test('egldisplay',                 egldisplay,                                                     env : egl_env)
-+test('egldevice',                  egldevice,                                                      env : egl_env)
-+test('eglgetprocaddress',          eglgetprocaddress,                                              env : egl_env)
-+test('eglmakecurrent',             eglmakecurrent,                                                 env : egl_env)
-+test('eglerror',                   eglerror,                                                       env : egl_env)
-+test('egldebug',                   egldebug,                                                       env : egl_env)
++
++if get_option('glx')
++  test('glxcreatecontext',           glxcreatecontext,                                               env : glx_env)
++  test('glxmcbasic',                 glxmakecurrent,           args : ['-t', '1', '-i', '1'],        env : glx_env)
++  test('glxmcloop',                  glxmakecurrent,           args : ['-t', '1', '-i', '250'],      env : glx_env)
++  test('glxmcthreads',               glxmakecurrent,           args : ['-t', '5', '-i', '20000'],    env : glx_threads)
++  test('glxmclate',                  glxmakecurrent,           args : ['-t', '1', '-i', '1', '-l'],  env : glx_env)
++  test('glxmcoldlink',               glxmakecurrent_oldlink,   args : ['-t', '1', '-i', '1'],        env : glx_env)
++  test('glxgetprocaddress',          glxgetprocaddress,                                              env : glx_env)
++  test('glxgetprocaddress_genentry', glxgetprocaddress,                                              env : glx_genentry)
++  test('glxgetclientstr',            glxgetclientstr,                                                env : glx_env)
++  test('glxqueryversion',            glxqueryversion,                                                env : glx_env)
++  test('patchentrypoints',           patchentrypoints,                                               env : glx_patch)
++endif
++
++if get_option('egl')
++  test('egldisplay',                 egldisplay,                                                     env : egl_env)
++  test('egldevice',                  egldevice,                                                      env : egl_env)
++  test('eglgetprocaddress',          eglgetprocaddress,                                              env : egl_env)
++  test('eglmakecurrent',             eglmakecurrent,                                                 env : egl_env)
++  test('eglerror',                   eglerror,                                                       env : egl_env)
++  test('egldebug',                   egldebug,                                                       env : egl_env)
++endif

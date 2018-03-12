@@ -7,7 +7,7 @@
 # Contributor: Darek Zielski <dz1125.bug.tracker@gmail.com>
 
 pkgname=lib32-nvidia-drivers
-pkgver=390.25
+pkgver=390.42
 pkgrel=1
 pkgdesc="NVIDIA drivers libraries (32-bit)"
 arch=('x86_64')
@@ -21,7 +21,7 @@ options=('!strip')
 _arch='x86'
 _pkg="NVIDIA-Linux-${_arch}-${pkgver}"
 source=("http://us.download.nvidia.com/XFree86/Linux-${_arch}/${pkgver}/${_pkg}.run")
-sha256sums=('1183552b46409a3c09caa172da5a296b56078d178c5ad272bed7101a40bf6b3a')
+sha256sums=('a132a5d999ca70b6047d6babd382e27394876afc3bce7e7418c3aa3ada78dc44')
 
 prepare() {
     sh ${_pkg}.run --extract-only

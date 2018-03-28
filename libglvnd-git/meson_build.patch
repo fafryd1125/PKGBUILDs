@@ -502,19 +502,6 @@ index 0000000..92e4e7f
 +if (__name__ == "__main__"):
 +    _main()
 +
-diff --git a/src/generate/glvnd_gen.mk b/src/generate/glvnd_gen.mk
-index c1727c9..5f28a6d 100644
---- a/src/generate/glvnd_gen.mk
-+++ b/src/generate/glvnd_gen.mk
-@@ -38,7 +38,7 @@ endef
- # Generates an export list for an entrypoint library.
- # $(1) specifies which library we're building, using the same names as
- # glapi_gen_mapi.
--glapi_gen_libopengl_exports_script := $(top_srcdir)/src/generate/gen_libOpenGL_exports.py
-+glapi_gen_libopengl_exports_script := $(top_srcdir)/src/generate/gen_libOpenGL_exports_old.py
- glapi_gen_libopengl_exports_deps := \
- 	$(glapi_gen_libopengl_exports_script) \
- 	$(glapi_gen_gl_deps)
 diff --git a/src/generate/meson.build b/src/generate/meson.build
 new file mode 100644
 index 0000000..3bea5ca
@@ -837,10 +824,10 @@ index 0000000..b3d0f77
 +endif
 diff --git a/tests/meson.build b/tests/meson.build
 new file mode 100644
-index 0000000..136f36a
+index 0000000..d5de5e6
 --- /dev/null
 +++ b/tests/meson.build
-@@ -0,0 +1,138 @@
+@@ -0,0 +1,139 @@
 +subdir('dummy')
 +
 +# The entrypoint patching tests need --smc-check=full when running under
@@ -914,6 +901,7 @@ index 0000000..136f36a
 +if get_option('egl')
 +  egl_test_utils = static_library('egl_test_utils', 'egl_test_utils.c',
 +      include_directories : inc,
++      dependencies : x11_dep,
 +  )
 +
 +  egldisplay = executable('testegldisplay', 'testegldisplay.c',

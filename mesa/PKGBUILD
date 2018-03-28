@@ -4,9 +4,7 @@
 
 pkgbase=mesa
 pkgname=('mesa-vdpau' 'mesa-glvnd'  'mesa')
-_rc=rc3
-pkgver=18.0.0${_rc}
-_pkgver=18.0.0
+pkgver=18.0.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -15,13 +13,10 @@ makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'd
              'lm_sensors')
 url="https://www.mesa3d.org/"
 license=('custom')
-source=(#https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
-        https://mesa.freedesktop.org/archive/mesa-${_pkgver}-${_rc}.tar.xz{,.sig}
-        '0002-glvnd-fix-gl-dot-pc.patch'
+source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
         'LICENSE')
-sha256sums=('27c1ade098d9e0afaa7ecaa2d4ce7fe1e84f105b82c0d19926f9694087ea5758'
+sha256sums=('694e5c3d37717d23258c1f88bc134223c5d1aac70518d2f9134d6df3ee791eea'
             'SKIP'
-            '64a77944a28026b066c1682c7258d02289d257b24b6f173a9f7580c48beed966'
             '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
@@ -30,13 +25,9 @@ validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suáre
 prepare() {
   mkdir build
 
-  cd "${pkgbase}-${_pkgver}-${_rc}"
+  cd "${pkgbase}-${pkgver}"
 
 #  patch -Np1 -i ../
-
-  # glvnd support patches - from Fedora
-  # non-upstreamed ones
-  patch -Np1 -i ../0002-glvnd-fix-gl-dot-pc.patch
 }
 
 build() {
@@ -63,7 +54,7 @@ build() {
         --sysconfdir=/etc     \
         --prefix=/usr         \
         "${meson_options[@]}" \
-        ../${pkgbase}-${_pkgver}-${_rc}
+        ../${pkgbase}-${pkgver}
   meson configure
   ninja
 

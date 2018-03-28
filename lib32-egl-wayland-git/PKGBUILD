@@ -3,7 +3,7 @@
 
 _pkgname=egl-wayland
 pkgname=lib32-egl-wayland-git
-pkgver=r22.6f5f7d0
+pkgver=r23.68ffe6f
 pkgrel=1
 pkgdesc="The EGLStream-based Wayland external platform (32-bit)"
 arch=('x86_64')
@@ -13,8 +13,10 @@ depends=('egl-wayland')
 makedepends=('eglexternalplatform' 'lib32-wayland' 'mesa' 'lib32-clang' 'git' 'meson')
 provides=('lib32-egl-wayland')
 conflicts=('lib32-egl-wayland')
-source=("egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git")
-sha256sums=('SKIP')
+source=("egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git"
+        'arch-clang32.txt')
+sha256sums=('SKIP'
+            'df34e68c0e3043ab0d6c00c90d9c2cdd6765a0b306367e7883c524d28105c729')
 
 pkgver() {
   cd "${_pkgname}"
@@ -38,6 +40,7 @@ build() {
       --libdir=/usr/lib32 \
       --datadir=/usr/lib32 \
       --buildtype=release \
+      --cross-file ../arch-clang32.txt \
       ../${_pkgname}
   ninja
 

@@ -3,21 +3,27 @@
 # Maintainer: Andreas Radke <andyrtr@archlinux.org>
 
 pkgbase=mesa
-pkgname=('mesa-vdpau' 'mesa-glvnd'  'mesa')
+pkgname=('libva-mesa-driver'  'mesa-vdpau' 'mesa-glvnd' 'mesa')
 pkgver=18.0.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
              'libxshmfence' 'libxxf86vm' 'libxdamage' 'libvdpau' 'libva' 'wayland' 'wayland-protocols'
              'elfutils' 'llvm' 'libomxil-bellagio' 'libclc' 'clang' 'libunwind'  'libglvnd' 'meson'
-             'lm_sensors')
+             'lm_sensors' 'libxvmc')
 url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
+        "meson_get_version.py::https://cgit.freedesktop.org/mesa/mesa/plain/bin/meson_get_version.py?h=mesa-18.0.0"
+        "fix-install.diff::https://git.archlinux.org/svntogit/packages.git/plain/trunk/fix-install.diff?h=packages/mesa"
+        "fix-versions.diff::https://git.archlinux.org/svntogit/packages.git/plain/trunk/fix-versions.diff?h=packages/mesa"
         'LICENSE')
 sha256sums=('694e5c3d37717d23258c1f88bc134223c5d1aac70518d2f9134d6df3ee791eea'
             'SKIP'
-            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2')
+            'ee6e8c0b99870e4929bc3183018d21e359bd3f90fcb40547852a049497c54bb2'
+            'bd9ea1fbb4d03b1e278b9995c2ddc1286ddfc8372182429ce34c841d08a809d4'
+            '2f6852a4a3699926520b1da4b9423170549b3b9e1f4073c18dc6b9ba8060dee2'
+            '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
@@ -28,6 +34,17 @@ prepare() {
   cd "${pkgbase}-${pkgver}"
 
 #  patch -Np1 -i ../
+
+  # fix symlinks created for vdpau drivers to be relative
+  # this is upstreamable
+  patch -Np1 -i ../fix-install.diff
+
+  # fix library versioning
+  # this is upstreamable
+  patch -Np1 -i ../fix-versions.diff
+
+  # file missing from tarball
+  cp ../meson_get_version.py bin/
 }
 
 build() {
@@ -59,16 +76,36 @@ build() {
   ninja
 
   # fake installation
-  mkdir $srcdir/fakeinstall
+  mkdir "$srcdir/fakeinstall"
   DESTDIR="${srcdir}/fakeinstall" ninja install
 }
+
+_install() {
+  local src f dir
+  for src; do
+    f="${src#fakeinstall/}"
+    dir="${pkgdir}/${f%/*}"
+    install -m755 -d "${dir}"
+    mv -v "${src}" "${dir}/"
+  done
+}
+
+package_libva-mesa-driver() {
+  pkgdesc="VA-API implementation for gallium"
+  depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'libxshmfence')
+
+  _install fakeinstall/usr/lib/dri/*_drv_video.so
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/"
+  ln -s "${pkgbase}" "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
 
 package_mesa-vdpau() {
   pkgdesc="Mesa VDPAU drivers"
   depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'lm_sensors' 'libxshmfence' 'libunwind')
 
-  install -m755 -d ${pkgdir}/usr/lib/vdpau
-  cp -rv ${srcdir}/fakeinstall/usr/lib/vdpau ${pkgdir}/usr/lib/vdpau
+  _install fakeinstall/usr/lib/vdpau
 
   install -m755 -d "${pkgdir}/usr/share/licenses/"
   ln -s "${pkgbase}" "${pkgdir}/usr/share/licenses/${pkgname}"
@@ -78,17 +115,15 @@ package_mesa-glvnd() {
   pkgdesc="Mesa 3-D graphics library"
   depends=('mesa' 'libglvnd')
 
-  install -m755 -d ${pkgdir}/usr/lib/
   #  --enable-libglvnd
-  cp -rv ${srcdir}/fakeinstall/usr/lib/libGLX_mesa.so* ${pkgdir}/usr/lib/
-  cp -rv ${srcdir}/fakeinstall/usr/lib/libEGL*.so* ${pkgdir}/usr/lib/
+  _install fakeinstall/usr/lib/libGLX_mesa.so*
+  _install fakeinstall/usr/lib/libEGL*.so*
 
-  install -m755 -d "${pkgdir}/usr/share/glvnd/egl_vendor.d"
-  cp -rv ${srcdir}/fakeinstall/usr/share/glvnd/egl_vendor.d/50_mesa.json ${pkgdir}/usr/share/glvnd/egl_vendor.d/
+  _install fakeinstall/usr/share/glvnd/egl_vendor.d/50_mesa.json
 
   # indirect rendering
   # uncomment if needed - provided by nvidia-drivers
-#  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
+  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
 
   install -m755 -d "${pkgdir}/usr/share/licenses/"
   ln -s "${pkgbase}" "${pkgdir}/usr/share/licenses/${pkgname}"
@@ -104,22 +139,23 @@ package_mesa() {
   provides=('nouveau-dri' 'svga-dri' 'mesa-dri')
   conflicts=('nouveau-dri' 'svga-dri' 'mesa-dri')
 
-  install -m755 -d ${pkgdir}/etc
-  cp -rv ${srcdir}/fakeinstall/etc/drirc ${pkgdir}/etc
+  _install fakeinstall/etc/drirc
 
-  install -m755 -d ${pkgdir}/usr/lib/dri
   # nouveau-dri, swrast
-  cp -av ${srcdir}/fakeinstall/usr/lib/dri/*_dri.so ${pkgdir}/usr/lib/dri
+  _install fakeinstall/usr/lib/dri/*_dri.so
 
-  cp -rv ${srcdir}/fakeinstall/usr/lib/bellagio  ${pkgdir}/usr/lib
-  cp -rv ${srcdir}/fakeinstall/usr/lib/d3d  ${pkgdir}/usr/lib
+  _install fakeinstall/usr/lib/bellagio
+  _install fakeinstall/usr/lib/d3d
 
-  cp -rv ${srcdir}/fakeinstall/usr/lib/*.so* ${pkgdir}/usr/lib/
   # provided by opencl-mesa (lib*OpenCL*), mesa-glvnd
-  rm -fv ${pkgdir}/usr/lib/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
+  rm -fv fakeinstall/usr/lib/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
+  _install fakeinstall/usr/lib/*.so*
 
-  cp -rv ${srcdir}/fakeinstall/usr/include ${pkgdir}/usr
-  cp -rv ${srcdir}/fakeinstall/usr/lib/pkgconfig ${pkgdir}/usr/lib/
+  _install fakeinstall/usr/include
+  _install fakeinstall/usr/lib/pkgconfig
+
+  # make sure there are no files left to install
+  find fakeinstall -depth -print0 | xargs -0 rmdir
 
   install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
   install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/"

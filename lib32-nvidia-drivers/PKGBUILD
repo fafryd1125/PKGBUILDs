@@ -13,7 +13,7 @@ pkgdesc="NVIDIA drivers libraries (32-bit)"
 arch=('x86_64')
 url="http://www.nvidia.com/"
 license=('custom')
-depends=( 'lib32-libglvnd') # 'nvidia-drivers'
+depends=('nvidia-drivers' 'lib32-libglvnd')
 optdepends=('lib32-libvdpau: VDPAU wrapper library'
             'lib32-egl-wayland: The EGLStream-based Wayland external platform')
 provides=('lib32-vulkan-driver' 'lib32-opengl-driver')

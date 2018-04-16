@@ -1,0 +1,41 @@
+# $Id$
+# Maintainer: Sébastien Luttringer
+# Contributor: Joel Teichroeb <joel@teichroeb.net>
+
+pkgname=weston
+pkgver=4.0.0
+pkgrel=1
+pkgdesc='Reference implementation of a Wayland compositor'
+arch=('x86_64')
+url='https://wayland.freedesktop.org/'
+license=('MIT')
+depends=('glibc' 'wayland' 'libxkbcommon' 'libinput' 'pixman' 'libdrm' 'pam'
+         'libsystemd' 'cairo' 'libpng' 'libjpeg-turbo' 'libwebp' 'mesa' 'glib2'
+         'pango' 'lcms2' 'libx11' 'libxcb' 'dbus' 'libva' 'libxcursor' 'colord')
+makedepends=('wayland-protocols')
+validpgpkeys=('C7223EBE4EF66513B892598911A30156E0E67611') # Bryce Harrington
+source=("https://wayland.freedesktop.org/releases/$pkgname-$pkgver.tar.xz"{,.sig})
+sha512sums=('0af41016ff4eae85779f95b5c5e44b9683f4ef681a8e52256efeebfa38073082b83e039d0db3c94ac22f22f8d8314c9d6cd16611144b260b353fc5bfdd1ded19'
+            'SKIP')
+
+build() {
+  cd "$pkgname-$pkgver"
+  ./configure \
+      --prefix=/usr \
+      --libexecdir=/usr/lib/weston \
+      --enable-systemd-login \
+      --enable-systemd-notify \
+      --enable-xwayland \
+      --enable-demo-clients-install \
+      --disable-devdocs
+  make
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  make DESTDIR="$pkgdir" install
+
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
+
+# vim:set ts=2 sw=2 et:

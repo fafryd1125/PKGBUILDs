@@ -1,0 +1,35 @@
+# $Id$
+# Maintainer: Tom Gundersen <teg@jklm.no>
+# Maintainer: Sébastien Luttringer <seblu@archlinux.org>
+# Contributor: Joel Teichroeb <joel@teichroeb.net>
+
+pkgname=wayland
+pkgver=1.15.0
+pkgrel=1
+pkgdesc='A computer display server protocol'
+arch=('x86_64')
+url='https://wayland.freedesktop.org/'
+license=('MIT')
+depends=('glibc' 'libffi' 'expat' 'libxml2')
+validpgpkeys=('C7223EBE4EF66513B892598911A30156E0E67611') # Bryce Harrington
+source=("https://wayland.freedesktop.org/releases/$pkgname-$pkgver.tar.xz"{,.sig})
+sha512sums=('f908917f1b575d2dc4d9770d3303e2637e8744fcb5c81feb2af2fe82cc51f54e22beaddfbe775fcf9623584169b7a062c75076132abeb888717180bfab53b3a8'
+            'SKIP')
+
+build() {
+  cd "$pkgname-$pkgver"
+
+  ./configure \
+      --prefix=/usr \
+      --disable-documentation
+  make
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  make DESTDIR="$pkgdir" install
+
+  install -Dm 644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
+
+# vim:set ts=2 sw=2 et:

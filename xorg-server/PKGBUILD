@@ -1,0 +1,193 @@
+# $Id$
+# Maintainer: AndyRTR <andyrtr@archlinux.org>
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgbase=xorg-server
+pkgname=('xorg-server' 'xorg-server-xephyr' 'xorg-server-xdmx' 'xorg-server-xvfb' 'xorg-server-xnest'
+         'xorg-server-xwayland' 'xorg-server-common' 'xorg-server-devel')
+pkgver=1.19.99.904
+pkgrel=1
+arch=('x86_64')
+license=('custom')
+groups=('xorg')
+url="http://xorg.freedesktop.org"
+makedepends=('pixman' 'libx11' 'mesa' 'xtrans' 'libxkbfile' 'libxfont2' 'libpciaccess'
+             'libxv' 'libxmu' 'libxrender' 'libxi' 'libxaw' 'libdmx' 'libxtst' 'libxres'
+             'xorg-xkbcomp' 'xorg-util-macros' 'xorg-font-util' 'libgcrypt' 'libepoxy'
+             'xcb-util' 'xcb-util-image' 'xcb-util-renderutil' 'xcb-util-wm' 'xcb-util-keysyms'
+             'libxshmfence' 'libunwind' 'systemd' 'wayland-protocols' 'xorgproto')
+_commit= # branch
+source=(https://xorg.freedesktop.org/releases/individual/xserver/${pkgbase}-${pkgver}.tar.bz2{,.sig}
+#source=("git+https://anongit.freedesktop.org/git/xorg/xserver.git#commit=$_commit"
+        xvfb-run
+        xvfb-run.1)
+validpgpkeys=('7B27A3F1A6E18CD9588B4AE8310180050905E40C'
+              'C383B778255613DFDB409D91DB221A6900000011'
+              'DD38563A8A8224537D1F90E45B8A2D50A0ECD0D3'
+              '995ED5C8A6138EB0961F18474C09DD83CAAA50B2')
+sha512sums=('b9dccc777d0a30c6b40bddffe1f359dde4103539c6598f04bf8cf5f59e6770229221a199c1866b4eba0cf8d2d87fe878985bbd2e3c6ec5b65e3f16195ea8d57e'
+            'SKIP'
+            'ca1cda27016f7c269cbdecc45da36255afeef5c1973cc484544f9dfbf56ed1868365c93a4c7f93e3a23e5322f084ec0cdd137e15b43872aae7f0c03040028ce6'
+            'de5e2cb3c6825e6cf1f07ca0d52423e17f34d70ec7935e9dd24be5fb9883bf1e03b50ff584931bd3b41095c510ab2aa44d2573fd5feaebdcb59363b65607ff22')
+
+prepare() {
+  cd "${pkgbase}-${pkgver}"
+
+#  patch -Np1 -i ../
+
+  autoreconf -vfi
+}
+
+build() {
+  cd "${pkgbase}-${pkgver}"
+
+  ./configure --prefix=/usr \
+      --enable-ipv6 \
+      --enable-dri \
+      --enable-dmx \
+      --enable-xnest \
+      --enable-xcsecurity \
+      --enable-libunwind \
+      --enable-xorg \
+      --enable-xephyr \
+      --enable-glamor \
+      --enable-xwayland \
+      --enable-kdrive \
+      --enable-config-udev \
+      --enable-systemd-logind \
+      --enable-install-setuid=no \
+      --libexecdir=/usr/lib/xorg-server \
+      --sysconfdir=/etc \
+      --localstatedir=/var \
+      --with-xkb-path=/usr/share/X11/xkb \
+      --with-xkb-output=/var/lib/xkb \
+      --with-fontrootdir=/usr/share/fonts \
+      --with-sha1=libgcrypt
+  make
+
+  # fake installation
+  make DESTDIR=${srcdir}/fakeinstall install
+}
+
+_install() {
+  local src f dir
+  for src; do
+    f="${src#fakeinstall/}"
+    dir="${pkgdir}/${f%/*}"
+    install -m755 -d "${dir}"
+    mv -v "${src}" "${dir}/"
+  done
+}
+
+package_xorg-server-common() {
+  pkgdesc="Xorg server common files"
+  depends=('xkeyboard-config' 'xorg-xkbcomp' 'xorg-setxkbmap')
+
+  install -m644 -Dt "${pkgdir}/usr/share/licenses/${pkgname}" "${pkgbase}-${pkgver}/COPYING"
+
+  _install fakeinstall/usr/share/man/man1/Xserver.1*
+  _install fakeinstall/usr/lib/xorg/protocol.txt
+
+  _install fakeinstall/var/lib/xkb
+}
+
+package_xorg-server() {
+  pkgdesc="Xorg X server"
+  depends=('libepoxy' 'libxfont2' 'pixman' 'xorg-server-common' 'libunwind' 'dbus' 'libgl' 'xf86-input-libinput'
+           'libpciaccess' 'libdrm' 'libxshmfence') # FS#52949
+
+  # see xorg-server-*/hw/xfree86/common/xf86Module.h for ABI versions - we provide major numbers that drivers can depend on
+  # and /usr/lib/pkgconfig/xorg-server.pc in xorg-server-devel pkg
+  provides=('X-ABI-VIDEODRV_VERSION=24' 'X-ABI-XINPUT_VERSION=24.1' 'X-ABI-EXTENSION_VERSION=10.0' 'x-server')
+  install=xorg-server.install
+
+  # distro specific files must be installed in /usr/share/X11/xorg.conf.d
+  install -m755 -d "${pkgdir}/etc/X11/xorg.conf.d"
+
+  _install fakeinstall/usr/bin/{X,Xorg,cvt,gtf}
+
+  _install fakeinstall/usr/lib/xorg/modules
+#  _install fakeinstall/usr/lib/xorg-server #  suid_wrapper
+  _install fakeinstall/usr/share/X11/xorg.conf.d/10-quirks.conf
+  _install fakeinstall/usr/share/man/man1/{Xorg*,cvt*,gtf*}
+  _install fakeinstall/usr/share/man/{man4,man5}
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  ln -sf ../xorg-server-common/COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
+
+package_xorg-server-xephyr() {
+  pkgdesc="A nested X server that runs as an X application"
+  depends=('libxfont2' 'libgl' 'libepoxy' 'libunwind' 'libsystemd' 'libxv' 'pixman' 'xorg-server-common' 'xcb-util-image'
+           'xcb-util-renderutil' 'xcb-util-wm' 'xcb-util-keysyms')
+
+  _install fakeinstall/usr/bin/Xephyr
+  _install fakeinstall/usr/share/man/man1/Xephyr*
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  ln -sf ../xorg-server-common/COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
+
+package_xorg-server-xvfb() {
+  pkgdesc="Virtual framebuffer X server"
+  depends=('libxfont2' 'libunwind' 'libsystemd' 'pixman' 'xorg-server-common' 'xorg-xauth' 'libgl' 'which')
+
+  _install fakeinstall/usr/bin/Xvfb
+  _install fakeinstall/usr/share/man/man1/Xvfb*
+
+  install -m755 "${srcdir}/xvfb-run" "${pkgdir}/usr/bin/"
+  install -m644 "${srcdir}/xvfb-run.1" "${pkgdir}/usr/share/man/man1/"
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  ln -sf ../xorg-server-common/COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
+
+package_xorg-server-xnest() {
+  pkgdesc="A nested X server that runs as an X application"
+  depends=('libxfont2' 'libxext' 'libunwind' 'pixman' 'xorg-server-common' 'libsystemd')
+
+  _install fakeinstall/usr/bin/Xnest
+  _install fakeinstall/usr/share/man/man1/Xnest*
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  ln -sf ../xorg-server-common/COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
+
+package_xorg-server-xdmx() {
+  pkgdesc="Distributed Multihead X Server and utilities"
+  depends=('libxfont2' 'libxi' 'libxaw' 'libxrender' 'libdmx' 'libxfixes' 'libunwind' 'pixman' 'xorg-server-common')
+
+  _install fakeinstall/usr/bin/{Xdmx,dmx*,vdltodmx,xdmxconfig}
+  _install fakeinstall/usr/share/man/man1/{Xdmx*,dmxtodmx*,vdltodmx*,xdmxconfig*}
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  ln -sf ../xorg-server-common/COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
+
+package_xorg-server-xwayland() {
+  pkgdesc="run X clients under wayland"
+  depends=('libxfont2' 'libepoxy' 'libunwind' 'libsystemd' 'libgl' 'pixman' 'xorg-server-common')
+
+  _install fakeinstall/usr/bin/Xwayland
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  ln -sf ../xorg-server-common/COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
+
+package_xorg-server-devel() {
+  pkgdesc="Development files for the X.Org X server"
+  depends=(# see pkgdir/usr/lib/pkgconfig/xorg-server.pc
+           'xorgproto' 'pixman' 'mesa' 'libpciaccess'
+           # not technically required but almost every Xorg pkg needs it to build
+           'xorg-util-macros')
+
+  _install fakeinstall/usr/include/xorg
+  _install fakeinstall/usr/lib/pkgconfig/xorg-server.pc
+  _install fakeinstall/usr/share/aclocal/xorg-server.m4
+
+  # make sure there are no files left to install
+  find fakeinstall -depth -print0 | xargs -0 rmdir
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  ln -sf ../xorg-server-common/COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}

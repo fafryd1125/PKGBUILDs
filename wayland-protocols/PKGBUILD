@@ -1,0 +1,32 @@
+# $Id$
+# Maintainer: Sébastien Luttringer <seblu@seblu.net>
+
+pkgname=wayland-protocols
+pkgver=1.13
+pkgrel=1
+pkgdesc='Specifications of extended Wayland protocols'
+arch=('any')
+url='https://wayland.freedesktop.org/'
+license=('MIT')
+makedepends=('wayland')
+validpgpkeys=('8307C0A224BABDA1BABD0EB9A6EEEC9E0136164A'  # Jonas Ådahl
+              'A66D805F7C9329B4C5D82767CCC4F07FAC641EFF') # Daniel Stone
+source=("https://wayland.freedesktop.org/releases/$pkgname-$pkgver.tar.xz"{,.sig})
+sha512sums=('f35c21da289038651b75af064ec7c10779158829f578e7320faf401e980da3c958d85e5bcad00994c574cac6319a3ab975aa5483a9b438f781b767bd6303e194'
+            'SKIP')
+
+build() {
+  cd "$pkgname-$pkgver"
+
+  ./configure --prefix=/usr
+  make
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  make DESTDIR="$pkgdir" install
+
+  install -Dm 644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
+
+# vim:set ts=2 sw=2 et:

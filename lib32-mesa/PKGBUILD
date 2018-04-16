@@ -10,18 +10,25 @@ pkgrel=1
 arch=('x86_64')
 makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
              'lib32-libxshmfence' 'lib32-libxxf86vm' 'lib32-libxdamage' 'gcc-multilib' 'lib32-libelf' 'lib32-llvm' 'lib32-libvdpau'
-             'lib32-wayland' 'wayland-protocols' 'lib32-libglvnd' 'lib32-lm_sensors' 'meson')
+             'lib32-libglvnd' 'lib32-lm_sensors' 'meson')
 url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
         "meson_get_version.py::https://cgit.freedesktop.org/mesa/mesa/plain/bin/meson_get_version.py?h=mesa-18.0.0"
-        "fix-install.diff::https://git.archlinux.org/svntogit/community.git/plain/trunk/fix-install.diff?h=packages/lib32-mesa"
-        "fix-versions.diff::https://git.archlinux.org/svntogit/community.git/plain/trunk/fix-versions.diff?h=packages/lib32-mesa")
+        "0001-meson-fix-megadriver-symlinking.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0001-meson-fix-megadriver-symlinking.patch?h=packages/mesa"
+        "0002-meson-Set-.so-version-for-xa-like-autotools-does.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0002-meson-Set-.so-version-for-xa-like-autotools-does.patch?h=packages/mesa"
+        "0003-meson-Define-NDEBUG-for-non-debug-builds.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0003-meson-Define-NDEBUG-for-non-debug-builds.patch?h=packages/mesa"
+        "0004-meson-Add-library-versions-to-swr-drivers.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0004-meson-Add-library-versions-to-swr-drivers.patch?h=packages/mesa"
+        "0005-meson-Version-libMesaOpenCL-like-autotools-does.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0005-meson-Version-libMesaOpenCL-like-autotools-does.patch?h=packages/mesa"
+       )
 sha256sums=('694e5c3d37717d23258c1f88bc134223c5d1aac70518d2f9134d6df3ee791eea'
             'SKIP'
             'ee6e8c0b99870e4929bc3183018d21e359bd3f90fcb40547852a049497c54bb2'
-            'bd9ea1fbb4d03b1e278b9995c2ddc1286ddfc8372182429ce34c841d08a809d4'
-            '2f6852a4a3699926520b1da4b9423170549b3b9e1f4073c18dc6b9ba8060dee2')
+            'c73a3a0005b96e43c39b4c5470e4d677f5c98da144d682d0cae4d7c643404597'
+            '34ae6375836c8aac2aa962b460a2631297bf210416bf02063ca0a4faa5fa2a45'
+            'eb29a8c8cfd111dddcbed0f550fc5436754e7a0b69adf97870aa1fc05fdf356d'
+            '4d172af7607cba7a4e1ffa98a3ed770740981262231ff81fc14f5fe8a40e3cd7'
+            'acda18e7bd556fd9bb9cdf902a119b4bc64f43fe1db07e1d4ae18276824f3b4c')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
@@ -33,13 +40,12 @@ prepare() {
 
 #  patch -Np1 -i ../
 
-  # fix symlinks created for vdpau drivers to be relative
-  # this is upstreamable
-  patch -Np1 -i ../fix-install.diff
-
-  # fix library versioning
-  # this is upstreamable
-  patch -Np1 -i ../fix-versions.diff
+  # Upstreamed meson fixes
+  patch -Np1 -i ../0001-meson-fix-megadriver-symlinking.patch
+  patch -Np1 -i ../0002-meson-Set-.so-version-for-xa-like-autotools-does.patch
+  patch -Np1 -i ../0003-meson-Define-NDEBUG-for-non-debug-builds.patch
+  patch -Np1 -i ../0004-meson-Add-library-versions-to-swr-drivers.patch
+  patch -Np1 -i ../0005-meson-Version-libMesaOpenCL-like-autotools-does.patch
 
   # file missing from tarball
   cp ../meson_get_version.py bin/
@@ -67,7 +73,7 @@ build() {
    -Dlibunwind=false
    -Dllvm=true
    -Dosmesa=gallium
-   -Dplatforms=x11,wayland,drm
+   -Dplatforms=x11,drm
    -Dgbm=true
    -Dtexture-float=true
     )
@@ -136,7 +142,7 @@ package_lib32-mesa-glvnd() {
 package_lib32-mesa() {
   pkgdesc="an open-source implementation of the OpenGL specification (32-bit)"
   depends=('lib32-libdrm' 'lib32-libxxf86vm' 'lib32-libxdamage' 'lib32-libxshmfence' 'lib32-libelf'
-           'lib32-llvm-libs' 'lib32-wayland' 'lib32-lm_sensors' 'mesa')
+           'lib32-llvm-libs' 'lib32-lm_sensors' 'mesa')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'lib32-mesa-vdpau: for accelerated video playback')
   provides=('lib32-nouveau-dri' 'lib32-mesa-dri')

@@ -8,22 +8,28 @@ pkgver=18.0.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
-             'libxshmfence' 'libxxf86vm' 'libxdamage' 'libvdpau' 'libva' 'wayland' 'wayland-protocols'
-             'elfutils' 'llvm' 'libomxil-bellagio' 'libclc' 'clang' 'libunwind'  'libglvnd' 'meson'
-             'lm_sensors' 'libxvmc')
+             'libxshmfence' 'libxxf86vm' 'libxdamage' 'libvdpau' 'libva' 'elfutils' 'llvm' 'libomxil-bellagio'
+             'libclc' 'clang' 'libunwind'  'libglvnd' 'meson' 'lm_sensors' 'libxvmc')
 url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
         "meson_get_version.py::https://cgit.freedesktop.org/mesa/mesa/plain/bin/meson_get_version.py?h=mesa-18.0.0"
-        "fix-install.diff::https://git.archlinux.org/svntogit/packages.git/plain/trunk/fix-install.diff?h=packages/mesa"
-        "fix-versions.diff::https://git.archlinux.org/svntogit/packages.git/plain/trunk/fix-versions.diff?h=packages/mesa"
-        'LICENSE')
+        'LICENSE'
+        "0001-meson-fix-megadriver-symlinking.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0001-meson-fix-megadriver-symlinking.patch?h=packages/mesa"
+        "0002-meson-Set-.so-version-for-xa-like-autotools-does.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0002-meson-Set-.so-version-for-xa-like-autotools-does.patch?h=packages/mesa"
+        "0003-meson-Define-NDEBUG-for-non-debug-builds.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0003-meson-Define-NDEBUG-for-non-debug-builds.patch?h=packages/mesa"
+        "0004-meson-Add-library-versions-to-swr-drivers.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0004-meson-Add-library-versions-to-swr-drivers.patch?h=packages/mesa"
+        "0005-meson-Version-libMesaOpenCL-like-autotools-does.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0005-meson-Version-libMesaOpenCL-like-autotools-does.patch?h=packages/mesa"
+       )
 sha256sums=('694e5c3d37717d23258c1f88bc134223c5d1aac70518d2f9134d6df3ee791eea'
             'SKIP'
             'ee6e8c0b99870e4929bc3183018d21e359bd3f90fcb40547852a049497c54bb2'
-            'bd9ea1fbb4d03b1e278b9995c2ddc1286ddfc8372182429ce34c841d08a809d4'
-            '2f6852a4a3699926520b1da4b9423170549b3b9e1f4073c18dc6b9ba8060dee2'
-            '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537')
+            '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537'
+            'c73a3a0005b96e43c39b4c5470e4d677f5c98da144d682d0cae4d7c643404597'
+            '34ae6375836c8aac2aa962b460a2631297bf210416bf02063ca0a4faa5fa2a45'
+            'eb29a8c8cfd111dddcbed0f550fc5436754e7a0b69adf97870aa1fc05fdf356d'
+            '4d172af7607cba7a4e1ffa98a3ed770740981262231ff81fc14f5fe8a40e3cd7'
+            'acda18e7bd556fd9bb9cdf902a119b4bc64f43fe1db07e1d4ae18276824f3b4c')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
@@ -35,13 +41,12 @@ prepare() {
 
 #  patch -Np1 -i ../
 
-  # fix symlinks created for vdpau drivers to be relative
-  # this is upstreamable
-  patch -Np1 -i ../fix-install.diff
-
-  # fix library versioning
-  # this is upstreamable
-  patch -Np1 -i ../fix-versions.diff
+  # Upstreamed meson fixes
+  patch -Np1 -i ../0001-meson-fix-megadriver-symlinking.patch
+  patch -Np1 -i ../0002-meson-Set-.so-version-for-xa-like-autotools-does.patch
+  patch -Np1 -i ../0003-meson-Define-NDEBUG-for-non-debug-builds.patch
+  patch -Np1 -i ../0004-meson-Add-library-versions-to-swr-drivers.patch
+  patch -Np1 -i ../0005-meson-Version-libMesaOpenCL-like-autotools-does.patch
 
   # file missing from tarball
   cp ../meson_get_version.py bin/
@@ -61,7 +66,7 @@ build() {
    -Dglvnd=true
    -Dllvm=true
    -Dosmesa=gallium
-   -Dplatforms=x11,wayland,drm
+   -Dplatforms=x11,drm
    -Dgbm=true
    -Dtexture-float=true
     )
@@ -131,7 +136,7 @@ package_mesa-glvnd() {
 
 package_mesa() {
   pkgdesc="an open-source implementation of the OpenGL specification"
-  depends=('libdrm' 'wayland' 'libxxf86vm' 'libxdamage' 'libxshmfence' 'libelf'
+  depends=('libdrm' 'libxxf86vm' 'libxdamage' 'libxshmfence' 'libelf'
            'libomxil-bellagio' 'libunwind' 'llvm-libs' 'lm_sensors')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'mesa-vdpau: for accelerated video playback'

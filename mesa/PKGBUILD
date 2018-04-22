@@ -4,7 +4,9 @@
 
 pkgbase=mesa
 pkgname=('libva-mesa-driver'  'mesa-vdpau' 'mesa-glvnd' 'mesa')
-pkgver=18.0.0
+_rc=rc1
+pkgver=18.1.0${_rc}
+_pkgver=18.1.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -12,24 +14,13 @@ makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'd
              'libclc' 'clang' 'libunwind'  'libglvnd' 'meson' 'lm_sensors' 'libxvmc')
 url="https://www.mesa3d.org/"
 license=('custom')
-source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
-        "meson_get_version.py::https://cgit.freedesktop.org/mesa/mesa/plain/bin/meson_get_version.py?h=mesa-18.0.0"
+source=(
+#        https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
+        "https://mesa.freedesktop.org/archive/${pkgbase}-${_pkgver}-${_rc}.tar.xz"
         'LICENSE'
-        "0001-meson-fix-megadriver-symlinking.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0001-meson-fix-megadriver-symlinking.patch?h=packages/mesa"
-        "0002-meson-Set-.so-version-for-xa-like-autotools-does.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0002-meson-Set-.so-version-for-xa-like-autotools-does.patch?h=packages/mesa"
-        "0003-meson-Define-NDEBUG-for-non-debug-builds.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0003-meson-Define-NDEBUG-for-non-debug-builds.patch?h=packages/mesa"
-        "0004-meson-Add-library-versions-to-swr-drivers.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0004-meson-Add-library-versions-to-swr-drivers.patch?h=packages/mesa"
-        "0005-meson-Version-libMesaOpenCL-like-autotools-does.patch::https://git.archlinux.org/svntogit/packages.git/plain/trunk/0005-meson-Version-libMesaOpenCL-like-autotools-does.patch?h=packages/mesa"
        )
-sha256sums=('694e5c3d37717d23258c1f88bc134223c5d1aac70518d2f9134d6df3ee791eea'
-            'SKIP'
-            'ee6e8c0b99870e4929bc3183018d21e359bd3f90fcb40547852a049497c54bb2'
-            '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537'
-            'c73a3a0005b96e43c39b4c5470e4d677f5c98da144d682d0cae4d7c643404597'
-            '34ae6375836c8aac2aa962b460a2631297bf210416bf02063ca0a4faa5fa2a45'
-            'eb29a8c8cfd111dddcbed0f550fc5436754e7a0b69adf97870aa1fc05fdf356d'
-            '4d172af7607cba7a4e1ffa98a3ed770740981262231ff81fc14f5fe8a40e3cd7'
-            'acda18e7bd556fd9bb9cdf902a119b4bc64f43fe1db07e1d4ae18276824f3b4c')
+sha256sums=('50d65a58aaff800756796b6aa9eb8fada5f02f2cd7656b40c32b937615b81ef9'
+            '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
@@ -37,29 +28,22 @@ validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suáre
 prepare() {
   mkdir build
 
-  cd "${pkgbase}-${pkgver}"
+#  cd "${pkgbase}-${pkgver}"
+  cd "${pkgbase}-${_pkgver}-${_rc}"
 
 #  patch -Np1 -i ../
-
-  # Upstreamed meson fixes
-  patch -Np1 -i ../0001-meson-fix-megadriver-symlinking.patch
-  patch -Np1 -i ../0002-meson-Set-.so-version-for-xa-like-autotools-does.patch
-  patch -Np1 -i ../0003-meson-Define-NDEBUG-for-non-debug-builds.patch
-  patch -Np1 -i ../0004-meson-Add-library-versions-to-swr-drivers.patch
-  patch -Np1 -i ../0005-meson-Version-libMesaOpenCL-like-autotools-does.patch
-
-  # file missing from tarball
-  cp ../meson_get_version.py bin/
 }
 
 build() {
   cd build
 
    local meson_options=(
+   -Db_ndebug=true
    -Ddri3=true
    -Ddri-drivers=nouveau
    -Dgallium-drivers=nouveau,swrast
    -Dgallium-nine=true
+   -Dgallium-omx=bellagio
    -Dvulkan-drivers=''
    -Dvulkan-icd-dir=''
    -Dgles1=false
@@ -76,12 +60,12 @@ build() {
         --sysconfdir=/etc     \
         --prefix=/usr         \
         "${meson_options[@]}" \
-        ../${pkgbase}-${pkgver}
-  meson configure
+        ../${pkgbase}-${_pkgver}-${_rc}
+#        ../${pkgbase}-${pkgver}
+#  meson configure
   ninja
 
   # fake installation
-  mkdir "$srcdir/fakeinstall"
   DESTDIR="${srcdir}/fakeinstall" ninja install
 }
 

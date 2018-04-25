@@ -2,53 +2,53 @@
 # Maintainer: Jan de Groot <jgc@archlinux.org>
 # Maintainer: Andreas Radke <andyrtr@archlinux.org>
 
-pkgbase=mesa-git
-_pkgbase=mesa
-pkgname=('mesa-vdpau-git' 'mesa-glvnd-git'  'mesa-git')
-pkgver=18.1.0_devel.99748.df1d5174fc
+_pkgname=mesa
+pkgname=mesa-git
+pkgver=18.2.0_devel.101822.4559aefb5c
 pkgrel=1
+pkgdesc="Mesa 3-D graphics library"
 arch=('x86_64')
-makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
-             'libxshmfence' 'libxxf86vm' 'libxdamage' 'libvdpau' 'libva' 'wayland' 'elfutils' 'llvm'
-             'libomxil-bellagio' 'libclc' 'clang' 'libunwind'  'libglvnd' 'git' 'meson' 'lm_sensors'
-             'libxvmc')
+depends=('libdrm' 'libxxf86vm' 'libxdamage' 'libxshmfence' 'libelf' 'libomxil-bellagio'
+         'libunwind' 'llvm-libs' 'lm_sensors' 'libx11' 'expat' 'libglvnd')
+makedepends=('python2-mako' 'libxml2'  'glproto' 'dri2proto' 'dri3proto' 'presentproto'
+             'libvdpau' 'libva' 'elfutils' 'llvm' 'libclc' 'clang' 'git' 'meson' 'libxvmc')
+provides=('mesa' 'mesa-glvnd' 'mesa-vdpau' 'libva-mesa-driver' 'opengl-driver') # 'vulkan-driver'
+conflicts=('mesa' 'mesa-glvnd' 'mesa-vdpau' 'libva-mesa-driver')
 url="https://www.mesa3d.org/"
 license=('custom')
 source=('mesa::git+http://anongit.freedesktop.org/git/mesa/mesa.git#branch=master'
-        'LICENSE'
-        '0002-glvnd-fix-gl-dot-pc.patch')
+        'LICENSE')
 sha256sums=('SKIP'
-            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2'
-            '64a77944a28026b066c1682c7258d02289d257b24b6f173a9f7580c48beed966')
+            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 
 pkgver() {
-  cd "$_pkgbase"
+  cd "${_pkgname}"
   echo $(cat VERSION | tr "-" "_").$(git rev-list --count HEAD).$(git rev-parse --short HEAD)
 }
 
 prepare() {
   mkdir build
-
-  cd "$_pkgbase"
-  patch -Np1 -i ../0002-glvnd-fix-gl-dot-pc.patch
 }
 
 build() {
   cd build
 
    local meson_options=(
+   -Db_ndebug=true
    -Ddri3=true
    -Ddri-drivers=nouveau
    -Dgallium-drivers=nouveau,swrast
    -Dgallium-nine=true
+   -Dgallium-omx=bellagio
    -Dvulkan-drivers=''
    -Dvulkan-icd-dir=''
    -Dgles1=false
+   -Dgles2=false
    -Dglvnd=true
    -Dllvm=true
    -Dosmesa=gallium
-   -Dplatforms=x11,wayland,drm
+   -Dplatforms=x11,drm
    -Dgbm=true
    -Dtexture-float=true
     )
@@ -58,76 +58,17 @@ build() {
         --sysconfdir=/etc     \
         --prefix=/usr         \
         "${meson_options[@]}" \
-        ../${_pkgbase}
+        ../${_pkgname}
   meson configure
   ninja
-
-  # fake installation
-  mkdir $srcdir/fakeinstall
-  DESTDIR="${srcdir}/fakeinstall" ninja install
 }
 
-package_mesa-vdpau-git() {
-  pkgdesc="Mesa VDPAU drivers (git version)"
-  depends=('libdrm' 'libx11' 'llvm-libs' 'expat' 'libelf' 'lm_sensors' 'libxshmfence' 'libunwind'
-           "mesa-git=${pkgver}")
-  provides=('mesa-vdpau')
-  conflicts=('mesa-vdpau')
-
-  install -m755 -d ${pkgdir}/usr/lib/vdpau
-  cp -rv ${srcdir}/fakeinstall/usr/lib/vdpau/* ${pkgdir}/usr/lib/vdpau
-
-  install -m755 -d "${pkgdir}/usr/share/licenses/"
-  ln -s "${pkgbase}" "${pkgdir}/usr/share/licenses/${pkgname}"
-}
-
-package_mesa-glvnd-git() {
-  pkgdesc="Mesa 3-D graphics library"
-  depends=('mesa-git' 'libglvnd')
-
-  install -m755 -d ${pkgdir}/usr/lib/
-  #  --enable-libglvnd
-  cp -rv ${srcdir}/fakeinstall/usr/lib/libGLX_mesa.so* ${pkgdir}/usr/lib/
-  cp -rv ${srcdir}/fakeinstall/usr/lib/libEGL*.so* ${pkgdir}/usr/lib/
-
-  install -m755 -d "${pkgdir}/usr/share/glvnd/egl_vendor.d"
-  cp -rv ${srcdir}/fakeinstall/usr/share/glvnd/egl_vendor.d/50_mesa.json ${pkgdir}/usr/share/glvnd/egl_vendor.d/
+package() {
+  cd build
+  DESTDIR="${pkgdir}" ninja install
 
   # indirect rendering
-  # uncomment if needed - provided by nvidia-drivers
-#  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
+  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
 
-  install -m755 -d "${pkgdir}/usr/share/licenses/"
-  ln -s "${pkgbase}" "${pkgdir}/usr/share/licenses/${pkgname}"
-}
-
-package_mesa-git() {
-  pkgdesc="an open-source implementation of the OpenGL specification"
-  depends=('libdrm' 'wayland' 'libxxf86vm' 'libxdamage' 'libxshmfence' 'libelf'
-           'libomxil-bellagio' 'libunwind' 'llvm-libs' 'lm_sensors')
-  optdepends=('opengl-man-pages: for the OpenGL API man pages'
-              'mesa-vdpau: for accelerated video playback'
-              'libva-mesa-driver: for accelerated video playback')
-  provides=('nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa')
-  conflicts=('nouveau-dri' 'svga-dri' 'mesa-dri' 'mesa')
-
-  install -m755 -d ${pkgdir}/etc
-  cp -rv ${srcdir}/fakeinstall/etc/drirc ${pkgdir}/etc
-
-  install -m755 -d ${pkgdir}/usr/lib/dri
-  # nouveau-dri, swrast
-  cp -av ${srcdir}/fakeinstall/usr/lib/dri/*_dri.so ${pkgdir}/usr/lib/dri
-
-  cp -rv ${srcdir}/fakeinstall/usr/lib/bellagio  ${pkgdir}/usr/lib
-  cp -rv ${srcdir}/fakeinstall/usr/lib/d3d  ${pkgdir}/usr/lib
-
-  cp -rv ${srcdir}/fakeinstall/usr/lib/*.so* ${pkgdir}/usr/lib/
-  # provided by opencl-mesa (lib*OpenCL*), mesa-glvnd-git
-  rm -fv ${pkgdir}/usr/lib/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
-
-  cp -rv ${srcdir}/fakeinstall/usr/include ${pkgdir}/usr
-  cp -rv ${srcdir}/fakeinstall/usr/lib/pkgconfig ${pkgdir}/usr/lib/
-
-  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
-  install -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/"
+  install -m644 -Dt "${pkgdir}/usr/share/licenses/${pkgname}" "${srcdir}/LICENSE"
 }

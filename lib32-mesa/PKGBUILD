@@ -5,7 +5,7 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-libva-mesa-driver' 'lib32-mesa-vdpau' 'lib32-mesa-glvnd' 'lib32-mesa')
-_rc=rc1
+_rc=rc2
 pkgver=18.1.0${_rc}
 _pkgver=18.1.0
 pkgrel=1
@@ -19,7 +19,7 @@ source=(
 #        https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
         "https://mesa.freedesktop.org/archive/${_pkgname}-${_pkgver}-${_rc}.tar.xz"
        )
-sha256sums=('50d65a58aaff800756796b6aa9eb8fada5f02f2cd7656b40c32b937615b81ef9')
+sha256sums=('39f0a0c748edcd13b1bbefbf203be937a7931f3e325a908c59fecc91d1bd008e')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"

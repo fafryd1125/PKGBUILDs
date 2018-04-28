@@ -4,7 +4,7 @@
 
 pkgbase=mesa
 pkgname=('libva-mesa-driver'  'mesa-vdpau' 'mesa-glvnd' 'mesa')
-_rc=rc1
+_rc=rc2
 pkgver=18.1.0${_rc}
 _pkgver=18.1.0
 pkgrel=1
@@ -19,7 +19,7 @@ source=(
         "https://mesa.freedesktop.org/archive/${pkgbase}-${_pkgver}-${_rc}.tar.xz"
         'LICENSE'
        )
-sha256sums=('50d65a58aaff800756796b6aa9eb8fada5f02f2cd7656b40c32b937615b81ef9'
+sha256sums=('39f0a0c748edcd13b1bbefbf203be937a7931f3e325a908c59fecc91d1bd008e'
             '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>

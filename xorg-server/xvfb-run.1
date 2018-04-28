@@ -1,5 +1,3 @@
-.\" $Id: xvfb-run.1 2138 2005-01-17 23:40:27Z branden $
-.\"
 .\" Copyright 1998-2004 Branden Robinson <branden@debian.org>.
 .\"
 .\" This is free software; you may redistribute it and/or modify
@@ -157,12 +155,7 @@ to achieve the latter function.
 The default is \(oq\-screen 0 640x480x8\(cq.
 .TP
 .BI \-w\  delay \fR,\fB\ \-\-wait= delay
-Wait
-.I delay
-seconds after launching
-.B Xvfb
-before attempting to start the specified command.
-The default is 3.
+Ignored for compatibility with earlier versions.
 .SH ENVIRONMENT
 .TP
 .B COLUMNS
@@ -266,14 +259,14 @@ their own, so they will have to be killed before
 will exit.
 .SH BUGS
 See
-.URL "http://bugs.debian.org/xvfb" "the Debian Bug Tracking System" .
+.URL "https://bugs.debian.org/xvfb" "the Debian Bug Tracking System" .
 If you wish to report a bug in
 .BR xvfb\-run ,
 please use the 
 .BR reportbug (1)
 command.
 .SH AUTHOR
-.B xfvb\-run
+.B xvfb\-run
 was written by Branden Robinson and Jeff Licquia with sponsorship from
 Progeny Linux Systems.
 .SH "SEE ALSO"

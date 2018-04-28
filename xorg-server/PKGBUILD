@@ -5,7 +5,7 @@
 pkgbase=xorg-server
 pkgname=('xorg-server' 'xorg-server-xephyr' 'xorg-server-xdmx' 'xorg-server-xvfb' 'xorg-server-xnest'
          'xorg-server-xwayland' 'xorg-server-common' 'xorg-server-devel')
-pkgver=1.19.99.904
+pkgver=1.19.99.905
 pkgrel=1
 arch=('x86_64')
 license=('custom')
@@ -25,10 +25,10 @@ validpgpkeys=('7B27A3F1A6E18CD9588B4AE8310180050905E40C'
               'C383B778255613DFDB409D91DB221A6900000011'
               'DD38563A8A8224537D1F90E45B8A2D50A0ECD0D3'
               '995ED5C8A6138EB0961F18474C09DD83CAAA50B2')
-sha512sums=('b9dccc777d0a30c6b40bddffe1f359dde4103539c6598f04bf8cf5f59e6770229221a199c1866b4eba0cf8d2d87fe878985bbd2e3c6ec5b65e3f16195ea8d57e'
+sha512sums=('9a6f173835989f7562debfbadae0077d75e35bfad5be1f78931fe46ac43df20591162950b27e2c813fd857114f98247be28d357566e45e5d3ac6b60873d94466'
             'SKIP'
-            'ca1cda27016f7c269cbdecc45da36255afeef5c1973cc484544f9dfbf56ed1868365c93a4c7f93e3a23e5322f084ec0cdd137e15b43872aae7f0c03040028ce6'
-            'de5e2cb3c6825e6cf1f07ca0d52423e17f34d70ec7935e9dd24be5fb9883bf1e03b50ff584931bd3b41095c510ab2aa44d2573fd5feaebdcb59363b65607ff22')
+            '190fa51c0a69d74e8e24b851de51d1bf191e318e27f1950bfa0f14e403b2e5233d338f76777bf0a767d74496946ea79e94c25b1cedeb3740c011794ddebde6d5'
+            'd2ba5be4d656cc1b285346f633315973517a16ce47ea314fe41409477884d08eb2b5e435fbff628ba2bb3a6e35f4d300cdfd6b324f00c09692defbf0264b8de7')
 
 prepare() {
   cd "${pkgbase}-${pkgver}"

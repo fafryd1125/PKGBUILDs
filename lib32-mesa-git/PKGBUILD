@@ -1,0 +1,83 @@
+# $Id$
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+
+_pkgname=mesa
+pkgname=lib32-mesa-git
+pkgver=18.2.0_devel.101947.96ed3714fc
+pkgrel=1
+pkgdesc="Mesa 3-D graphics library (32-bit)"
+arch=('x86_64')
+depends=('lib32-libdrm' 'lib32-libxxf86vm' 'lib32-libxdamage' 'lib32-libxshmfence' 'lib32-libelf'
+         'lib32-llvm-libs' 'lib32-lm_sensors' 'mesa' 'lib32-libglvnd' 'lib32-libx11' 'lib32-expat')
+makedepends=('python2-mako' 'lib32-libxml2' 'glproto' 'dri2proto' 'dri3proto' 'presentproto'
+             'gcc-multilib' 'lib32-llvm' 'lib32-libvdpau' 'meson' 'git')
+provides=('lib32-mesa' 'lib32-mesa-glvnd' 'lib32-mesa-vdpau' 'lib32-libva-mesa-driver' 'lib32-opengl-driver') # 'vulkan-driver'
+conflicts=('lib32-mesa' 'lib32-mesa-glvnd' 'lib32-mesa-vdpau' 'lib32-libva-mesa-driver')
+url="https://www.mesa3d.org/"
+license=('custom')
+source=('mesa::git+http://anongit.freedesktop.org/git/mesa/mesa.git#branch=master')
+sha512sums=('SKIP')
+
+pkgver() {
+  cd "${_pkgname}"
+  echo $(cat VERSION | tr "-" "_").$(git rev-list --count HEAD).$(git rev-parse --short HEAD)
+}
+
+prepare() {
+  mkdir build
+
+  cd "${_pkgname}"
+
+#  patch -Np1 -i ../
+}
+
+build() {
+  export CC="gcc -m32"
+  export CXX="g++ -m32"
+  export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
+  export LLVM_CONFIG="/usr/bin/llvm-config32"
+
+  cd build
+
+   local meson_options=(
+   -Db_ndebug=true
+   -Ddri3=true
+   -Ddri-drivers=nouveau
+   -Dgallium-drivers=nouveau,swrast
+   -Dgallium-nine=true
+   -Dgallium-xvmc=false
+   -Dvulkan-drivers=''
+   -Dvulkan-icd-dir=''
+   -Dgles1=false
+   -Dgles2=false
+   -Dglvnd=true
+   -Dlibunwind=false
+   -Dllvm=true
+   -Dosmesa=gallium
+   -Dplatforms=x11,drm
+   -Dgbm=true
+   -Dtexture-float=true
+    )
+
+  meson                       \
+        --buildtype=release   \
+        --sysconfdir=/etc     \
+        --prefix=/usr         \
+        --libdir=/usr/lib32   \
+        "${meson_options[@]}" \
+        ../${_pkgname}
+#  meson configure
+  ninja
+}
+
+package() {
+  cd build
+  DESTDIR="${pkgdir}" ninja install
+
+  rm -rv ${pkgdir}/etc
+  rm -rv ${pkgdir}/usr/{include,share}
+
+  install -m755 -d "${pkgdir}/usr/share/licenses"
+  ln -s "${_pkgname}" "$pkgdir/usr/share/licenses/${pkgname}"
+}

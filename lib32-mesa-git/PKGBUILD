@@ -79,5 +79,5 @@ package() {
   rm -rv ${pkgdir}/usr/{include,share}
 
   install -m755 -d "${pkgdir}/usr/share/licenses"
-  ln -s "${_pkgname}" "$pkgdir/usr/share/licenses/${pkgname}"
+  ln -s "${pkgname#*-}" "$pkgdir/usr/share/licenses/${pkgname}"
 }

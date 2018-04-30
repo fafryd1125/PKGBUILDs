@@ -4,17 +4,16 @@
 
 pkgname=xf86-video-nouveau-git
 _pkgname=xf86-video-nouveau
-pkgver=1.0.13.r7.g1516d35
+pkgver=1.0.15.r5.gac8f7b9
 pkgrel=1
 pkgdesc="Open Source 2D acceleration driver for nVidia cards"
-arch=('i686' 'x86_64')
+arch=('x86_64')
 url="http://nouveau.freedesktop.org/"
 license=('GPL')
 depends=('libsystemd' 'mesa')
-makedepends=('xorg-server-devel' 'X-ABI-VIDEODRV_VERSION=23' 'systemd' 'git')
+makedepends=('xorg-server-devel' 'X-ABI-VIDEODRV_VERSION=24' 'systemd' 'git')
 provides=('xf86-video-nouveau')
-conflicts=('xf86-video-nouveau' 'xorg-server<1.19' 'X-ABI-VIDEODRV_VERSION<23' 'X-ABI-VIDEODRV_VERSION>=24')
-install=$pkgname.install
+conflicts=('xf86-video-nouveau' 'xorg-server<1.19.99' 'X-ABI-VIDEODRV_VERSION<24' 'X-ABI-VIDEODRV_VERSION>=25')
 source=('xf86-video-nouveau::git+https://anongit.freedesktop.org/git/nouveau/xf86-video-nouveau.git')
 sha256sums=('SKIP')
 #validpgpkeys=('B97BD6A80CAC4981091AE547FE558C72A67013C3') # Maarten Lankhorst <maarten@debian.org>
@@ -25,6 +24,13 @@ pkgver() {
 }
 
 build() {
+  # Since pacman 5.0.2-2, hardened flags are now enabled in makepkg.conf
+  # With them, module fail to load with undefined symbol.
+  # See https://bugs.archlinux.org/task/55102 / https://bugs.archlinux.org/task/54845
+  export CFLAGS=${CFLAGS/-fno-plt}
+  export CXXFLAGS=${CXXFLAGS/-fno-plt}
+  export LDFLAGS=${LDFLAGS/,-z,now}
+
   cd "$_pkgname"
 
   ./autogen.sh

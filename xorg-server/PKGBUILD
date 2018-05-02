@@ -15,58 +15,73 @@ makedepends=('pixman' 'libx11' 'mesa' 'xtrans' 'libxkbfile' 'libxfont2' 'libpcia
              'libxv' 'libxmu' 'libxrender' 'libxi' 'libxaw' 'libdmx' 'libxtst' 'libxres'
              'xorg-xkbcomp' 'xorg-util-macros' 'xorg-font-util' 'libgcrypt' 'libepoxy'
              'xcb-util' 'xcb-util-image' 'xcb-util-renderutil' 'xcb-util-wm' 'xcb-util-keysyms'
-             'libxshmfence' 'libunwind' 'systemd' 'wayland-protocols' 'xorgproto')
-_commit= # branch
-source=(https://xorg.freedesktop.org/releases/individual/xserver/${pkgbase}-${pkgver}.tar.bz2{,.sig}
-#source=("git+https://anongit.freedesktop.org/git/xorg/xserver.git#commit=$_commit"
-        xvfb-run
-        xvfb-run.1)
+             'libxshmfence' 'libunwind' 'systemd' 'wayland-protocols' 'meson' 'xorgproto'
+             'clang' 'git')
+_commit=a843c61456b2046fb1780415f17162b503243af7 # branch
+#source=(https://xorg.freedesktop.org/releases/individual/xserver/${pkgbase}-${pkgver}.tar.bz2{,.sig}
+source=("git+https://anongit.freedesktop.org/git/xorg/xserver.git#commit=$_commit"
+        'xvfb-run'
+        'xvfb-run.1'
+        'xserver-meson-Fix-module_dir-configuration-v2.patch'
+       )
 validpgpkeys=('7B27A3F1A6E18CD9588B4AE8310180050905E40C'
               'C383B778255613DFDB409D91DB221A6900000011'
               'DD38563A8A8224537D1F90E45B8A2D50A0ECD0D3'
               '995ED5C8A6138EB0961F18474C09DD83CAAA50B2')
-sha512sums=('9a6f173835989f7562debfbadae0077d75e35bfad5be1f78931fe46ac43df20591162950b27e2c813fd857114f98247be28d357566e45e5d3ac6b60873d94466'
-            'SKIP'
+sha512sums=('SKIP'
             '190fa51c0a69d74e8e24b851de51d1bf191e318e27f1950bfa0f14e403b2e5233d338f76777bf0a767d74496946ea79e94c25b1cedeb3740c011794ddebde6d5'
-            'd2ba5be4d656cc1b285346f633315973517a16ce47ea314fe41409477884d08eb2b5e435fbff628ba2bb3a6e35f4d300cdfd6b324f00c09692defbf0264b8de7')
+            'd2ba5be4d656cc1b285346f633315973517a16ce47ea314fe41409477884d08eb2b5e435fbff628ba2bb3a6e35f4d300cdfd6b324f00c09692defbf0264b8de7'
+            'a4ceadc6cc85c2617271630560f3123236be6880066b2320aa2899530285351722d492afb01ba1a625ed50ce48e59a045b3406aed673612a5b18a1b2302bd574')
 
 prepare() {
-  cd "${pkgbase}-${pkgver}"
+  mkdir build
 
-#  patch -Np1 -i ../
-
-  autoreconf -vfi
+  cd xserver
+  patch -Np1 -i ../xserver-meson-Fix-module_dir-configuration-v2.patch
 }
 
 build() {
-  cd "${pkgbase}-${pkgver}"
+  export 'CC=clang'
+  export 'CXX=clang++'
 
-  ./configure --prefix=/usr \
-      --enable-ipv6 \
-      --enable-dri \
-      --enable-dmx \
-      --enable-xnest \
-      --enable-xcsecurity \
-      --enable-libunwind \
-      --enable-xorg \
-      --enable-xephyr \
-      --enable-glamor \
-      --enable-xwayland \
-      --enable-kdrive \
-      --enable-config-udev \
-      --enable-systemd-logind \
-      --enable-install-setuid=no \
-      --libexecdir=/usr/lib/xorg-server \
-      --sysconfdir=/etc \
-      --localstatedir=/var \
-      --with-xkb-path=/usr/share/X11/xkb \
-      --with-xkb-output=/var/lib/xkb \
-      --with-fontrootdir=/usr/share/fonts \
-      --with-sha1=libgcrypt
-  make
+  # Since pacman 5.0.2-2, hardened flags are now enabled in makepkg.conf
+  # With them, module fail to load with undefined symbol.
+  # See https://bugs.archlinux.org/task/55102 / https://bugs.archlinux.org/task/54845
+#  export CFLAGS=${CFLAGS/-fno-plt}
+#  export CXXFLAGS=${CXXFLAGS/-fno-plt}
+#  export LDFLAGS=${LDFLAGS/,-z,now}
+
+  cd build
+
+  local meson_options=(
+  -Ddefault_library=shared
+
+  -Ddmx=true
+  -Ddri1=true
+  -Ddri2=true
+  -Ddri3=true
+  -Dglx=true
+  -Dipv6=true
+  -Dlog_dir=/var/log
+  -Dxkb_dir=/usr/share/X11/xkb
+  -Dxkb_output_dir=/var/lib/xkb
+  -Dxephyr=true
+  -Dxnest=true
+  -Dxorg=true
+  -Dxwayland=true
+  )
+
+  meson \
+    --prefix=/usr \
+    --libexecdir=/usr/lib/xorg-server \
+    --buildtype=release \
+    "${meson_options[@]}" \
+    ../xserver
+  meson configure
+  ninja
 
   # fake installation
-  make DESTDIR=${srcdir}/fakeinstall install
+  DESTDIR="${srcdir}/fakeinstall" ninja install
 }
 
 _install() {
@@ -83,12 +98,11 @@ package_xorg-server-common() {
   pkgdesc="Xorg server common files"
   depends=('xkeyboard-config' 'xorg-xkbcomp' 'xorg-setxkbmap')
 
-  install -m644 -Dt "${pkgdir}/usr/share/licenses/${pkgname}" "${pkgbase}-${pkgver}/COPYING"
+##  install -m644 -Dt "${pkgdir}/usr/share/licenses/${pkgname}" "${pkgbase}-${pkgver}/COPYING"
+  install -m644 -Dt "${pkgdir}/usr/share/licenses/${pkgname}" xserver/COPYING
 
   _install fakeinstall/usr/share/man/man1/Xserver.1*
   _install fakeinstall/usr/lib/xorg/protocol.txt
-
-  _install fakeinstall/var/lib/xkb
 }
 
 package_xorg-server() {
@@ -104,10 +118,9 @@ package_xorg-server() {
   # distro specific files must be installed in /usr/share/X11/xorg.conf.d
   install -m755 -d "${pkgdir}/etc/X11/xorg.conf.d"
 
-  _install fakeinstall/usr/bin/{X,Xorg,cvt,gtf}
-
+  _install fakeinstall/usr/bin/{Xorg,cvt,gtf}
   _install fakeinstall/usr/lib/xorg/modules
-#  _install fakeinstall/usr/lib/xorg-server #  suid_wrapper
+#  _install fakeinstall/usr/lib/xorg-server #  -Dsuid_wrapper
   _install fakeinstall/usr/share/X11/xorg.conf.d/10-quirks.conf
   _install fakeinstall/usr/share/man/man1/{Xorg*,cvt*,gtf*}
   _install fakeinstall/usr/share/man/{man4,man5}

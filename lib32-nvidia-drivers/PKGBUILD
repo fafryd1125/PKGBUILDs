@@ -32,7 +32,7 @@ process_manifest () {
         ["OPENGL_LIB"]="lib32-nvidia-drivers install_lib"
         ["OPENGL_SYMLINK"]="lib32-nvidia-drivers symlink_lib"
         ["TLS_LIB"]="lib32-nvidia-drivers install_tls"
-        ["VDPAU_LIB"]="lib32-nvidia-drivers install_custom_module"
+        ["VDPAU_LIB"]="lib32-nvidia-drivers install_lib_with_path"
         ["VDPAU_SYMLINK"]="lib32-nvidia-drivers symlink_lib_with_path"
 
         # Ignored entries
@@ -109,7 +109,7 @@ process_manifest () {
     ln -s nvidia "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 
-install_custom_module() {
+install_lib_with_path() {
     case "$4" in
         COMPAT32)
             local libname=$(basename $1)

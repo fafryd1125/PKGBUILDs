@@ -110,73 +110,56 @@ process_manifest () {
 }
 
 install_lib_with_path() {
-    case "$4" in
-        COMPAT32)
-            local libname=$(basename $1)
-            install -D -m$2 "$1" "${pkgdir}/usr/lib32/$5${libname}";
-            ;;
-        NATIVE)
-            # not needed
-            ;;
-    esac
+    if [ "$4" == COMPAT32 ]; then
+        local libname=$(basename $1)
+        install -D -m$2 "$1" "${pkgdir}/usr/lib32/$5${libname}"
+    fi
 }
 
 install_lib() {
-    case "$4" in
-        COMPAT32)
-            local libname=$(basename $1)
-            install -D -m$2 "$1" "${pkgdir}/usr/lib32/$6${libname}"
-            ;;
-        NATIVE)
-            # not needed
-            ;;
-    esac
+    if [ "$4" == COMPAT32 ]; then
+        local libname=$(basename $1)
+        install -D -m$2 "$1" "${pkgdir}/usr/lib32/$6${libname}"
+    fi
 }
 
 install_tls() {
-    # Only "new" TLS is needed on modern systems.
-    case "$4:$5" in
-        COMPAT32:CLASSIC)
-            return
-            ;;
-        COMPAT32:NEW)
-            local libname=$(basename $1)
-            install -D -m$2 "$1" "${pkgdir}/usr/lib32/$6${libname}"
-            ;;
-        COMPAT32:*)
-            echo "Unrecognized TLS library type $5"
-            exit 1
-            ;;
-        NATIVE:*)
-            # not needed
-            ;;
-    esac
+    if [ "$4" == COMPAT32 ]; then
+         # Only "new" TLS is needed on modern systems.
+         case "$5" in
+             CLASSIC)
+                 return
+                 ;;
+             NEW)
+                 local libname=$(basename $1)
+                 install -D -m$2 "$1" "${pkgdir}/usr/lib32/${libname}"
+                 ;;
+             *)
+                 echo "Unrecognized TLS library type $5"
+                 exit 1
+                 ;;
+         esac
+    fi
 }
 
 symlink_lib_with_path() {
-    case "$4" in
-        COMPAT32)
-            ln -s "$6" "${pkgdir}/usr/lib32/$5$1";
-            ;;
-        NATIVE)
-            # not needed
-            ;;
-    esac
+    if [ "$4" == COMPAT32 ]; then
+        ln -s "$6" "${pkgdir}/usr/lib32/$5$1";
+    fi
 }
 
 symlink_lib() {
-    case "$4" in
-#    case "$1:$4" in
-#        libGLX_indirect*:COMPAT32)
-#            # Skip to avoid conflict with lib32-mesa-glvnd package.
-#            ;;
-        COMPAT32)
-            ln -s "$5" "${pkgdir}/usr/lib32/$1"
-            ;;
-        NATIVE)
-            # not needed
-            ;;
-    esac
+    if [ "$4" == COMPAT32 ]; then
+       # Uncomment if needed
+#        case "$1" in
+#            libGLX_indirect*)
+#                 # Skip to avoid conflict with lib32-mesa-glvnd package.
+#                 ;;
+#            *)
+                 ln -s "$5" "${pkgdir}/usr/lib32/$1"
+#                 ;;
+#         esac
+    fi
 }
 
 package() {

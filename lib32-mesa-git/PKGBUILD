@@ -4,7 +4,7 @@
 
 _pkgname=mesa
 pkgname=lib32-mesa-git
-pkgver=18.2.0_devel.101947.96ed3714fc
+pkgver=18.2.0_devel.102064.b6648798cf
 pkgrel=1
 pkgdesc="Mesa 3-D graphics library (32-bit)"
 arch=('x86_64')
@@ -50,7 +50,6 @@ build() {
    -Dvulkan-drivers=''
    -Dvulkan-icd-dir=''
    -Dgles1=false
-   -Dgles2=false
    -Dglvnd=true
    -Dlibunwind=false
    -Dllvm=true
@@ -77,6 +76,9 @@ package() {
 
   rm -rv ${pkgdir}/etc
   rm -rv ${pkgdir}/usr/{include,share}
+
+  # remove files present in lib32-libglvnd
+  rm "$pkgdir"/usr/lib32/libGLES*.so*
 
   install -m755 -d "${pkgdir}/usr/share/licenses"
   ln -s "${pkgname#*-}" "$pkgdir/usr/share/licenses/${pkgname}"

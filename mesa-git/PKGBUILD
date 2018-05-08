@@ -4,7 +4,7 @@
 
 _pkgname=mesa
 pkgname=mesa-git
-pkgver=18.2.0_devel.101822.4559aefb5c
+pkgver=18.2.0_devel.102064.b6648798cf
 pkgrel=1
 pkgdesc="Mesa 3-D graphics library"
 arch=('x86_64')
@@ -19,7 +19,7 @@ license=('custom')
 source=('mesa::git+http://anongit.freedesktop.org/git/mesa/mesa.git#branch=master'
         'LICENSE')
 sha256sums=('SKIP'
-            '7fdc119cf53c8ca65396ea73f6d10af641ba41ea1dd2bd44a824726e01c8b3f2')
+            '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 
 pkgver() {
@@ -44,7 +44,6 @@ build() {
    -Dvulkan-drivers=''
    -Dvulkan-icd-dir=''
    -Dgles1=false
-   -Dgles2=false
    -Dglvnd=true
    -Dllvm=true
    -Dosmesa=gallium
@@ -66,6 +65,9 @@ build() {
 package() {
   cd build
   DESTDIR="${pkgdir}" ninja install
+
+  # remove files provided by libglvnd
+  rm "$pkgdir"/usr/lib/libGLES*.so*
 
   # indirect rendering
   ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0

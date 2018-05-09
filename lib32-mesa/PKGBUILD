@@ -114,9 +114,6 @@ package_lib32-mesa-glvnd() {
   _install fakeinstall/usr/lib32/libGLX_mesa.so*
   _install fakeinstall/usr/lib32/libEGL*.so*
 
-  # indirect rendering
-  ln -s /usr/lib32/libGLX_mesa.so.0 ${pkgdir}/usr/lib32/libGLX_indirect.so.0
-
   install -m755 -d "${pkgdir}/usr/share/licenses"
   ln -s "${_pkgname}" "${pkgdir}/usr/share/licenses/${pkgname}"
 }

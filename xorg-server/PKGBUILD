@@ -133,7 +133,7 @@ package_xorg-server-xephyr() {
 
 package_xorg-server-xvfb() {
   pkgdesc="Virtual framebuffer X server"
-  depends=('libxfont2' 'libunwind' 'libsystemd' 'pixman' 'xorg-server-common' 'xorg-xauth' 'libgl' 'which')
+  depends=('libxfont2' 'libunwind' 'libsystemd' 'pixman' 'xorg-server-common' 'xorg-xauth' 'libgl')
 
   _install fakeinstall/usr/bin/Xvfb
   _install fakeinstall/usr/share/man/man1/Xvfb*

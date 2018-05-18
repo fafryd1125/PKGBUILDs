@@ -22,6 +22,9 @@ _commit=82f8fc5ffc0065537896ec43ae60d67d9a164c75
 source=("git+https://anongit.freedesktop.org/git/xorg/xserver.git#commit=$_commit"
         'xvfb-run'
         'xvfb-run.1'
+        "0001-${pkgbase}-meson.patch::https://cgit.freedesktop.org/xorg/xserver/patch/?id=08a3583b5b2f812cc7f039aebd74ff9b1cb0dbcd"
+        "0002-${pkgbase}-meson.patch::https://cgit.freedesktop.org/xorg/xserver/patch/?id=47321bb455b1226c04711241496e62667eea34ea"
+        "0003-${pkgbase}-meson.patch::https://cgit.freedesktop.org/xorg/xserver/patch/?id=27eff10bfa1a02da7338a82e2312d2080e3e5876"
        )
 validpgpkeys=('7B27A3F1A6E18CD9588B4AE8310180050905E40C'
               'C383B778255613DFDB409D91DB221A6900000011'
@@ -29,13 +32,19 @@ validpgpkeys=('7B27A3F1A6E18CD9588B4AE8310180050905E40C'
               '995ED5C8A6138EB0961F18474C09DD83CAAA50B2')
 sha512sums=('SKIP'
             '190fa51c0a69d74e8e24b851de51d1bf191e318e27f1950bfa0f14e403b2e5233d338f76777bf0a767d74496946ea79e94c25b1cedeb3740c011794ddebde6d5'
-            'd2ba5be4d656cc1b285346f633315973517a16ce47ea314fe41409477884d08eb2b5e435fbff628ba2bb3a6e35f4d300cdfd6b324f00c09692defbf0264b8de7')
+            'd2ba5be4d656cc1b285346f633315973517a16ce47ea314fe41409477884d08eb2b5e435fbff628ba2bb3a6e35f4d300cdfd6b324f00c09692defbf0264b8de7'
+            'f2c75a11ba441cb94ed9aa107ccd22fe2aebe52953ce837cc78588c534fd1dff674e9f50a8173706b11861eb57a94056fc5dc965929f143fe92458b7dff34d10'
+            'e1102cdfa811cd120f6c08a9240774f7dcd188d7a38e2af1bb6ae6802ccfe600bbc83243238b46941b9bdd15702381135be1f5e434556fa9cbef28ecfaa12cc5'
+            'acdb182aa944efd284dc23f2a53ba3e1cc92d6b68cd57f4f73a851d25605a0af0ccd8bdad8b7978f1649207002f07ae2878aa5d3f508cebb29228782c941c116')
 
 prepare() {
   mkdir build
 
   cd xserver
 #  patch -Np1 -i ../
+  patch -Np1 -i ../0001-${pkgbase}-meson.patch
+  patch -Np1 -i ../0002-${pkgbase}-meson.patch
+  patch -Np1 -i ../0003-${pkgbase}-meson.patch
 }
 
 build() {
@@ -53,7 +62,7 @@ build() {
     -Dglx=true
     -Dipv6=true
     -Dlog_dir=/var/log
-#  -Dsuid_wrapper=true
+#    -Dsuid_wrapper=true
     -Dxkb_dir=/usr/share/X11/xkb
     -Dxkb_output_dir=/var/lib/xkb
     -Dxephyr=true
@@ -110,7 +119,7 @@ package_xorg-server() {
 
   _install fakeinstall/usr/bin/{Xorg,cvt,gtf}
   _install fakeinstall/usr/lib/xorg/modules
-#  _install fakeinstall/usr/lib/xorg-server #  -Dsuid_wrapper
+#  _install fakeinstall/usr/libexec #  -Dsuid_wrapper
   _install fakeinstall/usr/share/X11/xorg.conf.d/10-quirks.conf
   _install fakeinstall/usr/share/man/man1/{Xorg*,cvt*,gtf*}
   _install fakeinstall/usr/share/man/{man4,man5}

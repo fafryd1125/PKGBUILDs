@@ -5,9 +5,7 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-libva-mesa-driver' 'lib32-mesa-vdpau' 'lib32-mesa-glvnd' 'lib32-mesa')
-_rc=rc3
-pkgver=18.1.0${_rc}
-_pkgver=18.1.0
+pkgver=18.1.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -16,10 +14,12 @@ makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glprot
 url="https://www.mesa3d.org/"
 license=('custom')
 source=(
-#        https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
-        "https://mesa.freedesktop.org/archive/${_pkgname}-${_pkgver}-${_rc}.tar.xz"
+        https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
+        'dri3-Stricter-SBC-wraparound-handling.patch'
        )
-sha256sums=('1f1f596f3232b9ae02c71b390593859e35cb4c60a42e776eddd5d9800e279123')
+sha256sums=('c855c5b67ef993b7621f76d8b120769ec0415f1c3616eaff44ef7f7f300aceba'
+            'SKIP'
+            '3c9663c96cdc2cc5110feabf5ff25ecb5681eaf3f7b9c4c07c4b57255a1af1ac')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
@@ -27,10 +27,8 @@ validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suáre
 prepare() {
   mkdir build
 
-#  cd "${_pkgname}-${pkgver}"
-  cd "${_pkgname}-${_pkgver}-${_rc}"
-
-#  patch -Np1 -i ../
+  cd "${_pkgname}-${pkgver}"
+  patch -Np1 -i ../dri3-Stricter-SBC-wraparound-handling.patch
 }
 
 build() {
@@ -41,24 +39,24 @@ build() {
 
   cd build
 
-   local meson_options=(
-   -Db_ndebug=true
-   -Ddri3=true
-   -Ddri-drivers=nouveau
-   -Dgallium-drivers=nouveau,swrast
-   -Dgallium-nine=true
-   -Dgallium-xvmc=false
-   -Dvulkan-drivers=''
-   -Dvulkan-icd-dir=''
-   -Dgles1=false
-   -Dglvnd=true
-   -Dlibunwind=false
-   -Dllvm=true
-   -Dosmesa=gallium
-   -Dplatforms=x11,drm
-   -Dgbm=true
-   -Dtexture-float=true
-    )
+  local meson_options=(
+     -Db_ndebug=true
+     -Ddri3=true
+     -Ddri-drivers=nouveau
+     -Dgallium-drivers=nouveau,swrast
+     -Dgallium-nine=true
+     -Dgallium-xvmc=false
+     -Dvulkan-drivers=''
+     -Dvulkan-icd-dir=''
+     -Dgles1=false
+     -Dglvnd=true
+     -Dlibunwind=false
+     -Dllvm=true
+     -Dosmesa=gallium
+     -Dplatforms=x11,drm
+     -Dgbm=true
+     -Dtexture-float=true
+  )
 
   meson                       \
         --buildtype=release   \
@@ -66,8 +64,7 @@ build() {
         --prefix=/usr         \
         --libdir=/usr/lib32   \
         "${meson_options[@]}" \
-        ../${_pkgname}-${_pkgver}-${_rc}
-#        ../${_pkgname}-${pkgver}
+        ../${_pkgname}-${pkgver}
 #  meson configure
   ninja
 

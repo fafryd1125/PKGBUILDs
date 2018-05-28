@@ -1,0 +1,71 @@
+From f21b87e3b2361adadae36996e09f17db5562c56e Mon Sep 17 00:00:00 2001
+From: fafryd <dz1125.bug.tracker@gmail.com>
+Date: Sun, 27 May 2018 22:47:51 +0200
+Subject: [PATCH] meson: fix sdk_required_modules
+
+---
+ meson.build | 45 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+
+diff --git a/meson.build b/meson.build
+index 650018c29..a1a1071ba 100644
+--- a/meson.build
++++ b/meson.build
+@@ -646,9 +646,54 @@ if build_xorg
+     )
+ 
+     sdk_required_modules = [
++      'xproto >= 7.0.31',
++      'randrproto >= 1.6.0',
++      'renderproto >= 0.11',
++      'xextproto >= 7.2.99.901',
++      'inputproto >= 2.3',
++      'kbproto >= 1.0.3',
++      'fontsproto >= 2.1.3',
+       'pixman-1 >= 0.27.2',
++
++      'presentproto >= 1.1',
+     ]
+ 
++    if build_xv
++      sdk_required_modules += 'videoproto'
++    endif
++
++    if build_screensaver
++      sdk_required_modules += 'scrnsaverproto >= 1.1'
++    endif
++
++    if build_res
++      sdk_required_modules += 'resourceproto >= 1.2.0'
++    endif
++
++    if build_dri1
++      sdk_required_modules += ['xf86driproto >= 2.1.0', 'glproto >= 1.4.17', 'dri >= 7.8.0']
++    endif
++
++    if build_dri2
++      sdk_required_modules += 'dri2proto >= 2.8'
++    endif
++
++    if build_dri3
++      sdk_required_modules += 'dri3proto >= 1.2'
++    endif
++
++    if build_xinerama
++      sdk_required_modules += 'xineramaproto'
++    endif
++
++    if build_xf86bigfont
++      sdk_required_modules += 'xf86bigfontproto >= 1.2.0'
++    endif
++
++    if get_option('pciaccess')
++      sdk_required_modules += 'pciaccess >= 0.12.901'
++    endif
++
+     # XXX this isn't trying very hard, but hard enough.
+     sdkconfig.set('PACKAGE_VERSION', meson.project_version())
+     sdkconfig.set('SDK_REQUIRED_MODULES', ' '.join(sdk_required_modules))
+-- 
+2.17.0
+

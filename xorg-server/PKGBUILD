@@ -5,7 +5,7 @@
 pkgbase=xorg-server
 pkgname=('xorg-server' 'xorg-server-xephyr' 'xorg-server-xdmx' 'xorg-server-xvfb' 'xorg-server-xnest'
          'xorg-server-xwayland' 'xorg-server-common' 'xorg-server-devel')
-pkgver=1.20.0
+pkgver=1.20.1
 pkgrel=1
 arch=('x86_64')
 license=('custom')
@@ -17,16 +17,10 @@ makedepends=('pixman' 'libx11' 'mesa' 'xtrans' 'libxkbfile' 'libxfont2' 'libpcia
              'xcb-util' 'xcb-util-image' 'xcb-util-renderutil' 'xcb-util-wm' 'xcb-util-keysyms'
              'libxshmfence' 'libunwind' 'systemd' 'wayland-protocols' 'meson' 'xorgproto'
              'clang' 'git')
-_commit=82f8fc5ffc0065537896ec43ae60d67d9a164c75
 #source=(https://xorg.freedesktop.org/releases/individual/xserver/${pkgbase}-${pkgver}.tar.bz2{,.sig}
-source=("git+https://anongit.freedesktop.org/git/xorg/xserver.git#commit=$_commit"
+source=("git+https://gitlab.freedesktop.org/xorg/xserver.git#branch=server-1.20-branch"
         'xvfb-run'
         'xvfb-run.1'
-        'xserver-1-2-glamor-Always-return-0-from-glamor_fds_from_pixmap-on-error.patch'
-        'xserver-2-2-glamor-Propagate-glamor_fds_from_pixmap-error-in-glamor_fd_from_pixmap.patch'
-        "0001-${pkgbase}-meson.patch::https://cgit.freedesktop.org/xorg/xserver/patch/?id=08a3583b5b2f812cc7f039aebd74ff9b1cb0dbcd"
-        "0002-${pkgbase}-meson.patch::https://cgit.freedesktop.org/xorg/xserver/patch/?id=47321bb455b1226c04711241496e62667eea34ea"
-        "0003-${pkgbase}-meson.patch::https://cgit.freedesktop.org/xorg/xserver/patch/?id=27eff10bfa1a02da7338a82e2312d2080e3e5876"
         '0001-v2-FS-58644.patch'
         '0001-fix-libshadow.patch'
         '0001-meson-fix-sdk_required_modules.patch'
@@ -38,11 +32,6 @@ validpgpkeys=('7B27A3F1A6E18CD9588B4AE8310180050905E40C'
 sha512sums=('SKIP'
             '190fa51c0a69d74e8e24b851de51d1bf191e318e27f1950bfa0f14e403b2e5233d338f76777bf0a767d74496946ea79e94c25b1cedeb3740c011794ddebde6d5'
             'd2ba5be4d656cc1b285346f633315973517a16ce47ea314fe41409477884d08eb2b5e435fbff628ba2bb3a6e35f4d300cdfd6b324f00c09692defbf0264b8de7'
-            'a8f65ca23ae52865147bdc1bc059b1265ba4bc61527992cf054fe76a0396ef5dfd2386782be371e926184a63def3be7333bb37fc429627d4e6fa159d263f40f7'
-            'fc259a0a4acb7b70209fc599b0f4bc94942316bbc8c6995f783026b7cd455900bcb7527615d76c99bd2e0155e0035cbd619939a1f7ddf3af32ed854afe45b631'
-            'f2c75a11ba441cb94ed9aa107ccd22fe2aebe52953ce837cc78588c534fd1dff674e9f50a8173706b11861eb57a94056fc5dc965929f143fe92458b7dff34d10'
-            'e1102cdfa811cd120f6c08a9240774f7dcd188d7a38e2af1bb6ae6802ccfe600bbc83243238b46941b9bdd15702381135be1f5e434556fa9cbef28ecfaa12cc5'
-            'acdb182aa944efd284dc23f2a53ba3e1cc92d6b68cd57f4f73a851d25605a0af0ccd8bdad8b7978f1649207002f07ae2878aa5d3f508cebb29228782c941c116'
             '74e1aa0c101e42f0f25349d305641873b3a79ab3b9bb2d4ed68ba8e392b4db2701fcbc35826531ee2667d3ee55673e4b4fecc2a9f088141af29ceb400f72f363'
             '0c7f7e43a2ba2372509f4a35e33a8a87a2e631c7e630c9c7c67ecaad00453b52c31d9dc26d1852ecd2fe1cb8c02cb716c1f39a4723473c38a0ef6e559bead271'
             'f7afd53b25d104396ae9c751d4b66926ecf04c1c28aba0e7e710b01f677c55a6b2c3dd76ff60bf26e99bc10b9373e6eb6b60ec4f0a89afed04aed881e118fb9d')
@@ -52,15 +41,6 @@ prepare() {
 
   cd xserver
 #  patch -Np1 -i ../
-
-  # Fix XWayland hangs - FS#58705
-  # https://patchwork.freedesktop.org/series/43618/
-  patch -Np1 -i ../xserver-1-2-glamor-Always-return-0-from-glamor_fds_from_pixmap-on-error.patch
-  patch -Np1 -i ../xserver-2-2-glamor-Propagate-glamor_fds_from_pixmap-error-in-glamor_fd_from_pixmap.patch
-
-  patch -Np1 -i ../0001-${pkgbase}-meson.patch
-  patch -Np1 -i ../0002-${pkgbase}-meson.patch
-  patch -Np1 -i ../0003-${pkgbase}-meson.patch
 
   patch -Np1 -i ../0001-v2-FS-58644.patch
   patch -Np1 -i ../0001-fix-libshadow.patch

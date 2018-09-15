@@ -1,25 +1,20 @@
-# $Id$
 # Maintainer: Jan de Groot <jgc@archlinux.org>
 # Maintainer: Andreas Radke <andyrtr@archlinux.org>
 
 pkgbase=lib32-mesa
 _pkgname=mesa
-pkgname=('lib32-libva-mesa-driver' 'lib32-mesa-vdpau' 'lib32-mesa-glvnd' 'lib32-mesa')
-pkgver=18.1.0
+pkgname=('lib32-vulkan-radeon' 'lib32-libva-mesa-driver' 'lib32-mesa-vdpau' 'lib32-mesa-glvnd' 'lib32-mesa')
+pkgver=18.2.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
              'lib32-libxshmfence' 'lib32-libxxf86vm' 'lib32-libxdamage' 'gcc-multilib' 'lib32-libelf' 'lib32-llvm' 'lib32-libvdpau'
-             'lib32-libglvnd' 'lib32-lm_sensors' 'meson')
+             'lib32-libglvnd' 'lib32-lm_sensors' 'meson' 'lib32-libxrandr')
 url="https://www.mesa3d.org/"
 license=('custom')
-source=(
-        https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
-        'dri3-Stricter-SBC-wraparound-handling.patch'
-       )
-sha256sums=('c855c5b67ef993b7621f76d8b120769ec0415f1c3616eaff44ef7f7f300aceba'
-            'SKIP'
-            '3c9663c96cdc2cc5110feabf5ff25ecb5681eaf3f7b9c4c07c4b57255a1af1ac')
+source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig})
+sha256sums=('22452bdffff8e11bf4284278155a9f77cb28d6d73a12c507f1490732d0d9ddce'
+            'SKIP')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
@@ -28,7 +23,7 @@ prepare() {
   mkdir build
 
   cd "${_pkgname}-${pkgver}"
-  patch -Np1 -i ../dri3-Stricter-SBC-wraparound-handling.patch
+#  patch -Np1 -i ../
 }
 
 build() {
@@ -42,20 +37,19 @@ build() {
   local meson_options=(
      -Db_ndebug=true
      -Ddri3=true
-     -Ddri-drivers=nouveau
-     -Dgallium-drivers=nouveau,swrast
+     -Ddri-drivers=r200,nouveau
+     -Dgallium-drivers=radeonsi,nouveau,swrast
      -Dgallium-nine=true
      -Dgallium-xvmc=false
-     -Dvulkan-drivers=''
-     -Dvulkan-icd-dir=''
+     -Dvulkan-drivers=amd
      -Dgles1=false
      -Dglvnd=true
+     -Dglx=dri
      -Dlibunwind=false
      -Dllvm=true
      -Dosmesa=gallium
      -Dplatforms=x11,drm
      -Dgbm=true
-     -Dtexture-float=true
   )
 
   meson                       \
@@ -80,6 +74,18 @@ _install() {
     install -m755 -d "${dir}"
     mv -v "${src}" "${dir}/"
   done
+}
+
+package_lib32-vulkan-radeon() {
+  pkgdesc="Radeon's Vulkan mesa driver (32-bit)"
+  depends=('lib32-libx11' 'lib32-llvm-libs' 'lib32-libdrm' 'lib32-libelf' 'lib32-libxshmfence')
+  provides=('lib32-vulkan-driver')
+
+  _install fakeinstall/usr/share/vulkan/icd.d/radeon_icd*.json
+  _install fakeinstall/usr/lib32/libvulkan_radeon.so
+
+  install -m755 -d "${pkgdir}/usr/share/licenses"
+  ln -s "${_pkgname}" "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 
 package_lib32-libva-mesa-driver() {

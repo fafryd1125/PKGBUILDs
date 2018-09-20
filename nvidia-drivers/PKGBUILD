@@ -7,7 +7,7 @@
 
 pkgbase=nvidia-drivers
 pkgname=('nvidia-utils' 'nvidia-drivers' 'opencl-nvidia')
-pkgver=396.24
+pkgver=410.57
 pkgrel=1
 arch=('x86_64')
 url="http://www.nvidia.com/"
@@ -15,7 +15,7 @@ license=('custom')
 options=('!strip')
 source=("http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run"
         'nvidia-utils.sysusers')
-sha512sums=('1feccc28f7479ae76ee92bb309db8891fe33769bfd762fea301b7ab43ec13424a091e96b59ecae4b9aec5caedc3dccf6b1af360e8fba935cc66e871d4ec28f8a'
+sha512sums=('6d20c26cc0ffbbf4b830704dc224dd65a14424ffc24a3223eb071d5ef97f211199762dd819d8b528577a0053da5be3c3f79619813d1bafcebaf4ed0029aa6bac'
             '4b3ad73f5076ba90fe0b3a2e712ac9cde76f469cd8070280f960c3ce7dc502d1927f525ae18d008075c8f08ea432f7be0a6c3a7a6b49c361126dcf42f97ec499')
 
 #validpgpkeys=(0xf56acc8f09ba9635) # Aaron Plattner <aplattner@nvidia.com>
@@ -114,8 +114,9 @@ install_app_profile()   { install -D -m$2 "$1" "${pkgdir}/usr/share/nvidia/$1"; 
 install_bin()           { install -D -m$2 "$1" "${pkgdir}/usr/bin/$1"; }
 install_lib_with_path() { install -D -m$2 "$1" "${pkgdir}/usr/lib/$5$1"; }
 install_egl_json()      { install -D -m$2 "$1" "${pkgdir}/usr/share/glvnd/egl_vendor.d/$1"; }
-install_glx_module()    { install -D -m$2 "$1" "${pkgdir}/usr/lib/xorg/modules/extensions/nvidia/$1"; }
+install_glx_module()    { install -D -m$2 "$1" "${pkgdir}/usr/lib/xorg/modules/extensions/$1"; }
 install_opencl_vendor() { install -D -m$2 "$1" "${pkgdir}/etc/OpenCL/vendors/$1"; }
+install_x_config()      { install -D -m$2 "$1" "${pkgdir}/usr/share/X11/xorg.conf.d/$1";}
 
 install_vulkan_json() {
     local filename=${1%.template}
@@ -124,15 +125,6 @@ install_vulkan_json() {
     # Set the proper Vulkan ICD configuration file to "glvnd_glx_client".
     sed -i -e 's:__NV_VK_ICD__:libGLX_nvidia.so.0:' \
               "${pkgdir}/etc/vulkan/icd.d/${filename}"
-}
-
-install_x_config() {
-    install -D -m$2 "$1" "${pkgdir}/usr/share/X11/xorg.conf.d/$1"
-
-    # Set the appropriate path to GLX extension module for X.
-    # This module is used by the X server to provide server-side GLX support.
-    sed -i '$ i \   \ ModulePath "/usr/lib/xorg/modules/extensions/nvidia"' \
-           "${pkgdir}/usr/share/X11/xorg.conf.d/$1"
 }
 
 install_lib() {
@@ -203,7 +195,7 @@ install_doc() {
     install -D -m$2 "$1" "${pkgdir}/usr/share/doc/nvidia/${target}/${src}"
 }
 
-symlink_glx_module()    { ln -s "$5" "${pkgdir}/usr/lib/xorg/modules/extensions/nvidia/$1"; }
+symlink_glx_module()    { ln -s "$5" "${pkgdir}/usr/lib/xorg/modules/extensions/$1"; }
 symlink_lib_with_path() { ln -s "$6" "${pkgdir}/usr/lib/$5$1"; }
 
 symlink_lib() {

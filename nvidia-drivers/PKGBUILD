@@ -7,7 +7,7 @@
 
 pkgbase=nvidia-drivers
 pkgname=('nvidia-utils' 'nvidia-drivers' 'opencl-nvidia')
-pkgver=410.57
+pkgver=415.13
 pkgrel=1
 arch=('x86_64')
 url="http://www.nvidia.com/"
@@ -15,7 +15,7 @@ license=('custom')
 options=('!strip')
 source=("http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/NVIDIA-Linux-x86_64-${pkgver}-no-compat32.run"
         'nvidia-utils.sysusers')
-sha512sums=('6d20c26cc0ffbbf4b830704dc224dd65a14424ffc24a3223eb071d5ef97f211199762dd819d8b528577a0053da5be3c3f79619813d1bafcebaf4ed0029aa6bac'
+sha512sums=('3575f0026cadba867dfedcda5bab905d693371dd0bf15c18047f7caff563528c8ecf306d95d97aea5705527517fdf92b7988bb6df6024d67955208aad1be3eaa'
             '4b3ad73f5076ba90fe0b3a2e712ac9cde76f469cd8070280f960c3ce7dc502d1927f525ae18d008075c8f08ea432f7be0a6c3a7a6b49c361126dcf42f97ec499')
 
 #validpgpkeys=(0xf56acc8f09ba9635) # Aaron Plattner <aplattner@nvidia.com>
@@ -116,6 +116,7 @@ install_lib_with_path() { install -D -m$2 "$1" "${pkgdir}/usr/lib/$5$1"; }
 install_egl_json()      { install -D -m$2 "$1" "${pkgdir}/usr/share/glvnd/egl_vendor.d/$1"; }
 install_glx_module()    { install -D -m$2 "$1" "${pkgdir}/usr/lib/xorg/modules/extensions/$1"; }
 install_opencl_vendor() { install -D -m$2 "$1" "${pkgdir}/etc/OpenCL/vendors/$1"; }
+install_tls()           { install -D -m$2 "$1" "${pkgdir}/usr/lib/$1"; }
 install_x_config()      { install -D -m$2 "$1" "${pkgdir}/usr/share/X11/xorg.conf.d/$1";}
 
 install_vulkan_json() {
@@ -168,23 +169,6 @@ install_dot_desktop() {
            -e 's:__PIXMAP_PATH__:/usr/share/doc/nvidia:' \
            -e 's:Application;Settings;:Settings;HardwareSettings;:' \
            "${pkgdir}/usr/share/applications/$1"
-}
-
-install_tls() {
-    # Only "new" TLS is needed on modern systems.
-    case $5 in
-        CLASSIC)
-            return
-            ;;
-        NEW)
-            local libname=$(basename $1)
-            install -D -m$2 "$1" "${pkgdir}/usr/lib/${libname}"
-            ;;
-        *)
-            echo "Unrecognized TLS library type $5"
-            exit 1
-            ;;
-    esac
 }
 
 install_doc() {

@@ -1,4 +1,3 @@
-# $Id$
 # Maintainer: Maxime Gauduin <alucryd@gmail.com>
 # Contributor: Jan de Groot <jgc@archlinux.org>
 
@@ -14,7 +13,7 @@ depends=('lib32-gcc-libs' 'lib32-libxext' 'libvdpau-git')
 makedepends=('dri2proto' 'git' 'lib32-clang' 'meson')
 provides=('lib32-libvdpau')
 conflicts=('lib32-libvdpau')
-source=("git+https://anongit.freedesktop.org/git/vdpau/libvdpau.git"
+source=("git+https://gitlab.freedesktop.org/vdpau/libvdpau.git"
         "${_pkgname}-meson.patch::https://gitlab.freedesktop.org/vdpau/libvdpau/merge_requests/2.patch"
         'x86-linux-gnu')
 sha256sums=('SKIP'

@@ -14,9 +14,9 @@ makedepends=('dri2proto' 'git' 'meson' 'clang')
 provides=('libvdpau')
 conflicts=('libvdpau')
 source=("git+https://anongit.freedesktop.org/git/vdpau/libvdpau.git"
-        "${_pkgname}-meson.patch::https://github.com/aaronp24/libvdpau/compare/meson.patch")
+        "${_pkgname}-meson.patch::https://gitlab.freedesktop.org/vdpau/libvdpau/merge_requests/2.patch")
 sha256sums=('SKIP'
-            '08af406f88040e2892c285320637db6748d4e8e8a86a026159ec0e7fce304780')
+            '26ef83e2567db24a0d7ffccd4a76497b15d614cbe57dfdbf5f4f57eb526a515f')
 #validpgpkeys=('BD68A042C603DDAD9AA354B0F56ACC8F09BA9635') # Aaron Plattner
 
 pkgver() {

@@ -3,7 +3,8 @@ c = '/usr/bin/clang'
 cpp = '/usr/bin/clang++'
 ar = '/usr/bin/ar'
 strip = '/usr/bin/strip'
-pkgconfig = '/usr/bin/pkg-config'
+pkgconfig = '/usr/bin/pkg-config-32'
+llvm-config = '/usr/bin/llvm-config32'
 
 [properties]
 c_args = ['-m32', '-march=i686', '-mtune=native', '-O2', '-pipe', '-fstack-protector-strong', '-fno-plt']

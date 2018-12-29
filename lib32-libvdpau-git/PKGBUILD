@@ -15,11 +15,11 @@ makedepends=('dri2proto' 'git' 'lib32-clang' 'meson')
 provides=('lib32-libvdpau')
 conflicts=('lib32-libvdpau')
 source=("git+https://anongit.freedesktop.org/git/vdpau/libvdpau.git"
-        "${_pkgname}-meson.patch::https://github.com/aaronp24/libvdpau/compare/meson.patch"
-        'arch-clang32.txt')
+        "${_pkgname}-meson.patch::https://gitlab.freedesktop.org/vdpau/libvdpau/merge_requests/2.patch"
+        'x86-linux-gnu')
 sha256sums=('SKIP'
-            '08af406f88040e2892c285320637db6748d4e8e8a86a026159ec0e7fce304780'
-            'd3d22034971ce44ab5fcd07ed69a4ffe712ff65f35bc8ab8e1132e74eb31fc9a')
+            '26ef83e2567db24a0d7ffccd4a76497b15d614cbe57dfdbf5f4f57eb526a515f'
+            '02d8f601edb767f787d6bd04bd286fff6339feb0300f3f0d4a79189bb207227f')
 #validpgpkeys=('BD68A042C603DDAD9AA354B0F56ACC8F09BA9635') # Aaron Plattner
 
 pkgver() {
@@ -35,14 +35,12 @@ prepare() {
 }
 
 build() {
-  export PKG_CONFIG_PATH='/usr/lib32/pkgconfig'
-
   cd build
   meson \
       --prefix=/usr \
       --libdir=/usr/lib32 \
       --buildtype=release \
-      --cross-file ../arch-clang32.txt \
+      --cross-file ../x86-linux-gnu \
       ../${_pkgname}
   ninja
 }

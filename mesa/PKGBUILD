@@ -3,17 +3,17 @@
 
 pkgbase=mesa
 pkgname=('opencl-mesa' 'vulkan-radeon' 'libva-mesa-driver'  'mesa-vdpau' 'mesa-glvnd' 'mesa')
-pkgver=18.2.0
+pkgver=18.3.1
 pkgrel=1
 arch=('x86_64')
-makedepends=('python2-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
+makedepends=('python-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
              'libxshmfence' 'libxxf86vm' 'libxdamage' 'libvdpau' 'libva' 'elfutils' 'llvm' 'libomxil-bellagio'
              'libclc' 'clang' 'libunwind'  'libglvnd' 'meson' 'lm_sensors' 'libxvmc' 'libxrandr')
 url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
         'LICENSE')
-sha256sums=('22452bdffff8e11bf4284278155a9f77cb28d6d73a12c507f1490732d0d9ddce'
+sha256sums=('5b1f827d28684a25f6657289f8b7d47ac56395988c7ac23e0ec9a62b644bdc63'
             'SKIP'
             '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537')
 
@@ -148,8 +148,6 @@ package_mesa() {
   provides=('nouveau-dri' 'svga-dri' 'mesa-dri')
   conflicts=('nouveau-dri' 'svga-dri' 'mesa-dri')
 
-  _install fakeinstall/etc/drirc
-
   # nouveau-dri, swrast
   _install fakeinstall/usr/lib/dri/*_dri.so
 
@@ -162,6 +160,8 @@ package_mesa() {
 
   _install fakeinstall/usr/include
   _install fakeinstall/usr/lib/pkgconfig
+
+  _install fakeinstall/usr/share/drirc.d/00-mesa-defaults.conf
 
   # make sure there are no files left to install
   find fakeinstall -depth -print0 | xargs -0 rmdir

@@ -14,9 +14,9 @@ makedepends=('eglexternalplatform' 'lib32-wayland' 'mesa' 'lib32-clang' 'git' 'm
 provides=('lib32-egl-wayland')
 conflicts=('lib32-egl-wayland')
 source=("egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git"
-        'arch-clang32.txt')
+        'x86-linux-gnu')
 sha256sums=('SKIP'
-            'df34e68c0e3043ab0d6c00c90d9c2cdd6765a0b306367e7883c524d28105c729')
+            '02d8f601edb767f787d6bd04bd286fff6339feb0300f3f0d4a79189bb207227f')
 
 pkgver() {
   cd "${_pkgname}"
@@ -31,16 +31,13 @@ prepare() {
 }
 
 build() {
-  export CC='clang -m32'
-  export CXX='clang++ -m32'
-
   cd build
   meson \
       --prefix=/usr \
       --libdir=/usr/lib32 \
       --datadir=/usr/lib32 \
       --buildtype=release \
-      --cross-file ../arch-clang32.txt \
+      --cross-file ../x86-linux-gnu \
       ../${_pkgname}
   ninja
 

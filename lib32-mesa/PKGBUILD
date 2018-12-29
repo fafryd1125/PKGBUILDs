@@ -4,16 +4,16 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-vulkan-radeon' 'lib32-libva-mesa-driver' 'lib32-mesa-vdpau' 'lib32-mesa-glvnd' 'lib32-mesa')
-pkgver=18.2.0
+pkgver=18.3.1
 pkgrel=1
 arch=('x86_64')
-makedepends=('python2-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
+makedepends=('python-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
              'lib32-libxshmfence' 'lib32-libxxf86vm' 'lib32-libxdamage' 'gcc-multilib' 'lib32-libelf' 'lib32-llvm' 'lib32-libvdpau'
              'lib32-libglvnd' 'lib32-lm_sensors' 'meson' 'lib32-libxrandr')
 url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig})
-sha256sums=('22452bdffff8e11bf4284278155a9f77cb28d6d73a12c507f1490732d0d9ddce'
+sha256sums=('5b1f827d28684a25f6657289f8b7d47ac56395988c7ac23e0ec9a62b644bdc63'
             'SKIP')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
@@ -141,7 +141,6 @@ package_lib32-mesa() {
 
   _install fakeinstall/usr/lib32/pkgconfig
 
-  rm -rv fakeinstall/etc
   rm -rv fakeinstall/usr/include
   rm -rv fakeinstall/usr/share
 

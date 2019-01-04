@@ -18,7 +18,7 @@ source=("git+https://gitlab.freedesktop.org/vdpau/libvdpau.git"
         'x86-linux-gnu')
 sha256sums=('SKIP'
             '26ef83e2567db24a0d7ffccd4a76497b15d614cbe57dfdbf5f4f57eb526a515f'
-            '02d8f601edb767f787d6bd04bd286fff6339feb0300f3f0d4a79189bb207227f')
+            '63ffd7f50b44782226baa26a63c8dcc31e63634345d0a94419068f7346f0afd1')
 #validpgpkeys=('BD68A042C603DDAD9AA354B0F56ACC8F09BA9635') # Aaron Plattner
 
 pkgver() {

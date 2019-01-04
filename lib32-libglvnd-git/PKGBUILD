@@ -23,7 +23,7 @@ source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
 sha1sums=('SKIP'
           '88b8f2e4d517ba34a46c4f64ce96840eab28dc4a'
           'bee6d5905a6f8bc12ddcc4dabb2949966215a11a'
-          '4fd546c6c7dfd409db2ada0305b9a49afc433f4f')
+          '452b096e2c24954976533e950341fd1e4aeebc24')
 
 depends=('lib32-libxext' 'libglvnd-git')
 _makedepends=('lib32-libx11' 'git' 'glproto' 'lib32-clang')

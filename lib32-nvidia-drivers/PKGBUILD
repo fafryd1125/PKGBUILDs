@@ -7,7 +7,7 @@
 # Contributor: Darek Zielski <dz1125.bug.tracker@gmail.com>
 
 pkgname=lib32-nvidia-drivers
-pkgver=415.13
+pkgver=418.30
 pkgrel=1
 pkgdesc="NVIDIA drivers libraries (32-bit)"
 arch=('x86_64')
@@ -20,7 +20,7 @@ provides=('lib32-vulkan-driver' 'lib32-opengl-driver')
 options=('!strip')
 _pkg="NVIDIA-Linux-${arch}-${pkgver}"
 source=("http://us.download.nvidia.com/XFree86/Linux-${arch}/${pkgver}/${_pkg}.run")
-sha512sums=('4115fe24d615694e3bc7644d8d648ed6be266c69c6ffc92b65c65b9a0b0c8fb9c672d74cd46e9f9be2467464310c55a29f0bd155163bfc760e0e8b39db9598b7')
+sha512sums=('f227923528d54e66d9f79bfaf7239a0e7dd6d59cfa7a7766b36c9a91be091ac0702874f9ed460d4171fb6b67d88adbe2415c70e4f82ff87c8baebd045a493831')
 
 prepare() {
     sh ${_pkg}.run --extract-only
@@ -49,10 +49,7 @@ process_manifest () {
         ["LIBGL_LA"]="ignored"                   # .la files are not needed
         ["OPENCL_WRAPPER_LIB"]="ignored"         # provided by libcl
         ["OPENCL_WRAPPER_SYMLINK"]="ignored"     # provided by libcl
-        ["OPENGL_HEADER"]="ignored"              # provided by mesa
         ["UTILITY_BIN_SYMLINK"]="ignored"        # provided by pacman
-        ["XMODULE_NEWSYM"]="ignored"             # not needed for modern X servers
-        ["XMODULE_SYMLINK"]="ignored"            # not needed for modern X servers
 
         # Ignored entries for lib32-nvidia-drivers package
         # opencl-nvidia

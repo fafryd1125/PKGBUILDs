@@ -1,40 +1,61 @@
-# $Id$
 # Maintainer: Sébastien Luttringer
 # Contributor: Joel Teichroeb <joel@teichroeb.net>
 
 pkgname=weston
-pkgver=4.0.0
+pkgver=5.0.94
 pkgrel=1
-pkgdesc='Reference implementation of a Wayland compositor'
+pkgdesc='A lightweight and functional Wayland compositor.'
 arch=('x86_64')
 url='https://wayland.freedesktop.org/'
 license=('MIT')
 depends=('glibc' 'wayland' 'libxkbcommon' 'libinput' 'pixman' 'libdrm' 'pam'
          'libsystemd' 'cairo' 'libpng' 'libjpeg-turbo' 'libwebp' 'mesa' 'glib2'
          'pango' 'lcms2' 'libx11' 'libxcb' 'dbus' 'libva' 'libxcursor' 'colord')
-makedepends=('wayland-protocols')
-validpgpkeys=('C7223EBE4EF66513B892598911A30156E0E67611') # Bryce Harrington
-source=("https://wayland.freedesktop.org/releases/$pkgname-$pkgver.tar.xz"{,.sig})
-sha512sums=('0af41016ff4eae85779f95b5c5e44b9683f4ef681a8e52256efeebfa38073082b83e039d0db3c94ac22f22f8d8314c9d6cd16611144b260b353fc5bfdd1ded19'
-            'SKIP')
+makedepends=('wayland-protocols' 'git' 'clang' 'lld' 'doxygen' 'meson' 'freerdp')
+_commit=cc64cc3717ab39882df37bc244d1ac6cf8526f93  # master
+source=("weston::git+https://gitlab.freedesktop.org/wayland/weston.git#commit=$_commit"
+        "https://gitlab.freedesktop.org/wayland/weston/merge_requests/129.patch")
+sha512sums=('SKIP'
+            '677b0dc79e3ce4e563ed880bc17acc2bc06c53834be0122393ea60ef5a4d03943be6ac3447d35522cc46c332a17a8e48dd60db2e6cf67e4e47d88bce1658e988')
+#validpgpkeys=('C7223EBE4EF66513B892598911A30156E0E67611' # Bryce Harrington
+#              'C0066D7DB8E9AC6844D728715E54498E697F11D7') # Derek Foreman
+
+pkgver() {
+  cd "$pkgname"
+  git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    cd "$pkgname"
+    patch -p1 -i ../129.patch
+}
+
 
 build() {
-  cd "$pkgname-$pkgver"
-  ./configure \
-      --prefix=/usr \
-      --libexecdir=/usr/lib/weston \
-      --enable-systemd-login \
-      --enable-systemd-notify \
-      --enable-xwayland \
-      --enable-demo-clients-install \
-      --disable-devdocs
-  make
+
+  local meson_options=(
+    -Dbackend-drm-screencast-vaapi=false
+    -Dscreenshare=false
+    -Dbackend-rdp=false
+    -Dshell-ivi=false
+    -Dsimple-dmabuf-drm=''
+  )
+
+
+    meson "$pkgname" build           \
+        --buildtype=release          \
+        --prefix=/usr                \
+        --libexecdir=/usr/lib/weston \
+        --native-file llvm-config    \
+        "${meson_options[@]}"
+    meson configure build
+    ninja -C build
 }
 
 package() {
-  cd "$pkgname-$pkgver"
-  make DESTDIR="$pkgdir" install
+  DESTDIR="$pkgdir" ninja install -C build
 
+  cd "$srcdir/$pkgname"
   install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
 }
 

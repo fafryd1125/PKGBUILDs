@@ -3,7 +3,7 @@
 
 pkgbase=mesa
 pkgname=('opencl-mesa' 'vulkan-radeon' 'libva-mesa-driver'  'mesa-vdpau' 'mesa-glvnd' 'mesa')
-pkgver=18.3.1
+pkgver=19.0.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -13,7 +13,7 @@ url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
         'LICENSE')
-sha256sums=('5b1f827d28684a25f6657289f8b7d47ac56395988c7ac23e0ec9a62b644bdc63'
+sha256sums=('5a549dfb40ec31e5c36c47aadac04554cb2e2a8d144a046a378fc16da57e38f8'
             'SKIP'
             '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537')
 

@@ -2,7 +2,7 @@
 
 pkgname=libvdpau-git
 _pkgname=libvdpau
-pkgver=1.1.1.r3.ga21bf7a
+pkgver=1.2.r2.gc7afb66
 pkgrel=1
 pkgdesc="Video Decode and Presentation API for UNIX"
 arch=('x86_64')
@@ -12,40 +12,25 @@ depends=('gcc-libs' 'libxext')
 makedepends=('dri2proto' 'git' 'meson' 'clang')
 provides=('libvdpau')
 conflicts=('libvdpau')
-source=("git+https://gitlab.freedesktop.org/vdpau/libvdpau.git"
-        "${_pkgname}-meson.patch::https://gitlab.freedesktop.org/vdpau/libvdpau/merge_requests/2.patch")
-sha256sums=('SKIP'
-            '26ef83e2567db24a0d7ffccd4a76497b15d614cbe57dfdbf5f4f57eb526a515f')
-#validpgpkeys=('BD68A042C603DDAD9AA354B0F56ACC8F09BA9635') # Aaron Plattner
+source=("git+https://gitlab.freedesktop.org/vdpau/libvdpau.git")
+sha256sums=('SKIP')
 
 pkgver() {
   cd "${_pkgname}"
   git describe --long | sed 's/^libvdpau-//;s/\([^-]*-g\)/r\1/;s/-/./g'
 }
 
-prepare() {
-  mkdir build
-
-  cd "${_pkgname}"
-  patch -Np1 -i ../${_pkgname}-meson.patch
-}
-
 build() {
-  export 'CC=clang'
-  export 'CXX=clang++'
-
-  cd build
-  meson \
+  meson ${_pkgname} build \
       --prefix=/usr \
       --buildtype=release \
-      ../${_pkgname}
-  meson configure
-  ninja
+      --native-file llvm-config
+#  meson configure
+  ninja -C build
 }
 
 package() {
-  cd build
-  DESTDIR="${pkgdir}" ninja install
+  DESTDIR="${pkgdir}" ninja install -C build
 
   cd "${srcdir}/${_pkgname}"
   install -d -m755 "${pkgdir}/usr/share/licenses/${pkgname}"

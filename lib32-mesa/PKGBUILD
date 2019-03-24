@@ -4,7 +4,7 @@
 pkgbase=lib32-mesa
 _pkgname=mesa
 pkgname=('lib32-vulkan-radeon' 'lib32-libva-mesa-driver' 'lib32-mesa-vdpau' 'lib32-mesa-glvnd' 'lib32-mesa')
-pkgver=18.3.1
+pkgver=19.0.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -13,7 +13,7 @@ makedepends=('python-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto
 url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig})
-sha256sums=('5b1f827d28684a25f6657289f8b7d47ac56395988c7ac23e0ec9a62b644bdc63'
+sha256sums=('5a549dfb40ec31e5c36c47aadac04554cb2e2a8d144a046a378fc16da57e38f8'
             'SKIP')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
@@ -27,11 +27,6 @@ prepare() {
 }
 
 build() {
-  export CC="gcc -m32"
-  export CXX="g++ -m32"
-  export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
-  export LLVM_CONFIG="/usr/bin/llvm-config32"
-
   cd build
 
   local meson_options=(
@@ -52,12 +47,13 @@ build() {
      -Dgbm=true
   )
 
-  meson                       \
-        --buildtype=release   \
-        --sysconfdir=/etc     \
-        --prefix=/usr         \
-        --libdir=/usr/lib32   \
-        "${meson_options[@]}" \
+  meson                            \
+        --buildtype=release        \
+        --sysconfdir=/etc          \
+        --prefix=/usr              \
+        --libdir=/usr/lib32        \
+        --cross-file x86-linux-gnu \
+        "${meson_options[@]}"      \
         ../${_pkgname}-${pkgver}
 #  meson configure
   ninja

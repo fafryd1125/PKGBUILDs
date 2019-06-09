@@ -5,7 +5,7 @@
 pkgbase=xorg-server
 pkgname=('xorg-server' 'xorg-server-xephyr' 'xorg-server-xdmx' 'xorg-server-xvfb' 'xorg-server-xnest'
          'xorg-server-xwayland' 'xorg-server-common' 'xorg-server-devel')
-pkgver=1.20.4
+pkgver=1.20.5
 pkgrel=1
 arch=('x86_64')
 license=('custom')
@@ -22,8 +22,8 @@ source=("git+https://gitlab.freedesktop.org/xorg/xserver.git#branch=server-1.20-
         'xvfb-run'
         'xvfb-run.1'
         '0001-v2-FS-58644.patch'
-        '0001-fix-libshadow.patch'
         '0001-meson-fix-sdk_required_modules.patch'
+        "https://gitlab.freedesktop.org/xorg/xserver/merge_requests/184.patch"
        )
 validpgpkeys=('7B27A3F1A6E18CD9588B4AE8310180050905E40C'
               'C383B778255613DFDB409D91DB221A6900000011'
@@ -33,24 +33,19 @@ sha512sums=('SKIP'
             '190fa51c0a69d74e8e24b851de51d1bf191e318e27f1950bfa0f14e403b2e5233d338f76777bf0a767d74496946ea79e94c25b1cedeb3740c011794ddebde6d5'
             'd2ba5be4d656cc1b285346f633315973517a16ce47ea314fe41409477884d08eb2b5e435fbff628ba2bb3a6e35f4d300cdfd6b324f00c09692defbf0264b8de7'
             '74e1aa0c101e42f0f25349d305641873b3a79ab3b9bb2d4ed68ba8e392b4db2701fcbc35826531ee2667d3ee55673e4b4fecc2a9f088141af29ceb400f72f363'
-            '0c7f7e43a2ba2372509f4a35e33a8a87a2e631c7e630c9c7c67ecaad00453b52c31d9dc26d1852ecd2fe1cb8c02cb716c1f39a4723473c38a0ef6e559bead271'
-            'f7afd53b25d104396ae9c751d4b66926ecf04c1c28aba0e7e710b01f677c55a6b2c3dd76ff60bf26e99bc10b9373e6eb6b60ec4f0a89afed04aed881e118fb9d')
+            'f7afd53b25d104396ae9c751d4b66926ecf04c1c28aba0e7e710b01f677c55a6b2c3dd76ff60bf26e99bc10b9373e6eb6b60ec4f0a89afed04aed881e118fb9d'
+            'ce84d9c184fb5fa21537834320155edf9a08e800a5db57102dca190e18a006b88d5bfee618a783c32b7fb30968110b154b248580051e2b5e15d22b75a14ef4ef')
 
 prepare() {
   mkdir build
 
   cd xserver
-#  patch -Np1 -i ../
-
   patch -Np1 -i ../0001-v2-FS-58644.patch
-  patch -Np1 -i ../0001-fix-libshadow.patch
+  patch -Np1 -i ../184.patch
   patch -Np1 -i ../0001-meson-fix-sdk_required_modules.patch
 }
 
 build() {
-  export 'CC=clang'
-  export 'CXX=clang++'
-
   cd build
 
   local meson_options=(
@@ -74,6 +69,7 @@ build() {
   meson \
     --prefix=/usr \
     --buildtype=release \
+    --native-file llvm-config \
     "${meson_options[@]}" \
     ../xserver
   meson configure

@@ -3,8 +3,8 @@
 
 pkgbase=lib32-mesa
 _pkgname=mesa
-pkgname=('lib32-vulkan-radeon' 'lib32-libva-mesa-driver' 'lib32-mesa-vdpau' 'lib32-mesa-glvnd' 'lib32-mesa')
-pkgver=19.0.0
+pkgname=('lib32-vulkan-radeon' 'lib32-libva-mesa-driver' 'lib32-mesa-vdpau' 'lib32-mesa')
+pkgver=19.1.4
 pkgrel=1
 arch=('x86_64')
 makedepends=('python-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto' 'lib32-libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -12,9 +12,11 @@ makedepends=('python-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto
              'lib32-libglvnd' 'lib32-lm_sensors' 'meson' 'lib32-libxrandr')
 url="https://www.mesa3d.org/"
 license=('custom')
-source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig})
-sha256sums=('5a549dfb40ec31e5c36c47aadac04554cb2e2a8d144a046a378fc16da57e38f8'
-            'SKIP')
+source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
+       'https://gitlab.freedesktop.org/mesa/mesa/merge_requests/1145.patch')
+sha256sums=('a6d268a7d9edcfd92b6da80f2e34e6e0a7baaa442efbeba2fc66c404943c6bfb'
+            'SKIP'
+            'c35df415fcb960badb2671e24362a99435d52de667e31550889c6cbb1b63f47f')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
@@ -23,7 +25,7 @@ prepare() {
   mkdir build
 
   cd "${_pkgname}-${pkgver}"
-#  patch -Np1 -i ../
+  patch -Np1 -i ../1145.patch
 }
 
 build() {
@@ -105,25 +107,13 @@ package_lib32-mesa-vdpau() {
   ln -s "${_pkgname}" "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 
-package_lib32-mesa-glvnd() {
-  pkgdesc="Mesa 3-D graphics library (32-bit)"
-  depends=('lib32-mesa' 'lib32-libglvnd')
-
-  #  --enable-libglvnd
-  _install fakeinstall/usr/lib32/libGLX_mesa.so*
-  _install fakeinstall/usr/lib32/libEGL*.so*
-
-  install -m755 -d "${pkgdir}/usr/share/licenses"
-  ln -s "${_pkgname}" "${pkgdir}/usr/share/licenses/${pkgname}"
-}
-
 package_lib32-mesa() {
   pkgdesc="an open-source implementation of the OpenGL specification (32-bit)"
   depends=('lib32-libdrm' 'lib32-libxxf86vm' 'lib32-libxdamage' 'lib32-libxshmfence' 'lib32-libelf'
-           'lib32-llvm-libs' 'lib32-lm_sensors' 'mesa')
+           'lib32-llvm-libs' 'lib32-lm_sensors' 'mesa' 'lib32-libglvnd')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'lib32-mesa-vdpau: for accelerated video playback')
-  provides=('lib32-nouveau-dri' 'lib32-mesa-dri')
+  provides=('lib32-nouveau-dri' 'lib32-mesa-dri' 'lib32-opengl-driver')
   conflicts=('lib32-nouveau-dri' 'lib32-mesa-dri')
 
   # nouveau-dri, swrast
@@ -132,8 +122,11 @@ package_lib32-mesa() {
   _install fakeinstall/usr/lib32/d3d
 
   # provided by lib32-opencl-mesa (lib*OpenCL*) , lib32-mesa-glvnd
-  rm -fv fakeinstall/usr/lib32/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
+  rm -fv fakeinstall/usr/lib32/{lib*OpenCL*,libGLES*.so*}
   _install fakeinstall/usr/lib32/*.so*
+
+  # indirect rendering
+  ln -s /usr/lib32/libGLX_mesa.so.0 ${pkgdir}/usr/lib32/libGLX_indirect.so.0
 
   _install fakeinstall/usr/lib32/pkgconfig
 

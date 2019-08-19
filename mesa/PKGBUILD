@@ -2,8 +2,8 @@
 # Maintainer: Andreas Radke <andyrtr@archlinux.org>
 
 pkgbase=mesa
-pkgname=('opencl-mesa' 'vulkan-radeon' 'libva-mesa-driver'  'mesa-vdpau' 'mesa-glvnd' 'mesa')
-pkgver=19.0.0
+pkgname=('opencl-mesa' 'vulkan-radeon' 'libva-mesa-driver'  'mesa-vdpau' 'mesa')
+pkgver=19.1.4
 pkgrel=1
 arch=('x86_64')
 makedepends=('python-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -12,10 +12,12 @@ makedepends=('python-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dr
 url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
-        'LICENSE')
-sha256sums=('5a549dfb40ec31e5c36c47aadac04554cb2e2a8d144a046a378fc16da57e38f8'
+        'LICENSE'
+       'https://gitlab.freedesktop.org/mesa/mesa/merge_requests/1145.patch')
+sha256sums=('a6d268a7d9edcfd92b6da80f2e34e6e0a7baaa442efbeba2fc66c404943c6bfb'
             'SKIP'
-            '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537')
+            '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537'
+            'c35df415fcb960badb2671e24362a99435d52de667e31550889c6cbb1b63f47f')
 
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
@@ -26,7 +28,7 @@ prepare() {
 
   cd "${pkgbase}-${pkgver}"
 
-#  patch -Np1 -i ../
+  patch -Np1 -i ../1145.patch
 }
 
 build() {
@@ -120,32 +122,14 @@ package_mesa-vdpau() {
   ln -s "${pkgbase}" "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 
-package_mesa-glvnd() {
-  pkgdesc="Mesa 3-D graphics library"
-  depends=('mesa' 'libglvnd')
-
-  #  --enable-libglvnd
-  _install fakeinstall/usr/lib/libGLX_mesa.so*
-  _install fakeinstall/usr/lib/libEGL*.so*
-
-  _install fakeinstall/usr/share/glvnd/egl_vendor.d/50_mesa.json
-
-  # indirect rendering
-  # uncomment if needed - provided by nvidia-drivers
-  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
-
-  install -m755 -d "${pkgdir}/usr/share/licenses/"
-  ln -s "${pkgbase}" "${pkgdir}/usr/share/licenses/${pkgname}"
-}
-
 package_mesa() {
-  pkgdesc="an open-source implementation of the OpenGL specification"
+  pkgdesc="An open-source implementation of the OpenGL specification"
   depends=('libdrm' 'libxxf86vm' 'libxdamage' 'libxshmfence' 'libelf'
-           'libomxil-bellagio' 'libunwind' 'llvm-libs' 'lm_sensors')
+           'libomxil-bellagio' 'libunwind' 'llvm-libs' 'lm_sensors' 'libglvnd')
   optdepends=('opengl-man-pages: for the OpenGL API man pages'
               'mesa-vdpau: for accelerated video playback'
               'libva-mesa-driver: for accelerated video playback')
-  provides=('nouveau-dri' 'svga-dri' 'mesa-dri')
+  provides=('nouveau-dri' 'svga-dri' 'mesa-dri' 'opengl-driver')
   conflicts=('nouveau-dri' 'svga-dri' 'mesa-dri')
 
   # nouveau-dri, swrast
@@ -154,9 +138,15 @@ package_mesa() {
   _install fakeinstall/usr/lib/bellagio
   _install fakeinstall/usr/lib/d3d
 
-  # provided by opencl-mesa (lib*OpenCL*), mesa-glvnd
-  rm -fv fakeinstall/usr/lib/{lib*OpenCL*,libGLX_mesa.so*,libEGL*.so*,libGLES*.so*}
+  # provided by opencl-mesa (lib*OpenCL*)
+  rm -fv fakeinstall/usr/lib/{lib*OpenCL*,libGLES*.so*}
   _install fakeinstall/usr/lib/*.so*
+
+  _install fakeinstall/usr/share/glvnd/egl_vendor.d/50_mesa.json
+
+  # indirect rendering
+  # uncomment if needed - provided by nvidia-drivers
+  ln -s /usr/lib/libGLX_mesa.so.0 ${pkgdir}/usr/lib/libGLX_indirect.so.0
 
   _install fakeinstall/usr/include
   _install fakeinstall/usr/lib/pkgconfig

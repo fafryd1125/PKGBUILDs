@@ -3,7 +3,7 @@
 
 _pkgname=egl-wayland
 pkgname=lib32-egl-wayland-git
-pkgver=r23.68ffe6f
+pkgver=1.1.3.r2.gbf00742
 pkgrel=1
 pkgdesc="The EGLStream-based Wayland external platform (32-bit)"
 arch=('x86_64')
@@ -13,14 +13,12 @@ depends=('egl-wayland')
 makedepends=('eglexternalplatform' 'lib32-wayland' 'mesa' 'lib32-clang' 'git' 'meson')
 provides=('lib32-egl-wayland')
 conflicts=('lib32-egl-wayland')
-source=("egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git"
-        'x86-linux-gnu')
-sha256sums=('SKIP'
-            '63ffd7f50b44782226baa26a63c8dcc31e63634345d0a94419068f7346f0afd1')
+source=("egl-wayland::git+https://github.com/NVIDIA/egl-wayland.git")
+sha256sums=('SKIP')
 
 pkgver() {
   cd "${_pkgname}"
-  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  git describe --long --tags | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
 }
 
 prepare() {
@@ -32,12 +30,13 @@ prepare() {
 
 build() {
   cd build
-  meson \
-      --prefix=/usr \
-      --libdir=/usr/lib32 \
-      --datadir=/usr/lib32 \
-      --buildtype=release \
-      --cross-file ../x86-linux-gnu \
+  meson                               \
+      --prefix=/usr                   \
+      --libdir=/usr/lib32             \
+      --datadir=/usr/lib32            \
+      --buildtype=release             \
+      --native-file llvm-config       \
+      --cross-file x86-linux-gnu-llvm \
       ../${_pkgname}
   ninja
 

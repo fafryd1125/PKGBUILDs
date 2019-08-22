@@ -2,7 +2,7 @@
 # Contributor: Joel Teichroeb <joel@teichroeb.net>
 
 pkgname=weston
-pkgver=5.0.94
+pkgver=6.0.93
 pkgrel=1
 pkgdesc='A lightweight and functional Wayland compositor.'
 arch=('x86_64')
@@ -12,11 +12,9 @@ depends=('glibc' 'wayland' 'libxkbcommon' 'libinput' 'pixman' 'libdrm' 'pam'
          'libsystemd' 'cairo' 'libpng' 'libjpeg-turbo' 'libwebp' 'mesa' 'glib2'
          'pango' 'lcms2' 'libx11' 'libxcb' 'dbus' 'libva' 'libxcursor' 'colord')
 makedepends=('wayland-protocols' 'git' 'clang' 'lld' 'doxygen' 'meson' 'freerdp')
-_commit=cc64cc3717ab39882df37bc244d1ac6cf8526f93  # master
-source=("weston::git+https://gitlab.freedesktop.org/wayland/weston.git#commit=$_commit"
-        "https://gitlab.freedesktop.org/wayland/weston/merge_requests/129.patch")
-sha512sums=('SKIP'
-            '677b0dc79e3ce4e563ed880bc17acc2bc06c53834be0122393ea60ef5a4d03943be6ac3447d35522cc46c332a17a8e48dd60db2e6cf67e4e47d88bce1658e988')
+_commit=670ac1c0edbc1a4e60f2fee2fcb1e39b57f853fc  # master
+source=("weston::git+https://gitlab.freedesktop.org/wayland/weston.git#commit=$_commit")
+sha512sums=('SKIP')
 #validpgpkeys=('C7223EBE4EF66513B892598911A30156E0E67611' # Bryce Harrington
 #              'C0066D7DB8E9AC6844D728715E54498E697F11D7') # Derek Foreman
 
@@ -27,7 +25,7 @@ pkgver() {
 
 prepare() {
     cd "$pkgname"
-    patch -p1 -i ../129.patch
+#    patch -p1 -i ../
 }
 
 

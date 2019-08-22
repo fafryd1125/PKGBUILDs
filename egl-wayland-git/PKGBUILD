@@ -1,9 +1,7 @@
-# $Id:
 # Maintainer: Darek Zielski <dz1125.bug.tracker@gmail.com>
 
-_pkgname=egl-wayland
 pkgname=egl-wayland-git
-pkgver=r22.6f5f7d0
+pkgver=1.1.3.r2.gbf00742
 pkgrel=1
 pkgdesc="The EGLStream-based Wayland external platform"
 arch=('x86_64')
@@ -18,26 +16,24 @@ sha256sums=('SKIP'
             '5cccf1905a266e8e34d5ad4aad4be85390e60b1a0850a29dd9d64adc641de412')
 
 pkgver() {
-  cd "${_pkgname}"
-  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  cd "${pkgname%-git}"
+  git describe --long --tags | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
 }
 
 prepare() {
     mkdir build
 
-#    cd "${_pkgname}"
+#    cd "${pkgname%-git}"
 #    patch -p1 -i ../
 }
 
 build() {
-    export CC=clang
-    export CXX=clang++
-
     cd build
     meson \
         --prefix=/usr \
         --buildtype=release \
-        ../${_pkgname}
+        --native-file llvm-config \
+        ../${pkgname%-git}
     ninja
 }
 
@@ -45,7 +41,7 @@ package() {
   cd build
   DESTDIR="${pkgdir}" ninja install
 
-  cd ../${_pkgname}
+  cd ../${pkgname%-git}
 
   # The NVIDIA EGL driver uses a JSON-based loader to load all EGL External platforms available on the system.
   # If this library is not installed as part of a NVIDIA driver installation, a JSON configuration file  must be

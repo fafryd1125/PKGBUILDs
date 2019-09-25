@@ -6,24 +6,20 @@
 # This is a work-in-progress: https://github.com/aaronp24/libglvnd/tree/meson
 # Set "1" to enable
 
-_meson=1
+_meson=0
 
 _pkgname=libglvnd
 pkgname=lib32-libglvnd-git
-pkgver=r582.5baa1e5
+pkgver=1.2.0.r0.g062a42e
 pkgrel=1
 pkgdesc="The GL Vendor-Neutral Dispatch library"
 arch=('x86_64')
 url="https://github.com/NVIDIA/libglvnd"
 license=('custom:BSD-like')
 source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
-        '0001-khronos-xml-m4.patch'
-        'meson_build.patch'
-        'x86-linux-gnu')
+        'meson_build.patch')
 sha1sums=('SKIP'
-          '88b8f2e4d517ba34a46c4f64ce96840eab28dc4a'
-          'bee6d5905a6f8bc12ddcc4dabb2949966215a11a'
-          '452b096e2c24954976533e950341fd1e4aeebc24')
+          'bee6d5905a6f8bc12ddcc4dabb2949966215a11a')
 
 depends=('lib32-libxext' 'libglvnd-git')
 _makedepends=('lib32-libx11' 'git' 'glproto' 'lib32-clang')
@@ -38,7 +34,7 @@ fi
 
 pkgver() {
   cd "${_pkgname}"
-  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  git describe --long --tags | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
 }
 
 prepare() {
@@ -46,16 +42,9 @@ prepare() {
     mkdir build
 
     cd "${_pkgname}"
-    patch -p1 -i ../0001-khronos-xml-m4.patch
-    patch -p1 -i ../meson_build.patch
+    patch -p1 -i ../meson_build.patch # broken
   else
     cd "${_pkgname}"
-    # Uncomment if needed
-
-    # *.xml - https://www.khronos.org/
-    # *.m4  - https://www.gnu.org/software/autoconf-archive/The-Macros.html#The-Macros
-    patch -p1 -i ../0001-khronos-xml-m4.patch
-
     # https://github.com/NVIDIA/libglvnd/pulls
 #    patch -p1 -i ../
   fi
@@ -68,13 +57,13 @@ build() {
         --prefix=/usr \
         --libdir=/usr/lib32/ \
         --buildtype=release \
-        --cross-file ../x86-linux-gnu \
+        --cross-file x86-linux-gnu \
         ../${_pkgname}
     ninja
   else
-    export PKG_CONFIG_PATH='/usr/lib32/pkgconfig'
-    export CC='clang -m32'
-    export CXX='clang++ -m32'
+    export PKG_CONFIG_PATH='/usr/bin/i686-pc-linux-gnu-pkg-config'
+#    export CC='clang -m32'
+#    export CXX='clang++ -m32'
 
     cd "${_pkgname}"
     ./autogen.sh

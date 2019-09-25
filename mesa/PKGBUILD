@@ -3,7 +3,7 @@
 
 pkgbase=mesa
 pkgname=('opencl-mesa' 'vulkan-radeon' 'libva-mesa-driver'  'mesa-vdpau' 'mesa')
-pkgver=19.1.4
+pkgver=19.2.0
 pkgrel=1
 arch=('x86_64')
 makedepends=('python-mako' 'libxml2' 'libx11' 'glproto' 'libdrm' 'dri2proto' 'dri3proto' 'presentproto'
@@ -13,11 +13,12 @@ url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
         'LICENSE'
-       'https://gitlab.freedesktop.org/mesa/mesa/merge_requests/1145.patch')
-sha256sums=('a6d268a7d9edcfd92b6da80f2e34e6e0a7baaa442efbeba2fc66c404943c6bfb'
+        '0001-Revert-meson-re-add-incorrect-pkg-config-files-with-.patch'
+       )
+sha256sums=('b060caa2a00f856431160ff7377d0e8f58f2aa48c16ee5a9e265ebdccb10852a'
             'SKIP'
             '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537'
-            'c35df415fcb960badb2671e24362a99435d52de667e31550889c6cbb1b63f47f')
+            '0ad1f0b8304a2674338afade816444e463b3c9b5ee0d1525a92fb4480599ae60')
 
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
@@ -28,7 +29,7 @@ prepare() {
 
   cd "${pkgbase}-${pkgver}"
 
-  patch -Np1 -i ../1145.patch
+  patch -Np1 -i ../0001-Revert-meson-re-add-incorrect-pkg-config-files-with-.patch
 }
 
 build() {

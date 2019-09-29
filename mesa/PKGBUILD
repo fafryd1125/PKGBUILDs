@@ -13,12 +13,14 @@ url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/mesa-${pkgver}.tar.xz{,.sig}
         'LICENSE'
-        '0001-Revert-meson-re-add-incorrect-pkg-config-files-with-.patch'
+        'https://gitlab.freedesktop.org/mesa/mesa/commit/41b57b8b73ec08a553c691542b00d77180bff422.patch'
+        'https://gitlab.freedesktop.org/mesa/mesa/commit/e456a053c3d6ec4f3d4581edcad05c72dfdaa407.patch'
        )
 sha256sums=('b060caa2a00f856431160ff7377d0e8f58f2aa48c16ee5a9e265ebdccb10852a'
             'SKIP'
             '7052ba73bb07ea78873a2431ee4e828f4e72bda7d176d07f770fa48373dec537'
-            '0ad1f0b8304a2674338afade816444e463b3c9b5ee0d1525a92fb4480599ae60')
+            '80202357b49553d8b5fc58231d3ac873d08a7fbd670585b8665b0160dfb4a274'
+            'f9a668674ada42bd9b90892df37e8c03a2de2558d779ffa33e75e2097a5755fd')
 
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
@@ -29,7 +31,8 @@ prepare() {
 
   cd "${pkgbase}-${pkgver}"
 
-  patch -Np1 -i ../0001-Revert-meson-re-add-incorrect-pkg-config-files-with-.patch
+  patch -Np1 -i ../41b57b8b73ec08a553c691542b00d77180bff422.patch
+  patch -Np1 -i ../e456a053c3d6ec4f3d4581edcad05c72dfdaa407.patch
 }
 
 build() {
@@ -53,12 +56,13 @@ build() {
      -Dgbm=true
   )
 
-  meson                       \
-        --buildtype=release   \
-        --sysconfdir=/etc     \
-        --prefix=/usr         \
-        "${meson_options[@]}" \
-        ../${pkgbase}-${pkgver}
+  meson                           \
+        --buildtype=release       \
+        --sysconfdir=/etc         \
+        --prefix=/usr             \
+        --native-file llvm-config \
+        "${meson_options[@]}"     \
+        ../"${pkgbase}-${pkgver}"
 #  meson configure
   ninja
 

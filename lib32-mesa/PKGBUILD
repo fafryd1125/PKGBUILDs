@@ -13,10 +13,13 @@ makedepends=('python-mako' 'lib32-libxml2' 'lib32-expat' 'lib32-libx11' 'glproto
 url="https://www.mesa3d.org/"
 license=('custom')
 source=(https://mesa.freedesktop.org/archive/${pkgver}/mesa-${pkgver}.tar.xz{,.sig}
-       '0001-Revert-meson-re-add-incorrect-pkg-config-files-with-.patch')
+        'https://gitlab.freedesktop.org/mesa/mesa/commit/41b57b8b73ec08a553c691542b00d77180bff422.patch'
+        'https://gitlab.freedesktop.org/mesa/mesa/commit/e456a053c3d6ec4f3d4581edcad05c72dfdaa407.patch'
+       )
 sha256sums=('b060caa2a00f856431160ff7377d0e8f58f2aa48c16ee5a9e265ebdccb10852a'
             'SKIP'
-            '0ad1f0b8304a2674338afade816444e463b3c9b5ee0d1525a92fb4480599ae60')
+            '80202357b49553d8b5fc58231d3ac873d08a7fbd670585b8665b0160dfb4a274'
+            'f9a668674ada42bd9b90892df37e8c03a2de2558d779ffa33e75e2097a5755fd')
 validpgpkeys=('8703B6700E7EE06D7A39B8D6EDAE37B02CEB490D') # Emil Velikov <emil.l.velikov@gmail.com>
 validpgpkeys+=('946D09B5E4C9845E63075FF1D961C596A7203456') # Andres Gomez <tanty@igalia.com>
 validpgpkeys+=('E3E8F480C52ADD73B278EE78E1ECBE07D7D70895') # Juan Antonio Suárez Romero (Igalia, S.L.) <jasuarez@igalia.com>"
@@ -25,7 +28,8 @@ prepare() {
   mkdir build
 
   cd "${_pkgname}-${pkgver}"
-  patch -Np1 -i ../0001-Revert-meson-re-add-incorrect-pkg-config-files-with-.patch
+  patch -Np1 -i ../41b57b8b73ec08a553c691542b00d77180bff422.patch
+  patch -Np1 -i ../e456a053c3d6ec4f3d4581edcad05c72dfdaa407.patch
 }
 
 build() {
@@ -49,14 +53,15 @@ build() {
      -Dgbm=true
   )
 
-  meson                            \
-        --buildtype=release        \
-        --sysconfdir=/etc          \
-        --prefix=/usr              \
-        --libdir=/usr/lib32        \
-        --cross-file x86-linux-gnu \
-        "${meson_options[@]}"      \
-        ../${_pkgname}-${pkgver}
+  meson                                 \
+        --buildtype=release             \
+        --sysconfdir=/etc               \
+        --prefix=/usr                   \
+        --libdir=/usr/lib32             \
+        --native-file llvm-config       \
+        --cross-file x86-linux-gnu-llvm \
+        "${meson_options[@]}"           \
+        ../"${_pkgname}-${pkgver}"
 #  meson configure
   ninja
 

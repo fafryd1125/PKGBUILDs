@@ -1,0 +1,65 @@
+From 80039359d40cf7959c47a589562ed41418191136 Mon Sep 17 00:00:00 2001
+From: fafryd <dz1125.bug.tracker@gmail.com>
+Date: Sat, 19 Oct 2019 21:49:46 +0200
+Subject: [PATCH] meson: Fix Xorg.wrap
+
+---
+ hw/xfree86/common/meson.build | 11 +++++++++++
+ hw/xfree86/meson.build        |  8 +-------
+ meson.build                   |  2 +-
+ 3 files changed, 13 insertions(+), 8 deletions(-)
+
+diff --git a/hw/xfree86/common/meson.build b/hw/xfree86/common/meson.build
+index 514999ff6..e0faf64cc 100644
+--- a/hw/xfree86/common/meson.build
++++ b/hw/xfree86/common/meson.build
+@@ -1,3 +1,14 @@
++if get_option('suid_wrapper')
++     configure_file(
++         input: '../Xorg.sh.in',
++         output: 'Xorg',
++         configuration: conf_data,
++         install: true,
++         install_dir: join_paths(get_option('prefix'), get_option('bindir')),
++         install_mode: 'rwxr-xr-x',
++     )
++endif
++
+ srcs_xorg_common = [
+     'xf86fbBus.c',
+     'xf86noBus.c',
+diff --git a/hw/xfree86/meson.build b/hw/xfree86/meson.build
+index cacf56d4c..bb6700aee 100644
+--- a/hw/xfree86/meson.build
++++ b/hw/xfree86/meson.build
+@@ -143,13 +143,7 @@ if get_option('suid_wrapper')
+         c_args: xorg_c_args,
+         install: true,
+         install_dir: get_option('libexecdir'),
+-        # install_mode: ['r-sr-xr-x', 0, 0],
+-    )
+-    configure_file(
+-        input: 'Xorg.sh.in',
+-        output: 'Xorg',
+-        configuration: conf_data,
+-        install_dir: join_paths(get_option('prefix'), get_option('bindir')),
++        install_mode: 'rwsr-xr-x',
+     )
+ endif
+ 
+diff --git a/meson.build b/meson.build
+index 492142850..93d2d8648 100644
+--- a/meson.build
++++ b/meson.build
+@@ -4,7 +4,7 @@ project('xserver', 'c',
+             'c_std=gnu99',
+         ],
+         version: '1.20.5',
+-        meson_version: '>= 0.42.0',
++        meson_version: '>= 0.50.0',
+ )
+ add_project_arguments('-DHAVE_DIX_CONFIG_H', language: 'c')
+ cc = meson.get_compiler('c')
+-- 
+2.23.0
+

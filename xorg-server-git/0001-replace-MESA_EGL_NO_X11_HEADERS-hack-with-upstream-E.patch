@@ -1,0 +1,95 @@
+From ee810f1efb03ed872ecb5f3362a8946ce05b695c Mon Sep 17 00:00:00 2001
+From: fafryd <dz1125.bug.tracker@gmail.com>
+Date: Sat, 19 Oct 2019 20:22:01 +0200
+Subject: [PATCH] replace MESA_EGL_NO_X11_HEADERS hack with upstream EGL_NO_X11
+
+---
+ glamor/glamor_egl.h                     | 2 +-
+ glamor/glamor_priv.h                    | 2 +-
+ hw/xwayland/xwayland-glamor-eglstream.c | 2 +-
+ hw/xwayland/xwayland-glamor-gbm.c       | 2 +-
+ hw/xwayland/xwayland-glamor.c           | 2 +-
+ hw/xwayland/xwayland-glx.c              | 2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/glamor/glamor_egl.h b/glamor/glamor_egl.h
+index 2f7566b24..af1c707d2 100644
+--- a/glamor/glamor_egl.h
++++ b/glamor/glamor_egl.h
+@@ -27,7 +27,7 @@
+ #ifndef GLAMOR_EGL_H
+ #define GLAMOR_EGL_H
+ 
+-#define MESA_EGL_NO_X11_HEADERS
++#define EGL_NO_X11
+ #include <epoxy/gl.h>
+ #include <epoxy/egl.h>
+ #include <glamor_egl_ext.h>
+diff --git a/glamor/glamor_priv.h b/glamor/glamor_priv.h
+index 10c74c1b5..aaf548ef4 100644
+--- a/glamor/glamor_priv.h
++++ b/glamor/glamor_priv.h
+@@ -39,7 +39,7 @@
+ 
+ #include <epoxy/gl.h>
+ #ifdef GLAMOR_HAS_GBM
+-#define MESA_EGL_NO_X11_HEADERS
++#define EGL_NO_X11
+ #include <epoxy/egl.h>
+ #endif
+ 
+diff --git a/hw/xwayland/xwayland-glamor-eglstream.c b/hw/xwayland/xwayland-glamor-eglstream.c
+index c62c0d2ac..e665b963e 100644
+--- a/hw/xwayland/xwayland-glamor-eglstream.c
++++ b/hw/xwayland/xwayland-glamor-eglstream.c
+@@ -32,7 +32,7 @@
+ #include "wayland-eglstream-client-protocol.h"
+ #include "wayland-eglstream-controller-client-protocol.h"
+ 
+-#define MESA_EGL_NO_X11_HEADERS
++#define EGL_NO_X11
+ #include <glamor_egl.h>
+ #include <glamor.h>
+ #include <glamor_transform.h>
+diff --git a/hw/xwayland/xwayland-glamor-gbm.c b/hw/xwayland/xwayland-glamor-gbm.c
+index 354695060..552c49379 100644
+--- a/hw/xwayland/xwayland-glamor-gbm.c
++++ b/hw/xwayland/xwayland-glamor-gbm.c
+@@ -35,7 +35,7 @@
+ #include <xf86drm.h>
+ #include <drm_fourcc.h>
+ 
+-#define MESA_EGL_NO_X11_HEADERS
++#define EGL_NO_X11
+ #include <gbm.h>
+ #include <glamor_egl.h>
+ 
+diff --git a/hw/xwayland/xwayland-glamor.c b/hw/xwayland/xwayland-glamor.c
+index dc07f7933..7ca29bac5 100644
+--- a/hw/xwayland/xwayland-glamor.c
++++ b/hw/xwayland/xwayland-glamor.c
+@@ -25,7 +25,7 @@
+ 
+ #include "xwayland.h"
+ 
+-#define MESA_EGL_NO_X11_HEADERS
++#define EGL_NO_X11
+ #include <glamor_egl.h>
+ 
+ #include <glamor.h>
+diff --git a/hw/xwayland/xwayland-glx.c b/hw/xwayland/xwayland-glx.c
+index abf48f71c..d3655439e 100644
+--- a/hw/xwayland/xwayland-glx.c
++++ b/hw/xwayland/xwayland-glx.c
+@@ -32,7 +32,7 @@
+ 
+ #include <xwayland-config.h>
+ #include "xwayland.h"
+-#define MESA_EGL_NO_X11_HEADERS
++#define EGL_NO_X11
+ // #include <EGL/egl.h>
+ #include <epoxy/egl.h>
+ #include "glxserver.h"
+-- 
+2.23.0
+

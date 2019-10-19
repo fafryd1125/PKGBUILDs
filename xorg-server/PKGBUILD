@@ -21,9 +21,11 @@ makedepends=('pixman' 'libx11' 'mesa' 'xtrans' 'libxkbfile' 'libxfont2' 'libpcia
 source=("git+https://gitlab.freedesktop.org/xorg/xserver.git#branch=server-1.20-branch"
         'xvfb-run'
         'xvfb-run.1'
-        '0001-v2-FS-58644.patch'
         '0001-meson-fix-sdk_required_modules.patch'
         "https://gitlab.freedesktop.org/xorg/xserver/merge_requests/184.patch"
+        '0001-meson-bump-gl-1.2.patch'
+        '0001-meson-Fix-Xorg.wrap.patch'
+        '0001-replace-MESA_EGL_NO_X11_HEADERS-hack-with-upstream-E.patch'
        )
 validpgpkeys=('7B27A3F1A6E18CD9588B4AE8310180050905E40C'
               'C383B778255613DFDB409D91DB221A6900000011'
@@ -32,17 +34,23 @@ validpgpkeys=('7B27A3F1A6E18CD9588B4AE8310180050905E40C'
 sha512sums=('SKIP'
             '190fa51c0a69d74e8e24b851de51d1bf191e318e27f1950bfa0f14e403b2e5233d338f76777bf0a767d74496946ea79e94c25b1cedeb3740c011794ddebde6d5'
             'd2ba5be4d656cc1b285346f633315973517a16ce47ea314fe41409477884d08eb2b5e435fbff628ba2bb3a6e35f4d300cdfd6b324f00c09692defbf0264b8de7'
-            '74e1aa0c101e42f0f25349d305641873b3a79ab3b9bb2d4ed68ba8e392b4db2701fcbc35826531ee2667d3ee55673e4b4fecc2a9f088141af29ceb400f72f363'
             'f7afd53b25d104396ae9c751d4b66926ecf04c1c28aba0e7e710b01f677c55a6b2c3dd76ff60bf26e99bc10b9373e6eb6b60ec4f0a89afed04aed881e118fb9d'
-            'ce84d9c184fb5fa21537834320155edf9a08e800a5db57102dca190e18a006b88d5bfee618a783c32b7fb30968110b154b248580051e2b5e15d22b75a14ef4ef')
+            '3d3be34ad9fa976daec53573d3a30a9f1953341ba5ee27099af0141f0ef7994fa5cf84dc08aae848380e6abfc10879f9a67f07601c7a437abf8aef13a3ec9fe1'
+            'cbf346dfada7027367dea56dbdb86915a7a1391ad24c8d9834700627f98ba6aee93e0556bcd160c8f72dc402d52aad604bb5b927b3947eb8c2c9db8d7cd99067'
+            '25b2d0e97652501e6952da2a10e37b8a6357da6de8e554ff9648d1748f51d9d5f5a43f86fd6e08c2a797a4be61bbd9015f4837fe156a61f42c26d9979a97928e'
+            'a8ac756423052c3615aa256547d9a6826a621a428c567a4b8e785a15574964dbc10cbed99333ffee53f2f0cc2d587ac00e16c47e79b949afd8d12952c54685d6')
 
 prepare() {
   mkdir build
 
   cd xserver
-  patch -Np1 -i ../0001-v2-FS-58644.patch
   patch -Np1 -i ../184.patch
   patch -Np1 -i ../0001-meson-fix-sdk_required_modules.patch
+  patch -Np1 -i ../0001-meson-bump-gl-1.2.patch
+  patch -Np1 -i ../0001-meson-Fix-Xorg.wrap.patch
+
+  # See https://gitlab.freedesktop.org/glvnd/libglvnd/merge_requests/193
+  patch -Np1 -i ../0001-replace-MESA_EGL_NO_X11_HEADERS-hack-with-upstream-E.patch
 }
 
 build() {

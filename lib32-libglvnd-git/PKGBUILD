@@ -1,25 +1,29 @@
-# $Id$
 # Maintainer: Darek Zielski <dz1125.bug.tracker@gmail.com>
 # Contributor: Felix Yan <felixonmars@archlinux.org>
 
 # The Meson Build system:     http://mesonbuild.com/index.html
 # This is a work-in-progress: https://github.com/aaronp24/libglvnd/tree/meson
+#                             https://gitlab.freedesktop.org/dbaker/libglvnd/tree/meson
 # Set "1" to enable
 
-_meson=0
+_meson=1
 
 _pkgname=libglvnd
 pkgname=lib32-libglvnd-git
-pkgver=1.2.0.r0.g062a42e
+pkgver=1.2.0.r10.gb581ecf
 pkgrel=1
 pkgdesc="The GL Vendor-Neutral Dispatch library"
 arch=('x86_64')
-url="https://github.com/NVIDIA/libglvnd"
+url="https://gitlab.freedesktop.org/glvnd/libglvnd"
 license=('custom:BSD-like')
-source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
-        'meson_build.patch')
-sha1sums=('SKIP'
-          'bee6d5905a6f8bc12ddcc4dabb2949966215a11a')
+source=("libglvnd::git+https://gitlab.freedesktop.org/glvnd/libglvnd.git"
+        'https://gitlab.freedesktop.org/glvnd/libglvnd/merge_requests/199.patch'
+        'fix_DEFAULT_EGL_VENDOR_CONFIG_DIRS.diff'
+        '0001-meson-Provide-an-empty-GLES3-gl3ext.h-header.patch')
+sha256sums=('SKIP'
+            'b3c3ac0b75a35f4d8d7f05cd910ae69394e521119e672d73ada49bd86eca874e'
+            'c6978026c204d7ce51715588f7449e57d535ba02b40ce7d05b706aae9984308f'
+            'f4c1e2fc0ebdcf902e29e93cd2a07adc7a60386bd7537368cdf58abddf678473')
 
 depends=('lib32-libxext' 'libglvnd-git')
 _makedepends=('lib32-libx11' 'git' 'glproto' 'lib32-clang')
@@ -42,11 +46,13 @@ prepare() {
     mkdir build
 
     cd "${_pkgname}"
-    patch -p1 -i ../meson_build.patch # broken
+    patch -p1 -i ../199.patch
+    patch -p1 -i ../fix_DEFAULT_EGL_VENDOR_CONFIG_DIRS.diff
+    patch -p1 -i ../0001-meson-Provide-an-empty-GLES3-gl3ext.h-header.patch
   else
     cd "${_pkgname}"
-    # https://github.com/NVIDIA/libglvnd/pulls
-#    patch -p1 -i ../
+    # https://gitlab.freedesktop.org/glvnd/libglvnd/merge_requests
+    patch -p1 -i ../199.patch # tests: Add symbol check tests
   fi
 }
 
@@ -57,11 +63,17 @@ build() {
         --prefix=/usr \
         --libdir=/usr/lib32/ \
         --buildtype=release \
-        --cross-file x86-linux-gnu \
+        --default-library=shared \
+        --native-file llvm-config \
+        --cross-file x86-linux-gnu-llvm-lld \
+        -Dgles1=false \
+        -Dheaders=false \
         ../${_pkgname}
     ninja
   else
     export PKG_CONFIG_PATH='/usr/lib32/pkgconfig'
+    export CC='clang -m32'
+    export CXX='clang++ -m32'
 
     cd "${_pkgname}"
     ./autogen.sh
@@ -70,7 +82,9 @@ build() {
         --libdir=/usr/lib32 \
         --build=i686-pc-linux-gnu \
         --enable-shared \
-        --enable-static=no
+        --enable-static=no \
+        --disable-headers \
+        --disable-gles1
     make
   fi
 }

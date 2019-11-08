@@ -1,0 +1,29 @@
+From ee645ddf1767b527dee0d029e170d7a260240bf1 Mon Sep 17 00:00:00 2001
+From: fafryd <dz1125.bug.tracker@gmail.com>
+Date: Fri, 8 Nov 2019 18:16:09 +0100
+Subject: [PATCH] meson: Provide an empty GLES3/gl3ext.h header
+
+The one in Mesa is empty but appears to come from some Khronos
+repository, but gl3ext.h has never existed in the OpenGL-Registry
+repository on github. Provide it for backwards compatibility.
+
+Closes: #195
+---
+ include/meson.build | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/meson.build b/include/meson.build
+index a2384ef..0e257ae 100644
+--- a/include/meson.build
++++ b/include/meson.build
+@@ -78,6 +78,7 @@ if get_option('gles2') and _headers
+   install_headers(
+     'GLES3/gl31.h',
+     'GLES3/gl32.h',
++    'GLES3/gl3ext.h',
+     'GLES3/gl3.h',
+     'GLES3/gl3platform.h',
+     subdir : 'GLES3',
+-- 
+2.24.0
+

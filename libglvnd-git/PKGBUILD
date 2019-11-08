@@ -1,27 +1,31 @@
-# $Id: PKGBUILD 249779 2015-10-27 00:47:25Z eric $
 # Maintainer: Darek Zielski <dz1125.bug.tracker@gmail.com>
 # Contributor: Felix Yan <felixonmars@archlinux.org>
 
 # The Meson Build system:     http://mesonbuild.com/index.html
 # This is a work-in-progress: https://github.com/aaronp24/libglvnd/tree/meson
+#                             https://gitlab.freedesktop.org/dbaker/libglvnd/tree/meson
 # Set "1" to enable
 
-_meson=0
+_meson=1
 
 _pkgname=libglvnd
 pkgname=libglvnd-git
-pkgver=1.2.0.r0.g062a42e
+pkgver=1.2.0.r10.gb581ecf
 pkgrel=1
 pkgdesc="The GL Vendor-Neutral Dispatch library"
 arch=('x86_64')
-url="https://github.com/NVIDIA/libglvnd"
+url="https://gitlab.freedesktop.org/glvnd/libglvnd"
 license=('custom:BSD-like')
-source=("libglvnd::git+https://github.com/NVIDIA/libglvnd.git"
+source=("libglvnd::git+https://gitlab.freedesktop.org/glvnd/libglvnd.git"
         'LICENSE'
-        'meson_build.patch')
-sha1sums=('SKIP'
-          'c88e07f333fcf8dcdbef370b85372b4d88ad8a66'
-          'bee6d5905a6f8bc12ddcc4dabb2949966215a11a')
+        'https://gitlab.freedesktop.org/glvnd/libglvnd/merge_requests/199.patch'
+        'fix_DEFAULT_EGL_VENDOR_CONFIG_DIRS.diff'
+        '0001-meson-Provide-an-empty-GLES3-gl3ext.h-header.patch')
+sha256sums=('SKIP'
+            '1a99f7487849c41fc3520e0af3dfcf28a0df05e78956d9ec58c2c52b1f20a77d'
+            'b3c3ac0b75a35f4d8d7f05cd910ae69394e521119e672d73ada49bd86eca874e'
+            'c6978026c204d7ce51715588f7449e57d535ba02b40ce7d05b706aae9984308f'
+            'f4c1e2fc0ebdcf902e29e93cd2a07adc7a60386bd7537368cdf58abddf678473')
 
 depends=('libxext')
 _makedepends=('libx11' 'git' 'glproto' 'clang')
@@ -44,34 +48,48 @@ prepare() {
     mkdir build
 
     cd "${_pkgname}"
-    patch -p1 -i ../meson_build.patch # broken
+    patch -p1 -i ../199.patch
+    patch -p1 -i ../fix_DEFAULT_EGL_VENDOR_CONFIG_DIRS.diff
+    patch -p1 -i ../0001-meson-Provide-an-empty-GLES3-gl3ext.h-header.patch
   else
     cd "${_pkgname}"
-    # https://github.com/NVIDIA/libglvnd/pulls
-#    patch -p1 -i ../
+    # https://gitlab.freedesktop.org/glvnd/libglvnd/merge_requests
+    patch -p1 -i ../199.patch # tests: Add symbol check tests
   fi
 }
 
 build() {
-#  export 'CC=clang'
-#  export 'CXX=clang++'
-
   if [[ ${_meson} = 1 ]]; then
     cd build
     meson \
         --prefix=/usr \
         --buildtype=release \
+        --native-file llvm-config \
+        -Dgles1=false \
         ../${_pkgname}
     ninja
   else
+   export 'CC=clang'
+   export 'CXX=clang++'
+
     cd "${_pkgname}"
     ./autogen.sh
     ./configure \
         --prefix=/usr \
         --enable-shared \
         --enable-static=no \
-        --disable-headers
+        --disable-gles1
     make
+  fi
+}
+
+check() {
+  if [[ ${_meson} = 1 ]]; then
+    cd build
+    ninja test
+  else
+    cd "${_pkgname}"
+    make check
   fi
 }
 

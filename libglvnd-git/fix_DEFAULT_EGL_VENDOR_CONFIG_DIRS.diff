@@ -1,0 +1,16 @@
+diff --git a/src/EGL/meson.build b/src/EGL/meson.build
+index 66e5bd8..4f12511 100644
+--- a/src/EGL/meson.build
++++ b/src/EGL/meson.build
+@@ -38,8 +38,9 @@ libEGL = shared_library(
+     'libegl.c', 'libeglcurrent.c', 'libeglmapping.c', 'libeglvendor.c', 'libeglerror.c',
+   ],
+   c_args : [
+-    '-DDEFAULT_EGL_VENDOR_CONFIG_DIRS="@0@/glvnd/egl_vendor.d:@1@/glvnd_egl_vendor.d"'.format(
+-      get_option('sysconfdir'), get_option('datadir')),
++    '-DDEFAULT_EGL_VENDOR_CONFIG_DIRS="@0@/glvnd/egl_vendor.d:@1@/glvnd/egl_vendor.d"'.format(
++        join_paths(get_option('prefix'), get_option('sysconfdir')),
++        join_paths(get_option('prefix'), get_option('datadir'))),
+   ],
+   include_directories : inc_include,
+   link_args : '-Wl,-Bsymbolic',
